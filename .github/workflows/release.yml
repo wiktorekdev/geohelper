@@ -1,0 +1,84 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build & release windows
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: setup rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+
+      - name: install npm deps
+        run: npm ci
+
+      - name: build
+        run: npm run build
+
+      - name: stage artifacts
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart("v") } else { "dev" }
+          $stage = "release-staging"
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+
+          Copy-Item "src-tauri/target/release/geohelper.exe" "$stage/GeoHelper-$version-portable.exe"
+          $installer = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+          if ($installer) {
+            Copy-Item $installer.FullName "$stage/GeoHelper-$version-setup.exe"
+          }
+
+          Get-ChildItem "$stage/*.exe" | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)" | Out-File -Append -Encoding ascii "$stage/SHA256SUMS.txt"
+          }
+
+          Get-ChildItem $stage
+
+      - name: upload portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: geohelper-portable
+          path: release-staging/GeoHelper-*-portable.exe
+
+      - name: upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: geohelper-installer
+          path: release-staging/GeoHelper-*-setup.exe
+
+      - name: upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: release-staging/SHA256SUMS.txt
+
+      - name: github release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-staging/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false

@@ -1,0 +1,41 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+dist-tsc
+*.local
+*.tsbuildinfo
+
+# Rust / Tauri
+src-tauri/target
+src-tauri/gen/schemas
+src-tauri/app-icon.png
+
+# built binaries that shouldn't be committed
+/*.exe
+/*.msi
+/*.dmg
+/*.AppImage
+/*.deb
+release/
+
+# editor / os
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# runtime logs
+logs/
+*.log
+
+# scratch
+old/

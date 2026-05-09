@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+*.sh       text eol=lf
+*.ps1      text eol=crlf
+*.cmd      text eol=crlf
+
+*.png      binary
+*.jpg      binary
+*.ico      binary
+*.icns     binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+
+src-tauri/icons/* binary
