@@ -10,8 +10,18 @@ permissions:
 
 jobs:
   build:
-    name: build & release windows
-    runs-on: windows-latest
+    name: build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+          - name: linux
+            os: ubuntu-22.04
+          - name: macos
+            os: macos-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -30,55 +40,154 @@ jobs:
         with:
           workspaces: "src-tauri -> target"
 
+      - name: install linux build deps
+        if: matrix.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev \
+            patchelf
+
       - name: install npm deps
         run: npm ci
 
       - name: build
         run: npm run build
 
-      - name: stage artifacts
+      - name: resolve version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="dev"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: stage artifacts (windows)
+        if: matrix.name == 'windows'
         shell: pwsh
         run: |
-          $version = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart("v") } else { "dev" }
+          $version = "${{ steps.version.outputs.version }}"
           $stage = "release-staging"
           New-Item -ItemType Directory -Path $stage -Force | Out-Null
 
-          Copy-Item "src-tauri/target/release/geohelper.exe" "$stage/GeoHelper-$version-portable.exe"
-          $installer = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+          Copy-Item "src-tauri/target/release/geohelper.exe" "$stage/GeoHelper-$version-windows-portable.exe"
+          $installer = Get-ChildItem "src-tauri/target/release/bundle/nsis/*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($installer) {
-            Copy-Item $installer.FullName "$stage/GeoHelper-$version-setup.exe"
+            Copy-Item $installer.FullName "$stage/GeoHelper-$version-windows-setup.exe"
+          }
+          $msi = Get-ChildItem "src-tauri/target/release/bundle/msi/*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msi) {
+            Copy-Item $msi.FullName "$stage/GeoHelper-$version-windows.msi"
           }
 
-          Get-ChildItem "$stage/*.exe" | ForEach-Object {
+          Get-ChildItem "$stage" -File | ForEach-Object {
             $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
-            "$hash  $($_.Name)" | Out-File -Append -Encoding ascii "$stage/SHA256SUMS.txt"
+            "$hash  $($_.Name)" | Out-File -Append -Encoding ascii "$stage/SHA256SUMS-windows.txt"
           }
 
           Get-ChildItem $stage
 
-      - name: upload portable
-        uses: actions/upload-artifact@v4
-        with:
-          name: geohelper-portable
-          path: release-staging/GeoHelper-*-portable.exe
+      - name: stage artifacts (linux)
+        if: matrix.name == 'linux'
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          stage="release-staging"
+          mkdir -p "$stage"
 
-      - name: upload installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: geohelper-installer
-          path: release-staging/GeoHelper-*-setup.exe
+          if [ -f src-tauri/target/release/geohelper ]; then
+            cp src-tauri/target/release/geohelper "$stage/GeoHelper-$version-linux"
+            chmod +x "$stage/GeoHelper-$version-linux"
+          fi
 
-      - name: upload checksums
+          deb=$(ls src-tauri/target/release/bundle/deb/*.deb 2>/dev/null | head -n1 || true)
+          if [ -n "$deb" ]; then
+            cp "$deb" "$stage/GeoHelper-$version-linux.deb"
+          fi
+
+          appimage=$(ls src-tauri/target/release/bundle/appimage/*.AppImage 2>/dev/null | head -n1 || true)
+          if [ -n "$appimage" ]; then
+            cp "$appimage" "$stage/GeoHelper-$version-linux.AppImage"
+          fi
+
+          rpm=$(ls src-tauri/target/release/bundle/rpm/*.rpm 2>/dev/null | head -n1 || true)
+          if [ -n "$rpm" ]; then
+            cp "$rpm" "$stage/GeoHelper-$version-linux.rpm"
+          fi
+
+          (cd "$stage" && sha256sum * > SHA256SUMS-linux.txt || true)
+          ls -la "$stage"
+
+      - name: stage artifacts (macos)
+        if: matrix.name == 'macos'
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          stage="release-staging"
+          mkdir -p "$stage"
+
+          dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg 2>/dev/null | head -n1 || true)
+          if [ -n "$dmg" ]; then
+            cp "$dmg" "$stage/GeoHelper-$version-macos.dmg"
+          fi
+
+          app_dir=$(ls -d src-tauri/target/release/bundle/macos/*.app 2>/dev/null | head -n1 || true)
+          if [ -n "$app_dir" ]; then
+            (cd "$(dirname "$app_dir")" && zip -qry "$GITHUB_WORKSPACE/$stage/GeoHelper-$version-macos.app.zip" "$(basename "$app_dir")")
+          fi
+
+          (cd "$stage" && shasum -a 256 * > SHA256SUMS-macos.txt || true)
+          ls -la "$stage"
+
+      - name: upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: checksums
-          path: release-staging/SHA256SUMS.txt
+          name: geohelper-${{ matrix.name }}
+          path: release-staging/*
+          if-no-files-found: ignore
+
+  release:
+    name: github release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          pattern: geohelper-*
+          merge-multiple: true
+
+      - name: combine checksums
+        shell: bash
+        run: |
+          cd release-artifacts
+          cat SHA256SUMS-*.txt > SHA256SUMS.txt 2>/dev/null || true
+          rm -f SHA256SUMS-*.txt
+          ls -la
 
       - name: github release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: release-staging/*
+          files: release-artifacts/*
           generate_release_notes: true
+          append_body: true
+          body: |
+            ## Install notes
+
+            - **Windows**: run the `-setup.exe` installer, or the `-portable.exe` directly.
+            - **Linux**: `.deb` for Debian/Ubuntu, `.rpm` for Fedora, or the `.AppImage` (make it executable and run it).
+            - **macOS**: the build is unsigned. Right-click the `.app` and choose **Open** the first time, or run `xattr -dr com.apple.quarantine /Applications/GeoHelper.app`. See the [FAQ](https://wiktorekdev.github.io/geohelper/#faq) for details.
+
+            Checksums are in `SHA256SUMS.txt`.
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}

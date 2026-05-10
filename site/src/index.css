@@ -12,9 +12,7 @@ body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: #e5e5e5;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(239, 68, 68, 0.12), transparent 70%),
-    #0a0a0a;
+  background: #0a0a0a;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
@@ -45,4 +43,11 @@ body {
 
 .logo-float {
   animation: float 5s ease-in-out infinite;
+}
+
+details[open] > summary svg {
+  transform: rotate(180deg);
+}
+summary::-webkit-details-marker {
+  display: none;
 }
