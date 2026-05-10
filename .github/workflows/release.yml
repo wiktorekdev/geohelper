@@ -99,11 +99,10 @@ jobs:
             Copy-Item $msi.FullName "$stage/GeoHelper-$version-windows.msi"
           }
 
-          # Updater artifact: NSIS-based zip + signature
-          $updaterZip = Get-ChildItem "src-tauri/target/release/bundle/nsis/*-setup.nsis.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($updaterZip) {
-            Copy-Item $updaterZip.FullName "$stage/GeoHelper-$version-windows-setup.nsis.zip"
-            Copy-Item "$($updaterZip.FullName).sig" "$stage/GeoHelper-$version-windows-setup.nsis.zip.sig"
+          # Updater artifact: NSIS setup exe + signature (Tauri 2 signs the setup.exe directly)
+          $updaterExe = Get-ChildItem "src-tauri/target/release/bundle/nsis/*-setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($updaterExe -and (Test-Path "$($updaterExe.FullName).sig")) {
+            Copy-Item "$($updaterExe.FullName).sig" "$stage/GeoHelper-$version-windows-setup.exe.sig"
           }
 
           Get-ChildItem "$stage" -File -Filter "*.exe" | ForEach-Object {
@@ -223,7 +222,7 @@ jobs:
             fi
           }
 
-          win_zip=$(ls GeoHelper-*-windows-setup.nsis.zip 2>/dev/null | head -n1 || true)
+          win_zip=$(ls GeoHelper-*-windows-setup.exe 2>/dev/null | head -n1 || true)
           lin_img=$(ls GeoHelper-*-linux.AppImage 2>/dev/null | head -n1 || true)
           mac_tar=$(ls GeoHelper-*-macos.app.tar.gz 2>/dev/null | head -n1 || true)
 
