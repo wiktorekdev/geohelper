@@ -5,6 +5,7 @@ import { type GeocodeProviderId } from "./geocode-providers";
 import { checkForUpdate, type UpdateInfo } from "./update-check";
 import type { Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { ipc } from "./ipc";
 import {
   loadBool,
   loadCopyFormat,
@@ -44,6 +45,7 @@ type Store = {
   installError: string | null;
   downloadedBytes: number;
   totalBytes: number | null;
+  isInstalled: boolean | null;
   geocodeError: string | null;
 
   setSnapshot: (s: { conn: ConnState; current: Coords | null; history: Round[] }) => void;
@@ -67,6 +69,7 @@ type Store = {
   runUpdateCheck: () => Promise<void>;
   dismissUpdate: () => void;
   installUpdate: () => Promise<void>;
+  detectInstallKind: () => Promise<void>;
 };
 
 export const useStore = create<Store>((set, get) => ({
@@ -93,6 +96,7 @@ export const useStore = create<Store>((set, get) => ({
   installError: null,
   downloadedBytes: 0,
   totalBytes: null,
+  isInstalled: null,
   geocodeError: null,
 
   setSnapshot: (s) => set({ conn: s.conn, current: s.current, history: s.history }),
@@ -193,6 +197,14 @@ export const useStore = create<Store>((set, get) => ({
         installState: "error",
         installError: e instanceof Error ? e.message : "Install failed",
       });
+    }
+  },
+  detectInstallKind: async () => {
+    try {
+      const installed = await ipc.isInstalled();
+      set({ isInstalled: installed });
+    } catch {
+      set({ isInstalled: null });
     }
   },
 }));
