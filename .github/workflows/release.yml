@@ -57,6 +57,9 @@ jobs:
         run: npm ci
 
       - name: build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: npm run build
 
       - name: resolve version
@@ -88,7 +91,14 @@ jobs:
             Copy-Item $msi.FullName "$stage/GeoHelper-$version-windows.msi"
           }
 
-          Get-ChildItem "$stage" -File | ForEach-Object {
+          # Updater artifact: NSIS-based zip + signature
+          $updaterZip = Get-ChildItem "src-tauri/target/release/bundle/nsis/*-setup.nsis.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($updaterZip) {
+            Copy-Item $updaterZip.FullName "$stage/GeoHelper-$version-windows-setup.nsis.zip"
+            Copy-Item "$($updaterZip.FullName).sig" "$stage/GeoHelper-$version-windows-setup.nsis.zip.sig"
+          }
+
+          Get-ChildItem "$stage" -File -Filter "*.exe" | ForEach-Object {
             $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
             "$hash  $($_.Name)" | Out-File -Append -Encoding ascii "$stage/SHA256SUMS-windows.txt"
           }
@@ -116,6 +126,10 @@ jobs:
           appimage=$(ls src-tauri/target/release/bundle/appimage/*.AppImage 2>/dev/null | head -n1 || true)
           if [ -n "$appimage" ]; then
             cp "$appimage" "$stage/GeoHelper-$version-linux.AppImage"
+            # Updater signature for AppImage
+            if [ -f "$appimage.sig" ]; then
+              cp "$appimage.sig" "$stage/GeoHelper-$version-linux.AppImage.sig"
+            fi
           fi
 
           rpm=$(ls src-tauri/target/release/bundle/rpm/*.rpm 2>/dev/null | head -n1 || true)
@@ -137,6 +151,14 @@ jobs:
           dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg 2>/dev/null | head -n1 || true)
           if [ -n "$dmg" ]; then
             cp "$dmg" "$stage/GeoHelper-$version-macos.dmg"
+          fi
+
+          app_tar=$(ls src-tauri/target/release/bundle/macos/*.app.tar.gz 2>/dev/null | head -n1 || true)
+          if [ -n "$app_tar" ]; then
+            cp "$app_tar" "$stage/GeoHelper-$version-macos.app.tar.gz"
+            if [ -f "$app_tar.sig" ]; then
+              cp "$app_tar.sig" "$stage/GeoHelper-$version-macos.app.tar.gz.sig"
+            fi
           fi
 
           app_dir=$(ls -d src-tauri/target/release/bundle/macos/*.app 2>/dev/null | head -n1 || true)
@@ -175,6 +197,64 @@ jobs:
           rm -f SHA256SUMS-*.txt
           ls -la
 
+      - name: generate updater manifest
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd release-artifacts
+          version="${TAG#v}"
+          base="https://github.com/${{ github.repository }}/releases/download/${TAG}"
+
+          read_sig() {
+            local f="$1"
+            if [ -f "$f" ]; then
+              cat "$f"
+            else
+              echo ""
+            fi
+          }
+
+          win_zip=$(ls GeoHelper-*-windows-setup.nsis.zip 2>/dev/null | head -n1 || true)
+          lin_img=$(ls GeoHelper-*-linux.AppImage 2>/dev/null | head -n1 || true)
+          mac_tar=$(ls GeoHelper-*-macos.app.tar.gz 2>/dev/null | head -n1 || true)
+
+          win_sig=$(read_sig "${win_zip}.sig")
+          lin_sig=$(read_sig "${lin_img}.sig")
+          mac_sig=$(read_sig "${mac_tar}.sig")
+
+          pub_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          platforms="{}"
+
+          add_platform() {
+            local key="$1"
+            local file="$2"
+            local sig="$3"
+            if [ -n "$file" ] && [ -n "$sig" ]; then
+              platforms=$(jq --arg k "$key" \
+                            --arg u "${base}/${file}" \
+                            --arg s "$sig" \
+                            '. + { ($k): { url: $u, signature: $s } }' <<< "$platforms")
+            fi
+          }
+
+          add_platform "windows-x86_64" "$win_zip" "$win_sig"
+          add_platform "linux-x86_64"   "$lin_img" "$lin_sig"
+          add_platform "darwin-x86_64"  "$mac_tar" "$mac_sig"
+          add_platform "darwin-aarch64" "$mac_tar" "$mac_sig"
+
+          jq -n \
+            --arg version "$version" \
+            --arg notes "See the release page for details." \
+            --arg pub_date "$pub_date" \
+            --argjson platforms "$platforms" \
+            '{ version: $version, notes: $notes, pub_date: $pub_date, platforms: $platforms }' \
+            > latest.json
+
+          echo "--- latest.json ---"
+          cat latest.json
+
       - name: github release
         uses: softprops/action-gh-release@v2
         with:
@@ -188,6 +268,6 @@ jobs:
             - **Linux**: `.deb` for Debian/Ubuntu, `.rpm` for Fedora, or the `.AppImage` (make it executable and run it).
             - **macOS**: the build is unsigned. Right-click the `.app` and choose **Open** the first time, or run `xattr -dr com.apple.quarantine /Applications/GeoHelper.app`. See the [FAQ](https://wiktorekdev.github.io/geohelper/#faq) for details.
 
-            Checksums are in `SHA256SUMS.txt`.
+            Existing installs on 0.12+ update automatically. Checksums are in `SHA256SUMS.txt`.
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}

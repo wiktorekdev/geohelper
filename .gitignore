@@ -33,6 +33,11 @@ Thumbs.db
 .env.*
 !.env.example
 
+# tauri signing keys - NEVER commit these
+.tauri/
+*.key
+!capabilities/*.key
+
 # runtime logs
 logs/
 *.log

@@ -3,6 +3,8 @@ import type { ConnState, Coords, CountryDetails, PlaceInfo, Round } from "@/type
 import { type MapProviderId } from "./map-providers";
 import { type GeocodeProviderId } from "./geocode-providers";
 import { checkForUpdate, type UpdateInfo } from "./update-check";
+import type { Update } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 import {
   loadBool,
   loadCopyFormat,
@@ -37,6 +39,11 @@ type Store = {
   updateChecking: boolean;
   updateDismissed: string;
   updateError: string | null;
+  updateHandle: Update | null;
+  installState: "idle" | "downloading" | "installing" | "done" | "error";
+  installError: string | null;
+  downloadedBytes: number;
+  totalBytes: number | null;
   geocodeError: string | null;
 
   setSnapshot: (s: { conn: ConnState; current: Coords | null; history: Round[] }) => void;
@@ -59,6 +66,7 @@ type Store = {
 
   runUpdateCheck: () => Promise<void>;
   dismissUpdate: () => void;
+  installUpdate: () => Promise<void>;
 };
 
 export const useStore = create<Store>((set, get) => ({
@@ -80,6 +88,11 @@ export const useStore = create<Store>((set, get) => ({
   updateChecking: false,
   updateDismissed: loadString(STORAGE_KEYS.updateDismissed),
   updateError: null,
+  updateHandle: null,
+  installState: "idle",
+  installError: null,
+  downloadedBytes: 0,
+  totalBytes: null,
   geocodeError: null,
 
   setSnapshot: (s) => set({ conn: s.conn, current: s.current, history: s.history }),
@@ -126,15 +139,61 @@ export const useStore = create<Store>((set, get) => ({
     set({ updateChecking: true, updateError: null });
     const result = await checkForUpdate();
     if (result.ok) {
-      set({ updateInfo: result.info, updateChecking: false, updateError: null });
+      set({
+        updateInfo: result.info,
+        updateHandle: result.handle,
+        updateChecking: false,
+        updateError: null,
+      });
     } else {
-      set({ updateInfo: null, updateChecking: false, updateError: result.error });
+      set({
+        updateInfo: null,
+        updateHandle: null,
+        updateChecking: false,
+        updateError: result.error,
+      });
     }
   },
   dismissUpdate: () => {
     const latest = get().updateInfo?.latest ?? "";
     saveString(STORAGE_KEYS.updateDismissed, latest);
     set({ updateDismissed: latest });
+  },
+  installUpdate: async () => {
+    const handle = get().updateHandle;
+    if (!handle) return;
+    if (get().installState === "downloading" || get().installState === "installing") return;
+
+    set({
+      installState: "downloading",
+      installError: null,
+      downloadedBytes: 0,
+      totalBytes: null,
+    });
+
+    try {
+      await handle.downloadAndInstall((event) => {
+        switch (event.event) {
+          case "Started":
+            set({ totalBytes: event.data.contentLength ?? null, downloadedBytes: 0 });
+            break;
+          case "Progress":
+            set((st) => ({ downloadedBytes: st.downloadedBytes + event.data.chunkLength }));
+            break;
+          case "Finished":
+            set({ installState: "installing" });
+            break;
+        }
+      });
+
+      set({ installState: "done" });
+      await relaunch();
+    } catch (e) {
+      set({
+        installState: "error",
+        installError: e instanceof Error ? e.message : "Install failed",
+      });
+    }
   },
 }));
 

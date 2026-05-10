@@ -12,7 +12,6 @@ export function useBridge() {
   const pushCoords = useStore((s) => s.pushCoords);
   const pushRound = useStore((s) => s.pushRound);
   const setConn = useStore((s) => s.setConn);
-  const setGeocodeError = useStore((s) => s.setGeocodeError);
 
   useEffect(() => {
     let mounted = true;
@@ -32,6 +31,11 @@ export function useBridge() {
           }),
           listen<Round>("round", (e) => pushRound(e.payload)),
         ]);
+
+        if (!mounted) {
+          listeners.forEach((u) => u());
+          return;
+        }
         unsubs.push(...listeners);
 
         const snap = await ipc.getState();
@@ -46,7 +50,7 @@ export function useBridge() {
       enrichToken++;
       unsubs.forEach((u) => u());
     };
-  }, [setSnapshot, pushCoords, pushRound, setConn, setGeocodeError]);
+  }, [setSnapshot, pushCoords, pushRound, setConn]);
 }
 
 async function enrichLocation(coords: Coords, isCurrent: () => boolean) {
