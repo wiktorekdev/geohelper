@@ -29,6 +29,7 @@ pub fn run() {
             commands::clear_history,
             commands::reconnect,
             commands::set_always_on_top,
+            commands::is_installed,
         ])
         .run(tauri::generate_context!())
         .expect("failed to start GeoHelper");

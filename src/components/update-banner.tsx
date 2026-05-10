@@ -1,4 +1,4 @@
-import { Download, Loader2, RotateCw, X } from "lucide-react";
+import { Download, ExternalLink, Loader2, RotateCw, X } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { useStore } from "@/lib/store";
@@ -13,11 +13,15 @@ export function UpdateBanner() {
   const installError = useStore((s) => s.installError);
   const downloaded = useStore((s) => s.downloadedBytes);
   const total = useStore((s) => s.totalBytes);
+  const isInstalled = useStore((s) => s.isInstalled);
 
   if (!info?.hasUpdate) return null;
   if (info.latest === dismissed && installState === "idle") return null;
 
   const pct = total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null;
+  // Treat null (unknown) as portable, so users who ship without the command
+  // available still get the safe manual-download path.
+  const canAutoInstall = isInstalled === true;
 
   return (
     <div className="mx-3 mb-2 rounded-md border border-sidebar-border bg-background/60 px-3 py-2 text-xs">
@@ -73,7 +77,7 @@ export function UpdateBanner() {
         </div>
       )}
 
-      {installState === "idle" && (
+      {installState === "idle" && canAutoInstall && (
         <Button
           variant="outline"
           size="sm"
@@ -83,6 +87,23 @@ export function UpdateBanner() {
           <Download className="h-3 w-3" />
           Install & restart
         </Button>
+      )}
+
+      {installState === "idle" && !canAutoInstall && (
+        <>
+          <div className="mt-2 text-[10px] text-muted-foreground">
+            Portable build - download and replace manually.
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-1 h-7 w-full text-xs"
+            onClick={() => openUrl(info.url)}
+          >
+            <ExternalLink className="h-3 w-3" />
+            Download v{info.latest}
+          </Button>
+        </>
       )}
 
       {installState === "error" && (

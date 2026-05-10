@@ -14,11 +14,13 @@ export default function App() {
 
   const settingsOpen = useStore((s) => s.settingsOpen);
   const runUpdateCheck = useStore((s) => s.runUpdateCheck);
+  const detectInstallKind = useStore((s) => s.detectInstallKind);
   const alwaysOnTop = useStore((s) => s.alwaysOnTop);
 
   useEffect(() => {
     runUpdateCheck();
-  }, [runUpdateCheck]);
+    detectInstallKind();
+  }, [runUpdateCheck, detectInstallKind]);
 
   useEffect(() => {
     // Small delay on first run to let Tauri attach the window.
