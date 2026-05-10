@@ -29,6 +29,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "category": "Utility",
     "shortDescription": "GeoGuessr Steam helper",
     "longDescription": "Monitors GeoGuessr (Steam) via CDP and surfaces round coordinates on a map.",
@@ -44,6 +45,18 @@
       "nsis": {
         "installMode": "perMachine",
         "displayLanguageSelector": false
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/wiktorekdev/geohelper/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdGRUNEMzkwNDQxRjQwMEQKUldRTlFCOUVrTlBzZjc4WTg0c0xPQytsVTBuQ0RibVV6ajNTQlBYQzNxTFZkZW1XT2YxY1pkcXUK",
+      "windows": {
+        "installMode": "passive"
       }
     }
   }
