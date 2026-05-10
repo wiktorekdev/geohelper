@@ -235,20 +235,28 @@ function CoordsRow() {
     void openUrl(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`);
   }
 
+  function openInStreetView() {
+    void openUrl(`https://www.google.com/maps?layer=c&cbll=${current.lat},${current.lng}`);
+  }
+
   return (
     <div className="mx-4 my-3 rounded-md border bg-background/40 p-3">
       <div className="grid grid-cols-2 gap-2">
         <CoordValue label="Lat" value={lat} />
         <CoordValue label="Lng" value={lng} />
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-3 gap-2">
         <CoordAction onClick={copy}>
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? "Copied" : "Copy"}
         </CoordAction>
         <CoordAction onClick={openInGoogleMaps}>
           <ExternalLink className="h-3.5 w-3.5" />
-          Google Maps
+          Maps
+        </CoordAction>
+        <CoordAction onClick={openInStreetView}>
+          <ExternalLink className="h-3.5 w-3.5" />
+          Street
         </CoordAction>
       </div>
     </div>
