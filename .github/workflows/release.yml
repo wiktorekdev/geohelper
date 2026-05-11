@@ -269,6 +269,25 @@ jobs:
           generate_release_notes: true
           append_body: true
           body: |
+            ## What's new in v0.13.0
+
+            **Added**
+            - Layout editor: pencil icon in the sidebar header. Drag to reorder sections, per-section style (visibility, size S/M/L, bold, any color).
+            - Mock preview data loads when you enter edit mode without a round active.
+            - Hide-the-map toggle in the edit toolbar (stops all tile requests).
+            - Tooltips on header icons and actions.
+            - Toasts for "copied" / "layout reset" feedback.
+            - Friendly error screen instead of a black window if the UI crashes.
+
+            **Changed**
+            - Coordinates card: two buttons, branded Google Maps action replaces the plain link.
+
+            **Removed**
+            - Street View shortcut (froze for some users).
+            - DevTools context menu in release builds.
+
+            See [CHANGELOG.md](https://github.com/wiktorekdev/geohelper/blob/main/CHANGELOG.md) for the full history.
+
             ## Install notes
 
             - **Windows**: run the `-setup.exe` installer, or the `-portable.exe` directly.
