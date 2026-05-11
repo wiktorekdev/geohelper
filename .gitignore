@@ -47,3 +47,6 @@ old/
 
 # playwright automation artifacts
 .playwright-mcp/
+
+# raw screenshot captures (intermediates for scripts/process-screenshots.mjs)
+/raw-*.png
