@@ -44,3 +44,6 @@ logs/
 
 # scratch
 old/
+
+# playwright automation artifacts
+.playwright-mcp/

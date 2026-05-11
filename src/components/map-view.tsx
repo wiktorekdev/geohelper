@@ -6,18 +6,23 @@ import { MAP_PROVIDERS } from "@/lib/map-providers";
 import { useStore } from "@/lib/store";
 import { GoogleMapView } from "./google-map-view";
 
+// Mirrors the Google Maps marker: 10px red dot with a white 4px ring and a
+// subtle drop shadow so it reads clearly on any tile style.
 const pinIcon = L.divIcon({
   className: "",
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
   html: `
-    <div style="position:relative; width:32px; height:32px;">
-      <div style="position:absolute; inset:0; border-radius:9999px;
-        background: radial-gradient(circle at 30% 30%, #fca5a5, #dc2626);
-        box-shadow: 0 0 0 4px rgba(239,68,68,0.25), 0 6px 16px rgba(0,0,0,0.5);
-        border: 2px solid #111;"></div>
-      <div style="position:absolute; inset:10px; border-radius:9999px; background:#fff;
-        box-shadow: inset 0 0 0 3px #dc2626;"></div>
+    <div style="
+      width:24px; height:24px; position:relative;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    ">
+      <div style="
+        position:absolute; inset:0;
+        background:#dc2626;
+        border-radius:9999px;
+        border:4px solid #ffffff;
+      "></div>
     </div>
   `,
 });
