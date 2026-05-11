@@ -14,25 +14,33 @@
 </div>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="GeoHelper next to GeoGuessr" />
+  <img src="docs/screenshots/paris.png" alt="GeoHelper showing Paris" />
 </p>
 
 ## What this is
 
-GeoHelper is a small desktop app (~6 MB) that sits next to GeoGuessr and tells you where the current Street View pano actually is. It works by reading the Chrome DevTools traffic the game already makes. No browser extension, no injected scripts, no automation inside the game.
+GeoHelper (~6 MB) sits next to GeoGuessr and shows where the current Street View pano actually is — country, region, road, postcode, flag. It reads Chrome DevTools traffic the game already makes. No browser extension, no injected scripts, no automation.
 
-It's meant for custom maps, solo play and learning. Don't use it in ranked matches.
+Built for custom maps, solo play and learning. Don't use it in ranked.
 
 ## Getting started
 
-1. Download `GeoHelper.exe` from [Releases](../../releases) and put it anywhere.
-2. In Steam, right-click **GeoGuessr**, **Properties**, **Launch Options**, and paste:
+1. Download from [Releases](../../releases/latest) and run it.
+2. In Steam → right-click **GeoGuessr** → **Properties** → **Launch Options**, paste:
    ```
    --remote-debugging-port=9222 --remote-allow-origins=*
    ```
-3. Start GeoGuessr. Start GeoHelper. The dot next to the logo goes green once they see each other.
+3. Start GeoGuessr, start GeoHelper. Dot goes green, coordinates appear.
 
-Works on Windows 10/11, recent Linux (GTK 3 + WebKitGTK 4.1) and macOS 11+.
+Works on Windows 10/11, Linux (GTK 3 + WebKitGTK 4.1) and macOS 11+.
+
+## Customize
+
+Drag sections, change colors and font sizes per widget, hide what you don't need.
+
+<p align="center">
+  <img src="docs/screenshots/edit-mode.png" alt="GeoHelper layout editor" />
+</p>
 
 ## Build from source
 
@@ -46,15 +54,7 @@ npm run build     # release
 
 ## How it works
 
-GeoHelper connects to `localhost:9222`, the CDP endpoint GeoGuessr exposes when you pass those launch flags. It reads the Street View pano IDs off Google Maps RPC responses and asks the game's own `StreetViewService` to turn them back into coordinates. No servers, no external APIs beyond the ones the map and reverse-geocoder already need.
-
-## Roadmap
-
-- [ ] App overlay mode
-- [ ] Chromium / Gecko browser extension
-- [ ] Layout customizer
-
-Open an issue if any of it matters to you.
+Connects to `localhost:9222` — the CDP endpoint GeoGuessr exposes with those launch flags. Reads Street View pano IDs from Google Maps RPC responses and resolves them back to coordinates through the game's own service. No external servers, no APIs beyond what the map already uses.
 
 ## Support
 

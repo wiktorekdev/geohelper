@@ -12,11 +12,13 @@ import {
   KeyRound,
   Layout,
   MapPin,
+  Menu,
   Monitor,
   Palette,
   Shield,
   Sparkles,
   Terminal,
+  X,
   Zap,
 } from "lucide-react";
 
@@ -50,10 +52,8 @@ export default function App() {
       <Nav />
       <Hero />
       <HeroScreenshot />
-      <TrustStrip />
       <Features />
       <Customizer />
-      <HowItWorks />
       <GetStarted />
       <Faq />
       <Footer />
@@ -70,26 +70,82 @@ function Backdrop() {
   );
 }
 
+// ─── Nav with scroll-triggered backdrop ─────────────────────────────────────
 function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close the mobile sheet when a link is clicked.
+  const close = () => setOpen(false);
+
   return (
-    <header className="relative max-w-6xl mx-auto flex items-center justify-between px-6 pt-6">
-      <a href="#top" className="flex items-center gap-2.5">
-        <img src={logoUrl} alt="" className="h-8 w-8" />
-        <span className="font-semibold tracking-tight text-white">GeoHelper</span>
-      </a>
-      <nav className="flex items-center gap-1 text-sm">
-        <NavLink href="#features">Features</NavLink>
-        <NavLink href="#customize">Customize</NavLink>
-        <NavLink href="#get-started">Get started</NavLink>
-        <NavLink href={GITHUB_URL}>GitHub</NavLink>
-        <a
-          href={RELEASES_LATEST_URL}
-          className="ml-2 inline-flex items-center gap-2 rounded-md bg-white px-4 py-1.5 font-medium text-black transition hover:bg-neutral-200"
-        >
-          Download
+    <div
+      className={
+        "sticky top-0 z-40 transition-colors " +
+        (scrolled || open
+          ? "border-b border-white/10 bg-neutral-950/80 backdrop-blur-md"
+          : "border-b border-transparent")
+      }
+    >
+      <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+        <a href="#top" className="flex items-center gap-2.5" onClick={close}>
+          <img src={logoUrl} alt="" className="h-8 w-8" />
+          <span className="font-semibold tracking-tight text-white">GeoHelper</span>
         </a>
-      </nav>
-    </header>
+
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 text-sm md:flex">
+          <NavLink href="#features">Features</NavLink>
+          <NavLink href="#customize">Customize</NavLink>
+          <NavLink href="#get-started">Get started</NavLink>
+          <NavLink href={GITHUB_URL}>GitHub</NavLink>
+          <a
+            href={RELEASES_LATEST_URL}
+            className="ml-2 inline-flex items-center gap-2 rounded-md bg-white px-4 py-1.5 font-medium text-black transition hover:bg-neutral-200"
+          >
+            Download
+          </a>
+        </nav>
+
+        {/* Mobile trigger */}
+        <button
+          type="button"
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.02] text-neutral-200 transition hover:bg-white/[0.06] md:hidden"
+        >
+          {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        </button>
+      </header>
+
+      {/* Mobile sheet */}
+      {open && (
+        <nav className="border-t border-white/10 bg-neutral-950/95 px-6 py-4 md:hidden">
+          <div className="flex flex-col gap-1 text-sm">
+            <MobileLink href="#features" onClick={close}>Features</MobileLink>
+            <MobileLink href="#customize" onClick={close}>Customize</MobileLink>
+            <MobileLink href="#get-started" onClick={close}>Get started</MobileLink>
+            <MobileLink href={GITHUB_URL} onClick={close}>GitHub</MobileLink>
+            <a
+              href={RELEASES_LATEST_URL}
+              onClick={close}
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 font-medium text-black transition hover:bg-neutral-200"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </a>
+          </div>
+        </nav>
+      )}
+    </div>
   );
 }
 
@@ -104,52 +160,74 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
+function MobileLink({
+  href,
+  onClick,
+  children,
+}: {
+  href: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      className="rounded-md px-3 py-2.5 text-neutral-300 transition hover:bg-white/5 hover:text-white"
+    >
+      {children}
+    </a>
+  );
+}
+
 function Hero() {
   return (
-    <section
-      id="top"
-      className="relative mx-auto max-w-4xl px-6 pt-16 pb-10 text-center sm:pt-24"
-    >
-      <a
-        href={`${GITHUB_URL}/releases/latest`}
-        className="group mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1 pr-3 text-[11px] text-neutral-300 transition hover:border-white/20 hover:bg-white/[0.05]"
+    <Reveal className="relative z-30">
+      <section
+        id="top"
+        className="relative mx-auto max-w-4xl px-6 pt-12 pb-10 text-center sm:pt-20"
       >
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-red-300">
-          <Sparkles className="h-3 w-3" />
-          v0.13
-        </span>
-        <span>New: layout editor — customize what you see</span>
-        <ArrowRight className="h-3 w-3 text-neutral-500 transition group-hover:translate-x-0.5 group-hover:text-white" />
-      </a>
-
-      <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl">
-        Live coordinates for{" "}
-        <span className="bg-gradient-to-br from-red-400 to-red-600 bg-clip-text text-transparent">
-          GeoGuessr
-        </span>
-        .
-      </h1>
-
-      <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-neutral-400">
-        A tiny desktop helper that reads GeoGuessr's own traffic and tells you where the current
-        Street View actually is. No browser extension, no scripts inside the game.
-      </p>
-
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <DownloadButton />
         <a
-          href={GITHUB_URL}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-5 py-3 text-white transition hover:bg-white/5"
+          href={`${GITHUB_URL}/releases/latest`}
+          className="group mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1 pr-3 text-[11px] text-neutral-300 transition hover:border-white/20 hover:bg-white/[0.05]"
         >
-          <Github className="h-[18px] w-[18px]" />
-          Source on GitHub
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-red-300">
+            <Sparkles className="h-3 w-3" />
+            v0.13
+          </span>
+          <span>New: layout editor — customize what you see</span>
+          <ArrowRight className="h-3 w-3 text-neutral-500 transition group-hover:translate-x-0.5 group-hover:text-white" />
         </a>
-      </div>
 
-      <p className="mt-6 font-mono text-xs text-neutral-500">
-        MIT · around 6 MB · no installer required
-      </p>
-    </section>
+        <h1 className="text-[2.5rem] font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
+          Live coordinates for{" "}
+          <span className="bg-gradient-to-br from-red-400 to-red-600 bg-clip-text text-transparent">
+            GeoGuessr
+          </span>
+          .
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-neutral-400">
+          A tiny desktop helper that reads GeoGuessr's own traffic and tells you where the current
+          Street View actually is. No browser extension, no scripts inside the game.
+        </p>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <DownloadButton />
+          <a
+            href={GITHUB_URL}
+            className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-5 py-3 text-white transition hover:bg-white/5"
+          >
+            <Github className="h-[18px] w-[18px]" />
+            Source on GitHub
+          </a>
+        </div>
+
+        <p className="mt-6 font-mono text-xs text-neutral-500">
+          MIT · around 6 MB · no installer required
+        </p>
+      </section>
+    </Reveal>
   );
 }
 
@@ -190,7 +268,7 @@ function DownloadButton() {
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-10 mt-2 rounded-lg border border-white/10 bg-neutral-950/95 p-1 text-left text-sm shadow-xl shadow-black/50 backdrop-blur">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-lg border border-white/10 bg-neutral-950/95 p-1 text-left text-sm shadow-xl shadow-black/50 backdrop-blur">
           {(["windows", "macos", "linux"] as OsId[]).map((id) => {
             const OsIcon = id === "macos" ? Apple : id === "linux" ? Terminal : Monitor;
             return (
@@ -222,74 +300,47 @@ function DownloadButton() {
   );
 }
 
-// Auto-rotating hero screenshot: swaps between three real screenshots every
-// few seconds so the page feels alive without feeling noisy.
+// ─── Rotating hero screenshot ───────────────────────────────────────────────
 function HeroScreenshot() {
   const shots = [
-    { src: parisShot, label: "France — Paris" },
-    { src: krakowShot, label: "Poland — Kraków" },
-    { src: tokyoShot, label: "Japan — Tokyo" },
+    { src: parisShot, label: "Paris" },
+    { src: krakowShot, label: "Kraków" },
+    { src: tokyoShot, label: "Tokyo" },
   ];
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
+    if (paused) return;
     const t = setInterval(() => setIdx((i) => (i + 1) % shots.length), 4200);
     return () => clearInterval(t);
-  }, [shots.length]);
+  }, [paused, shots.length]);
 
   return (
-    <section className="relative mx-auto max-w-6xl px-6 pb-20">
-      <div className="screenshot-glow relative overflow-hidden rounded-xl border border-white/10 bg-black">
-        {shots.map((s, i) => (
-          <img
-            key={s.src}
-            src={s.src}
-            alt={`GeoHelper showing ${s.label}`}
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
-            style={{ opacity: i === idx ? 1 : 0 }}
-          />
-        ))}
-        <img
-          src={shots[0].src}
-          aria-hidden
-          className="block w-full opacity-0"
-          alt=""
-        />
-        <div className="absolute left-3 bottom-3 flex items-center gap-2 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[11px] text-neutral-300 backdrop-blur">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/70" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          </span>
-          {shots[idx].label}
+    <Reveal>
+      <section className="relative mx-auto max-w-6xl px-6 pb-24">
+        <div
+          className="relative overflow-hidden rounded-xl border border-white/10 bg-black"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {shots.map((s, i) => (
+            <img
+              key={s.src}
+              src={s.src}
+              alt={`GeoHelper showing ${s.label}`}
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+              style={{ opacity: i === idx ? 1 : 0 }}
+            />
+          ))}
+          <img src={shots[0].src} aria-hidden className="block w-full opacity-0" alt="" />
         </div>
-      </div>
-    </section>
+      </section>
+    </Reveal>
   );
 }
 
-function TrustStrip() {
-  return (
-    <section className="relative mx-auto max-w-5xl px-6 pb-20">
-      <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 rounded-xl border border-white/5 bg-white/[0.015] px-8 py-5 text-sm text-neutral-400">
-        <Stat label="Platforms" value="Windows · Linux · macOS" />
-        <Stat label="Binary size" value="~6 MB" />
-        <Stat label="API keys" value="Optional" />
-        <Stat label="Telemetry" value="None" />
-        <Stat label="License" value="MIT" />
-      </div>
-    </section>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col items-center">
-      <div className="text-[10px] uppercase tracking-widest text-neutral-500">{label}</div>
-      <div className="mt-0.5 text-[13px] font-medium text-neutral-200">{value}</div>
-    </div>
-  );
-}
-
+// ─── Feature grid ───────────────────────────────────────────────────────────
 function Features() {
   const items: Array<{ title: string; body: string; icon: React.ReactNode }> = [
     {
@@ -325,23 +376,25 @@ function Features() {
   ];
 
   return (
-    <section id="features" className="relative mx-auto max-w-5xl px-6 pb-24">
-      <h2 className="mb-10 text-2xl font-bold text-white sm:text-3xl">Small app, full kit.</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((it) => (
-          <div
-            key={it.title}
-            className="group rounded-xl border border-white/10 bg-white/[0.02] p-5 transition hover:border-white/20 hover:bg-white/[0.04]"
-          >
-            <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-400 ring-1 ring-red-500/20">
-              {it.icon}
+    <Reveal>
+      <section id="features" className="relative mx-auto max-w-5xl px-6 pb-24">
+        <h2 className="mb-10 text-2xl font-bold text-white sm:text-3xl">Small app, full kit.</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((it) => (
+            <div
+              key={it.title}
+              className="group rounded-xl border border-white/10 bg-white/[0.02] p-5 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.04]"
+            >
+              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-400 ring-1 ring-red-500/20">
+                {it.icon}
+              </div>
+              <h3 className="font-semibold text-white">{it.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-neutral-400">{it.body}</p>
             </div>
-            <h3 className="font-semibold text-white">{it.title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-neutral-400">{it.body}</p>
-          </div>
-        ))}
-      </div>
-    </section>
+          ))}
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
@@ -349,58 +402,33 @@ function Customizer() {
   const bullets = [
     { icon: <Layout className="h-4 w-4" />, text: "Drag to reorder every section" },
     { icon: <Palette className="h-4 w-4" />, text: "Custom colors, bold, font size per widget" },
-    { icon: <Sparkles className="h-4 w-4" />, text: "Hide everything except what you want to train" },
+    { icon: <Code2 className="h-4 w-4" />, text: "Hide everything except what you want to train" },
   ];
 
   return (
-    <section id="customize" className="relative mx-auto max-w-6xl px-6 pb-24">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-[11px] font-medium text-red-300">
-            <Sparkles className="h-3 w-3" />
-            New in v0.13
-          </div>
+    <Reveal>
+      <section id="customize" className="relative mx-auto max-w-5xl px-6 pb-24">
+        <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-2xl font-bold text-white sm:text-3xl">Make it yours.</h2>
           <p className="mt-4 leading-relaxed text-neutral-400">
             Hit the pencil icon and the sidebar becomes a canvas. Drag sections around,
             change colors and sizes per widget, hide what you don't need. Want to practice
-            by seeing only the currency and language? Just toggle the rest off.
+            by seeing only the currency and language? Toggle the rest off.
           </p>
-          <ul className="mt-6 space-y-3 text-sm">
+          <ul className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
             {bullets.map((b) => (
-              <li key={b.text} className="flex items-center gap-3 text-neutral-200">
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/5 text-red-400 ring-1 ring-white/10">
-                  {b.icon}
-                </span>
+              <li key={b.text} className="flex items-center gap-2 text-neutral-300">
+                <span className="text-red-400">{b.icon}</span>
                 {b.text}
               </li>
             ))}
           </ul>
         </div>
-        <div className="relative">
-          <div className="screenshot-glow relative overflow-hidden rounded-xl border border-white/10 bg-black">
-            <img src={editShot} alt="GeoHelper layout editor" className="block w-full" />
-          </div>
+        <div className="relative mt-10 overflow-hidden rounded-xl border border-white/10 bg-black">
+          <img src={editShot} alt="GeoHelper layout editor" className="block w-full" />
         </div>
-      </div>
-    </section>
-  );
-}
-
-function HowItWorks() {
-  return (
-    <section className="relative mx-auto max-w-4xl px-6 pb-24">
-      <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">How it works</h2>
-      <p className="leading-relaxed text-neutral-400">
-        GeoHelper connects to the Chrome DevTools Protocol that the Steam GeoGuessr client already
-        exposes, reads network traffic coming out of the game, picks up Street View panorama IDs
-        and asks the game's own resolver to turn them back into coordinates. The result goes
-        through a tiny Rust bridge into a window sitting next to your game.
-      </p>
-      <p className="mt-4 leading-relaxed text-neutral-400">
-        No servers. No browser extension. No code injected into GeoGuessr.
-      </p>
-    </section>
+      </section>
+    </Reveal>
   );
 }
 
@@ -419,55 +447,68 @@ function GetStarted() {
   }
 
   return (
-    <section id="get-started" className="relative mx-auto max-w-5xl px-6 pb-24">
-      <h2 className="mb-8 text-2xl font-bold text-white sm:text-3xl">Three steps, one minute.</h2>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Step n="01" title="Download">
-          Grab the latest build for your OS from{" "}
-          <a
-            href={RELEASES_LATEST_URL}
-            className="underline decoration-red-500/60 hover:text-white"
-          >
-            releases
-          </a>{" "}
-          and open it.
-        </Step>
-
-        <Step n="02" title="Add launch flags to Steam">
-          <p>Right-click GeoGuessr, Properties, Launch Options, paste:</p>
-          <div className="mt-3 flex items-start gap-2 rounded bg-black/60 px-3 py-2">
-            <code className="flex-1 break-all font-mono text-[11px] text-red-300">{flags}</code>
-            <button
-              type="button"
-              onClick={copy}
-              aria-label="Copy launch flags"
-              className="shrink-0 rounded border border-white/10 p-1 text-neutral-400 transition hover:bg-white/5 hover:text-white"
+    <Reveal>
+      <section id="get-started" className="relative mx-auto max-w-5xl px-6 pb-24">
+        <h2 className="mb-8 text-2xl font-bold text-white sm:text-3xl">Three steps, one minute.</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Step n="01" title="Download" icon={<Download className="h-5 w-5" />}>
+            Grab the latest build for your OS from{" "}
+            <a
+              href={RELEASES_LATEST_URL}
+              className="underline decoration-red-500/60 hover:text-white"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-            </button>
-          </div>
-        </Step>
+              releases
+            </a>{" "}
+            and open it.
+          </Step>
 
-        <Step n="03" title="Play">
-          Start GeoGuessr, start GeoHelper. Dot goes green, coordinates show up.
-        </Step>
-      </div>
-    </section>
+          <Step
+            n="02"
+            title="Add launch flags to Steam"
+            icon={<Terminal className="h-5 w-5" />}
+          >
+            <p>Right-click GeoGuessr, Properties, Launch Options, paste:</p>
+            <div className="mt-3 flex items-start gap-2 rounded bg-black/60 px-3 py-2">
+              <code className="flex-1 break-all font-mono text-[11px] text-red-300">{flags}</code>
+              <button
+                type="button"
+                onClick={copy}
+                aria-label="Copy launch flags"
+                className="shrink-0 rounded border border-white/10 p-1 text-neutral-400 transition hover:bg-white/5 hover:text-white"
+              >
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+              </button>
+            </div>
+          </Step>
+
+          <Step n="03" title="Play" icon={<MapPin className="h-5 w-5" />}>
+            Start GeoGuessr, start GeoHelper. Dot goes green, coordinates show up.
+          </Step>
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
 function Step({
   n,
   title,
+  icon,
   children,
 }: {
   n: string;
   title: string;
+  icon: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-      <div className="font-mono text-xs text-red-400">{n}</div>
+    <div className="relative rounded-xl border border-white/10 bg-white/[0.02] p-5">
+      <div className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-400 ring-1 ring-red-500/20">
+        {icon}
+      </div>
+      <div className="absolute right-4 top-4 font-mono text-[10px] tracking-widest text-neutral-600">
+        {n}
+      </div>
       <strong className="mt-1 block text-white">{title}</strong>
       <div className="mt-2 text-sm leading-relaxed text-neutral-400">{children}</div>
     </div>
@@ -495,20 +536,22 @@ function Faq() {
   ];
 
   return (
-    <section className="relative mx-auto max-w-4xl px-6 pb-24">
-      <h2 className="mb-8 text-2xl font-bold text-white sm:text-3xl">Questions we actually get asked.</h2>
-      <div className="divide-y divide-white/5 rounded-xl border border-white/10 bg-white/[0.02]">
-        {items.map((it) => (
-          <details key={it.q} className="group px-5 py-4">
-            <summary className="flex cursor-pointer items-center justify-between gap-4 text-white">
-              <span className="font-medium">{it.q}</span>
-              <ChevronDown className="h-4 w-4 text-neutral-500 transition group-open:rotate-180" />
-            </summary>
-            <p className="mt-3 text-sm leading-relaxed text-neutral-400">{it.a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
+    <Reveal>
+      <section className="relative mx-auto max-w-4xl px-6 pb-20">
+        <h2 className="mb-8 text-2xl font-bold text-white sm:text-3xl">Questions we actually get asked.</h2>
+        <div className="divide-y divide-white/5 rounded-xl border border-white/10 bg-white/[0.02]">
+          {items.map((it) => (
+            <details key={it.q} className="group px-5 py-4">
+              <summary className="flex cursor-pointer items-center justify-between gap-4 text-white">
+                <span className="font-medium">{it.q}</span>
+                <ChevronDown className="h-4 w-4 text-neutral-500 transition group-open:rotate-180" />
+              </summary>
+              <p className="mt-3 text-sm leading-relaxed text-neutral-400">{it.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
@@ -536,5 +579,41 @@ function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+// ─── Scroll reveal wrapper ──────────────────────────────────────────────────
+function Reveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [seen, setSeen] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setSeen(true);
+            io.disconnect();
+          }
+        }
+      },
+      { rootMargin: "0px 0px -80px 0px", threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={(seen ? "reveal reveal-in " : "reveal ") + className}>
+      {children}
+    </div>
   );
 }

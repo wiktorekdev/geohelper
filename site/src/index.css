@@ -6,6 +6,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
@@ -29,13 +30,6 @@ body {
   mask-image: radial-gradient(ellipse 60% 40% at 50% 0%, black 40%, transparent 100%);
 }
 
-.screenshot-glow {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 10px 40px -10px rgba(239, 68, 68, 0.3),
-    0 40px 120px -30px rgba(0, 0, 0, 0.8);
-}
-
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
@@ -50,4 +44,28 @@ details[open] > summary svg {
 }
 summary::-webkit-details-marker {
   display: none;
+}
+
+/* Scroll reveal: start hidden + offset, reveal when intersection observer
+   adds .reveal-in. Falls back to visible if JS is off (media query). */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .logo-float {
+    animation: none;
+  }
 }
