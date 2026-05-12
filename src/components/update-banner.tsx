@@ -36,7 +36,7 @@ export function UpdateBanner() {
             title="Dismiss"
             className="text-muted-foreground hover:text-foreground shrink-0"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="size-3.5" />
           </button>
         )}
       </div>
@@ -44,7 +44,7 @@ export function UpdateBanner() {
       {installState === "downloading" && (
         <div className="mt-2 space-y-1">
           <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>Downloading...</span>
+            <span>Downloading…</span>
             <span className="font-mono tabular-nums">
               {pct !== null ? `${pct}%` : formatBytes(downloaded)}
             </span>
@@ -60,8 +60,8 @@ export function UpdateBanner() {
 
       {installState === "installing" && (
         <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Installing, relaunching...
+          <Loader2 className="size-3 animate-spin" />
+          Installing, relaunching…
         </div>
       )}
 
@@ -84,7 +84,7 @@ export function UpdateBanner() {
           className="mt-2 h-7 w-full text-xs"
           onClick={() => install()}
         >
-          <Download className="h-3 w-3" />
+          <Download className="size-3" />
           Install & restart
         </Button>
       )}
@@ -100,7 +100,7 @@ export function UpdateBanner() {
             className="mt-1 h-7 w-full text-xs"
             onClick={() => openUrl(info.url)}
           >
-            <ExternalLink className="h-3 w-3" />
+            <ExternalLink className="size-3" />
             Download v{info.latest}
           </Button>
         </>
@@ -113,7 +113,7 @@ export function UpdateBanner() {
           className="mt-2 h-7 w-full text-xs"
           onClick={() => install()}
         >
-          <RotateCw className="h-3 w-3" />
+          <RotateCw className="size-3" />
           Try again
         </Button>
       )}

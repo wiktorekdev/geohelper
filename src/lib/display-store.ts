@@ -39,9 +39,17 @@ const DEFAULT_CONFIG: DisplayConfig = {
 };
 
 const STORAGE_KEY = "geohelper.display";
+const KNOWN_WIDGETS = new Set<WidgetId>(ALL_WIDGETS);
 
 function cloneDefault(): DisplayConfig {
-  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  return {
+    order: [...DEFAULT_CONFIG.order],
+    visibility: { ...DEFAULT_CONFIG.visibility },
+    styles: Object.fromEntries(
+      ALL_WIDGETS.map((w) => [w, { ...DEFAULT_CONFIG.styles[w] }]),
+    ) as Record<WidgetId, WidgetStyle>,
+    mapVisible: DEFAULT_CONFIG.mapVisible,
+  };
 }
 
 function load(): DisplayConfig {
@@ -51,11 +59,11 @@ function load(): DisplayConfig {
     const parsed = JSON.parse(raw) as Partial<DisplayConfig> | null;
     if (!parsed) return cloneDefault();
 
-    // Normalize: keep only known widget ids, then append any that are missing
     const orderRaw = Array.isArray(parsed.order) ? parsed.order : [];
-    const order = orderRaw.filter((w): w is WidgetId => ALL_WIDGETS.includes(w as WidgetId));
+    const order = orderRaw.filter((w): w is WidgetId => KNOWN_WIDGETS.has(w as WidgetId));
+    const ordered = new Set(order);
     for (const w of ALL_WIDGETS) {
-      if (!order.includes(w)) order.push(w);
+      if (!ordered.has(w)) order.push(w);
     }
 
     const visibility: Record<WidgetId, boolean> = { ...DEFAULT_CONFIG.visibility };
@@ -66,7 +74,7 @@ function load(): DisplayConfig {
       }
     }
 
-    const styles: Record<WidgetId, WidgetStyle> = JSON.parse(JSON.stringify(DEFAULT_CONFIG.styles));
+    const styles = cloneDefault().styles;
     if (parsed.styles && typeof parsed.styles === "object") {
       for (const w of ALL_WIDGETS) {
         const s = (parsed.styles as Record<string, unknown>)[w] as Partial<WidgetStyle> | undefined;
@@ -81,17 +89,32 @@ function load(): DisplayConfig {
       }
     }
 
-    return { order, visibility, styles, mapVisible: typeof parsed.mapVisible === "boolean" ? parsed.mapVisible : true };
+    return {
+      order,
+      visibility,
+      styles,
+      mapVisible: typeof parsed.mapVisible === "boolean" ? parsed.mapVisible : true,
+    };
   } catch {
     return cloneDefault();
   }
 }
 
+function selectConfig(state: DisplayConfig): DisplayConfig {
+  return {
+    order: [...state.order],
+    visibility: { ...state.visibility },
+    styles: Object.fromEntries(
+      ALL_WIDGETS.map((w) => [w, { ...state.styles[w] }]),
+    ) as Record<WidgetId, WidgetStyle>,
+    mapVisible: state.mapVisible,
+  };
+}
+
 function save(state: DisplayConfig): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectConfig(state)));
   } catch {
-    // quota / privacy mode — drop silently
   }
 }
 

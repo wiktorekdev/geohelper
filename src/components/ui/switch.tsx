@@ -1,19 +1,17 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type Props = {
+type Props = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> & {
   checked: boolean;
   onCheckedChange: (v: boolean) => void;
-  disabled?: boolean;
-  id?: string;
-  className?: string;
 };
 
 export const Switch = React.forwardRef<HTMLButtonElement, Props>(
-  ({ checked, onCheckedChange, disabled, id, className }, ref) => (
+  ({ checked, onCheckedChange, disabled, id, className, ...props }, ref) => (
     <button
       ref={ref}
       id={id}
+      {...props}
       type="button"
       role="switch"
       aria-checked={checked}
@@ -27,7 +25,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, Props>(
     >
       <span
         className={cn(
-          "pointer-events-none inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
+          "pointer-events-none inline-block size-3.5 rounded-full bg-white shadow transition-transform",
           checked ? "translate-x-[18px]" : "translate-x-0.5",
         )}
       />

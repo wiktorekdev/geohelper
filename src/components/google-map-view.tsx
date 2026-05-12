@@ -1,24 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const CALLBACK = "__geohelperGmapsReady";
-let loader: Promise<void> | null = null;
-
-function loadGoogle(key: string): Promise<void> {
-  if (window.google?.maps) return Promise.resolve();
-  if (loader) return loader;
-
-  loader = new Promise<void>((resolve, reject) => {
-    (window as any)[CALLBACK] = () => resolve();
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&callback=${CALLBACK}`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => reject(new Error("failed to load Google Maps"));
-    document.head.appendChild(script);
-  });
-
-  return loader;
-}
+import { loadGoogleMaps } from "@/lib/google-maps-loader";
 
 type Props = {
   apiKey: string;
@@ -34,7 +16,8 @@ export function GoogleMapView({ apiKey, mapTypeId, center }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    loadGoogle(apiKey)
+    setError(null);
+    loadGoogleMaps(apiKey)
       .then(() => {
         if (cancelled || !containerRef.current) return;
         if (!mapRef.current) {

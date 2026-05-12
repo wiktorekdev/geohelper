@@ -6,10 +6,17 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  check:
-    name: build & type-check
-    runs-on: windows-latest
+  frontend:
+    name: frontend build
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +26,20 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: install npm deps
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: frontend build
+        run: npm run vite:build
+
+  rust:
+    name: rust checks
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
 
       - name: setup rust
         uses: dtolnay/rust-toolchain@stable
@@ -28,11 +49,8 @@ jobs:
         with:
           workspaces: "src-tauri -> target"
 
-      - name: install npm deps
-        run: npm ci
+      - name: cargo fmt
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 
-      - name: frontend build (tsc + vite)
-        run: npm run vite:build
-
-      - name: cargo check
-        run: cargo check --manifest-path src-tauri/Cargo.toml
+      - name: cargo clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings

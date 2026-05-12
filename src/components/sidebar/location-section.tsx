@@ -7,23 +7,17 @@ export function LocationSection() {
   const details = useStore((s) => s.countryDetails);
 
   if (!place.country && !place.region && !place.city) {
-    return <div className="px-5 py-5 text-sm text-muted-foreground">Locating...</div>;
+    return <div className="p-5 text-sm text-muted-foreground">Locating…</div>;
   }
 
-  const areaLine = [place.neighbourhood, place.city]
-    .filter(Boolean)
-    .filter((v, i, a) => a.indexOf(v) === i)
-    .join(" - ");
+  const areaLine = uniqueLine(place.neighbourhood, place.city);
 
-  const regionLine = [place.county, place.region]
-    .filter(Boolean)
-    .filter((v, i, a) => a.indexOf(v) === i)
-    .join(" - ");
+  const regionLine = uniqueLine(place.county, place.region);
 
   const continentLine = composeContinentLine(place.continent, details?.subregion);
 
   return (
-    <div className="px-5 py-5 space-y-3">
+    <div className="p-5 space-y-3">
       <div className="flex items-center gap-3">
         {place.countryCode && (
           <ReactCountryFlag
@@ -49,6 +43,17 @@ export function LocationSection() {
       </div>
     </div>
   );
+}
+
+function uniqueLine(...values: Array<string | undefined>): string {
+  const seen = new Set<string>();
+  const parts: string[] = [];
+  for (const value of values) {
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    parts.push(value);
+  }
+  return parts.join(" - ");
 }
 
 function composeContinentLine(continent?: string, subregion?: string): string {

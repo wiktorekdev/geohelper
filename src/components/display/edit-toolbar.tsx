@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDisplayStore } from "@/lib/display-store";
+import { clearMockIfPresent } from "@/lib/mock-data";
 
 export function EditToolbar() {
   const editing = useDisplayStore((s) => s.editing);
@@ -15,11 +16,16 @@ export function EditToolbar() {
 
   if (!editing) return null;
 
+  function finishEditing() {
+    clearMockIfPresent();
+    stopEditing();
+  }
+
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center">
       <div className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-sidebar-border bg-sidebar/95 px-3 py-1.5 shadow-lg backdrop-blur">
         <div className="inline-flex items-center gap-2 pl-1 pr-2 text-[12px] font-medium">
-          <Pencil className="h-3.5 w-3.5 text-brand" />
+          <Pencil className="size-3.5 text-brand" />
           <span>Editing layout</span>
         </div>
         <Separator orientation="vertical" className="h-5" />
@@ -32,7 +38,7 @@ export function EditToolbar() {
               className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
               onClick={() => setMapVisible(!mapVisible)}
             >
-              {mapVisible ? <Map className="h-3.5 w-3.5" /> : <MapPinOff className="h-3.5 w-3.5" />}
+              {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
               {mapVisible ? "Hide map" : "Show map"}
             </Button>
           </TooltipTrigger>
@@ -52,7 +58,7 @@ export function EditToolbar() {
                 toast.success("Layout reset");
               }}
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <RotateCcw className="size-3.5" />
               Reset
             </Button>
           </TooltipTrigger>
@@ -62,9 +68,9 @@ export function EditToolbar() {
         <Button
           size="sm"
           className="h-7 gap-1.5 rounded-full px-3 text-xs"
-          onClick={stopEditing}
+          onClick={finishEditing}
         >
-          <Check className="h-3.5 w-3.5" />
+          <Check className="size-3.5" />
           Done
         </Button>
       </div>

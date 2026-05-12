@@ -19,7 +19,7 @@ export function ColorPicker({ value, onChange }: Props) {
           type="button"
           aria-label="Pick color"
           className={cn(
-            "h-6 w-6 shrink-0 rounded-md border border-sidebar-border shadow-sm",
+            "size-6 shrink-0 rounded-md border border-sidebar-border shadow-sm",
             "ring-offset-background transition-all hover:scale-105",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           )}
@@ -40,7 +40,7 @@ export function ColorPicker({ value, onChange }: Props) {
           />
           <div className="flex items-center gap-2">
             <div
-              className="h-5 w-5 rounded border border-sidebar-border"
+              className="size-5 rounded border border-sidebar-border"
               style={{ backgroundColor: value ?? "var(--foreground)" }}
             />
             <span className="font-mono text-[11px] text-muted-foreground flex-1">

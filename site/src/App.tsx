@@ -70,7 +70,6 @@ function Backdrop() {
   );
 }
 
-// ─── Nav with scroll-triggered backdrop ─────────────────────────────────────
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -82,7 +81,6 @@ function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close the mobile sheet when a link is clicked.
   const close = () => setOpen(false);
 
   return (
@@ -100,7 +98,6 @@ function Nav() {
           <span className="font-semibold tracking-tight text-white">GeoHelper</span>
         </a>
 
-        {/* Desktop nav */}
         <nav className="hidden items-center gap-1 text-sm md:flex">
           <NavLink href="#features">Features</NavLink>
           <NavLink href="#customize">Customize</NavLink>
@@ -114,7 +111,6 @@ function Nav() {
           </a>
         </nav>
 
-        {/* Mobile trigger */}
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -126,7 +122,6 @@ function Nav() {
         </button>
       </header>
 
-      {/* Mobile sheet */}
       {open && (
         <nav className="border-t border-white/10 bg-neutral-950/95 px-6 py-4 md:hidden">
           <div className="flex flex-col gap-1 text-sm">
@@ -201,7 +196,7 @@ function Hero() {
 
         <h1 className="text-[2.5rem] font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
           Live coordinates for{" "}
-          <span className="bg-gradient-to-br from-red-400 to-red-600 bg-clip-text text-transparent">
+          <span className="text-red-400">
             GeoGuessr
           </span>
           .
@@ -300,7 +295,6 @@ function DownloadButton() {
   );
 }
 
-// ─── Rotating hero screenshot ───────────────────────────────────────────────
 function HeroScreenshot() {
   const shots = [
     { src: parisShot, label: "Paris" },
@@ -308,21 +302,26 @@ function HeroScreenshot() {
     { src: tokyoShot, label: "Tokyo" },
   ];
   const [idx, setIdx] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const paused = useRef(false);
 
   useEffect(() => {
-    if (paused) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % shots.length), 4200);
+    const t = setInterval(() => {
+      if (!paused.current) setIdx((i) => (i + 1) % shots.length);
+    }, 4200);
     return () => clearInterval(t);
-  }, [paused, shots.length]);
+  }, [shots.length]);
 
   return (
     <Reveal>
       <section className="relative mx-auto max-w-6xl px-6 pb-24">
         <div
           className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-950"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
+          onMouseEnter={() => {
+            paused.current = true;
+          }}
+          onMouseLeave={() => {
+            paused.current = false;
+          }}
         >
           {shots.map((s, i) => (
             <img
@@ -340,7 +339,6 @@ function HeroScreenshot() {
   );
 }
 
-// ─── Feature grid ───────────────────────────────────────────────────────────
 function Features() {
   const items: Array<{ title: string; body: string; icon: React.ReactNode }> = [
     {
@@ -442,7 +440,6 @@ function GetStarted() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* ignore */
     }
   }
 
@@ -582,7 +579,6 @@ function Footer() {
   );
 }
 
-// ─── Scroll reveal wrapper ──────────────────────────────────────────────────
 function Reveal({
   children,
   className = "",

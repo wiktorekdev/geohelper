@@ -23,26 +23,39 @@ use conn::Conn;
 
 const BURST_DEBOUNCE: Duration = Duration::from_millis(300);
 const RESOLVE_INTERVAL: Duration = Duration::from_millis(600);
+const RETRY_MIN: Duration = Duration::from_secs(1);
+const RETRY_MAX: Duration = Duration::from_secs(30);
 const MAX_BATCH: usize = 10;
 const MAX_REMEMBERED: usize = 1000;
 
 pub async fn run(app: AppHandle, state: Shared) {
+    let mut retry_delay = RETRY_MIN;
+
     loop {
         state.set_conn(ConnState::Searching);
         emit_status(&app, &state);
 
-        if let Err(e) = attempt(&app, &state).await {
-            eprintln!("[cdp] {e}");
-            log_line(&app, "error", format!("{e}"));
-            state.set_conn(ConnState::Disconnected {
-                reason: format!("{e}"),
-            });
-            emit_status(&app, &state);
+        match attempt(&app, &state).await {
+            Ok(()) => {
+                retry_delay = RETRY_MIN;
+            }
+            Err(e) => {
+                eprintln!("[cdp] {e}");
+                log_line(&app, "error", format!("{e}"));
+                state.set_conn(ConnState::Disconnected {
+                    reason: format!("{e}"),
+                });
+                emit_status(&app, &state);
+            }
         }
 
         tokio::select! {
-            _ = tokio::time::sleep(Duration::from_secs(3)) => {}
-            _ = state.kick.notified() => {}
+            _ = tokio::time::sleep(retry_delay) => {
+                retry_delay = (retry_delay * 2).min(RETRY_MAX);
+            }
+            _ = state.kick.notified() => {
+                retry_delay = RETRY_MIN;
+            }
         }
     }
 }

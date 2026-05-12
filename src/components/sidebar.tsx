@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Pencil, Settings as SettingsIcon } from "lucide-react";
 import {
   closestCenter,
@@ -40,14 +39,13 @@ export function Sidebar() {
   const order = useDisplayStore((s) => s.order);
   const setOrder = useDisplayStore((s) => s.setOrder);
 
-  // Inject mock data when entering edit mode if nothing real is available yet,
-  // and clear it when leaving.
-  useEffect(() => {
-    if (editing) injectMockIfEmpty();
-    else clearMockIfPresent();
-  }, [editing]);
-
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
+  function handleToggleEditing() {
+    if (editing) clearMockIfPresent();
+    else injectMockIfEmpty();
+    toggleEditing();
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -67,7 +65,7 @@ export function Sidebar() {
     >
       <header className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <img src={logoUrl} alt="" className="h-8 w-8 shrink-0" />
+          <img src={logoUrl} alt="" className="size-8 shrink-0" />
           <div className="text-[15px] font-semibold tracking-tight">GeoHelper</div>
         </div>
         <div className="flex items-center gap-1">
@@ -77,11 +75,11 @@ export function Sidebar() {
               <Button
                 size="icon"
                 variant={editing ? "default" : "ghost"}
-                className="h-8 w-8"
-                onClick={toggleEditing}
+                className="size-8"
+                onClick={handleToggleEditing}
                 aria-pressed={editing}
               >
-                <Pencil className="h-4 w-4" />
+                <Pencil className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -90,8 +88,8 @@ export function Sidebar() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={openSettings}>
-                <SettingsIcon className="h-4 w-4" />
+              <Button size="icon" variant="ghost" className="size-8" onClick={openSettings}>
+                <SettingsIcon className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">Settings</TooltipContent>
@@ -146,7 +144,7 @@ function StatusDot({ conn }: { conn: ReturnType<typeof useStore.getState>["conn"
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "mr-1 inline-block h-1.5 w-1.5 rounded-full",
+            "mr-1 inline-block size-1.5 rounded-full",
             tone === "ok" && "bg-emerald-500",
             tone === "warn" && "bg-amber-500 animate-pulse",
             tone === "bad" && "bg-rose-500",
@@ -163,15 +161,19 @@ function describe(conn: ReturnType<typeof useStore.getState>["conn"]) {
     case "connected":
       return { tone: "ok" as const, title: "Connected to GeoGuessr" };
     case "searching":
-      return { tone: "warn" as const, title: "Looking for GeoGuessr..." };
-    case "disconnected":
-      return { tone: "bad" as const, title: `Disconnected: ${conn.reason}` };
+      return { tone: "warn" as const, title: "Looking for GeoGuessr" };
+    case "disconnected": {
+      const details = connectionDetails(conn);
+      return { tone: "bad" as const, title: details.title };
+    }
     default:
       return { tone: "warn" as const, title: "Idle" };
   }
 }
 
 function EmptyState({ conn }: { conn: ReturnType<typeof useStore.getState>["conn"] }) {
+  const details = connectionDetails(conn);
+
   if (conn.kind === "connected") {
     return (
       <div className="flex-1 flex items-center justify-center py-16 text-xs text-muted-foreground">
@@ -182,15 +184,58 @@ function EmptyState({ conn }: { conn: ReturnType<typeof useStore.getState>["conn
 
   return (
     <div className="px-5 py-10 space-y-3 text-center">
-      <div className="text-sm text-muted-foreground">Not connected</div>
-      <div className="mx-auto max-w-[260px] rounded-md border border-sidebar-border bg-background/50 p-3 text-left text-[11px] text-muted-foreground leading-relaxed">
-        Make sure GeoGuessr is launched with:
-        <code className="mt-1.5 block rounded bg-accent px-2 py-1 font-mono text-[10px] break-all">
-          --remote-debugging-port=9222 --remote-allow-origins=*
-        </code>
-      </div>
+      <div className="text-sm font-medium">{details.title}</div>
+      <div className="text-xs text-muted-foreground">{details.body}</div>
+      {details.showFlags && (
+        <div className="mx-auto max-w-[260px] rounded-md border border-sidebar-border bg-background/50 p-3 text-left text-[11px] text-muted-foreground leading-relaxed">
+          Add these Steam launch options:
+          <code className="mt-1.5 block rounded bg-accent px-2 py-1 font-mono text-[10px] break-all">
+            --remote-debugging-port=9222 --remote-allow-origins=*
+          </code>
+        </div>
+      )}
     </div>
   );
+}
+
+function connectionDetails(conn: ReturnType<typeof useStore.getState>["conn"]) {
+  if (conn.kind === "searching" || conn.kind === "idle") {
+    return {
+      title: "Looking for GeoGuessr",
+      body: "Start GeoGuessr on Steam and open a round.",
+      showFlags: false,
+    };
+  }
+
+  if (conn.kind !== "disconnected") {
+    return {
+      title: "Not connected",
+      body: "Start GeoGuessr on Steam and open a round.",
+      showFlags: false,
+    };
+  }
+
+  if (conn.reason.includes("CDP port is not reachable")) {
+    return {
+      title: "Launch flags missing",
+      body: "GeoGuessr is not exposing localhost:9222 yet.",
+      showFlags: true,
+    };
+  }
+
+  if (conn.reason.includes("GeoGuessr is not active")) {
+    return {
+      title: "GeoGuessr is not active",
+      body: "Start GeoGuessr on Steam or open an active game round.",
+      showFlags: false,
+    };
+  }
+
+  return {
+    title: "Connection lost",
+    body: conn.reason,
+    showFlags: false,
+  };
 }
 
 function GeocodeNotice() {

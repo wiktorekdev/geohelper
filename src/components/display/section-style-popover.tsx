@@ -40,9 +40,9 @@ export function SectionStylePopover({ id }: Props) {
             <button
               type="button"
               aria-label={`Edit ${label}`}
-              className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-sidebar-border bg-background/60 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="inline-flex size-6 items-center justify-center rounded-md border border-sidebar-border bg-background/60 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              <Settings2 className="h-3 w-3" />
+              <Settings2 className="size-3" />
             </button>
           </PopoverTrigger>
         </TooltipTrigger>
@@ -59,10 +59,10 @@ export function SectionStylePopover({ id }: Props) {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => resetWidget(id)}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                  className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
                   aria-label="Reset"
                 >
-                  <RotateCcw className="h-3 w-3" />
+                  <RotateCcw className="size-3" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="top">Reset this section</TooltipContent>
@@ -71,7 +71,7 @@ export function SectionStylePopover({ id }: Props) {
 
           <Separator />
 
-          <Row label={visible ? "Visible" : "Hidden"} icon={visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}>
+          <Row label={visible ? "Visible" : "Hidden"} icon={visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}>
             <Switch
               checked={visible}
               onCheckedChange={(v) => setVisibility(id, v)}

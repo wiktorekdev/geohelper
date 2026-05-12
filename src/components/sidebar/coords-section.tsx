@@ -53,7 +53,7 @@ export function CoordsSection() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Action onClick={copy}>
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
               {copied ? "Copied" : "Copy"}
             </Action>
           </TooltipTrigger>
@@ -62,7 +62,7 @@ export function CoordsSection() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Action onClick={openInGoogleMaps}>
-              <GoogleMaps className="h-3.5 w-3.5" />
+              <GoogleMaps className="size-3.5" />
               Google Maps
             </Action>
           </TooltipTrigger>

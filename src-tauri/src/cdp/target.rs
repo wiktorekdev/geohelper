@@ -1,7 +1,18 @@
-use anyhow::{anyhow, Result};
 use serde::Deserialize;
+use thiserror::Error;
 
 const CDP_URL: &str = "http://localhost:9222/json";
+const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222 --remote-allow-origins=*";
+
+#[derive(Debug, Error)]
+pub enum TargetError {
+    #[error("CDP port is not reachable. Add Steam launch options: {LAUNCH_FLAGS}")]
+    PortUnavailable(#[source] reqwest::Error),
+    #[error("GeoGuessr is not active. Start GeoGuessr on Steam or open a game round.")]
+    GeoGuessrNotActive,
+    #[error("CDP target list is invalid: {0}")]
+    InvalidTargetList(#[from] reqwest::Error),
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Target {
@@ -15,12 +26,18 @@ pub struct Target {
     pub ws_url: String,
 }
 
-pub async fn find() -> Result<Target> {
+pub async fn find() -> Result<Target, TargetError> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(4))
-        .build()?;
+        .build()
+        .map_err(TargetError::InvalidTargetList)?;
 
-    let targets: Vec<Target> = client.get(CDP_URL).send().await?.json().await?;
+    let res = client
+        .get(CDP_URL)
+        .send()
+        .await
+        .map_err(TargetError::PortUnavailable)?;
+    let targets: Vec<Target> = res.json().await?;
 
     let game_iframe = targets
         .iter()
@@ -28,14 +45,18 @@ pub async fn find() -> Result<Target> {
     let game_page = targets
         .iter()
         .find(|t| t.r#type == "page" && is_geoguessr(t) && looks_like_game(t));
-    let any_iframe = targets.iter().find(|t| t.r#type == "iframe" && is_geoguessr(t));
-    let any_page = targets.iter().find(|t| t.r#type == "page" && is_geoguessr(t));
+    let any_iframe = targets
+        .iter()
+        .find(|t| t.r#type == "iframe" && is_geoguessr(t));
+    let any_page = targets
+        .iter()
+        .find(|t| t.r#type == "page" && is_geoguessr(t));
 
     let picked = game_iframe
         .or(game_page)
         .or(any_iframe)
         .or(any_page)
-        .ok_or_else(|| anyhow!("no GeoGuessr target found"))?;
+        .ok_or(TargetError::GeoGuessrNotActive)?;
 
     Ok(Target {
         r#type: picked.r#type.clone(),

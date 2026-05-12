@@ -39,7 +39,13 @@ export function useBridge() {
         unsubs.push(...listeners);
 
         const snap = await ipc.getState();
-        if (mounted) setSnapshot(snap);
+        if (mounted) {
+          setSnapshot(snap);
+          if (snap.current) {
+            const token = ++enrichToken;
+            void enrichLocation(snap.current, () => mounted && token === enrichToken);
+          }
+        }
       } catch (e) {
         if (mounted) setConn({ kind: "disconnected", reason: describeError(e) });
       }
@@ -54,6 +60,7 @@ export function useBridge() {
 }
 
 async function enrichLocation(coords: Coords, isCurrent: () => boolean) {
+  if (!isCurrent()) return;
   const { place, error } = await reverseGeocode(coords.lat, coords.lng);
   if (!isCurrent()) return;
 

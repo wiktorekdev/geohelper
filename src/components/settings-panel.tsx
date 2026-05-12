@@ -84,15 +84,15 @@ export function SettingsSidebar() {
 
   return (
     <aside className="flex h-full w-[320px] shrink-0 flex-col bg-sidebar border-r border-sidebar-border">
-      <header className="flex items-center gap-2 px-3 py-3">
-        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={close}>
-          <ArrowLeft className="h-4 w-4" />
+      <header className="flex items-center gap-2 p-3">
+        <Button size="icon" variant="ghost" className="size-8" onClick={close}>
+          <ArrowLeft className="size-4" />
         </Button>
         <div className="text-[15px] font-semibold tracking-tight">Settings</div>
       </header>
 
       <ScrollArea className="flex-1">
-        <Group icon={<Layers className="h-3.5 w-3.5" />} title="Sources">
+        <Group icon={<Layers className="size-3.5" />} title="Sources">
           <Field label="Map provider">
             <Select value={provider} onValueChange={(v) => setProvider(v as MapProviderId)}>
               <SelectTrigger className="h-9">
@@ -105,7 +105,7 @@ export function SettingsSidebar() {
                     <SelectItem key={id} value={id} disabled={locked}>
                       <span className="inline-flex items-center gap-2">
                         <span>{p.name}</span>
-                        {locked && <Lock className="h-3 w-3 opacity-60" />}
+                        {locked && <Lock className="size-3 opacity-60" />}
                       </span>
                     </SelectItem>
                   );
@@ -129,7 +129,7 @@ export function SettingsSidebar() {
                     <SelectItem key={id} value={id} disabled={locked}>
                       <span className="inline-flex items-center gap-2">
                         <span>{p.name}</span>
-                        {locked && <Lock className="h-3 w-3 opacity-60" />}
+                        {locked && <Lock className="size-3 opacity-60" />}
                       </span>
                     </SelectItem>
                   );
@@ -153,7 +153,7 @@ export function SettingsSidebar() {
                   onClick={() => setReveal((v) => !v)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {reveal ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {reveal ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                 </button>
               </div>
             </div>
@@ -164,14 +164,14 @@ export function SettingsSidebar() {
               className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
             >
               Get a key on Google Cloud
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="size-3" />
             </button>
           </Field>
         </Group>
 
         <Divider />
 
-        <Group icon={<Palette className="h-3.5 w-3.5" />} title="Appearance">
+        <Group icon={<Palette className="size-3.5" />} title="Appearance">
           <Field label="Theme">
             <div className="grid grid-cols-2 gap-2">
               <ThemeButton active={theme === "dark"} onClick={() => setTheme("dark")}>
@@ -183,10 +183,14 @@ export function SettingsSidebar() {
             </div>
           </Field>
 
-          <label className="flex items-center justify-between gap-2 cursor-pointer text-sm pt-1">
+          <div className="flex items-center justify-between gap-2 text-sm pt-1">
             <span>Always on top</span>
-            <Switch checked={alwaysOnTop} onCheckedChange={(v) => void toggleAlwaysOnTop(v)} />
-          </label>
+            <Switch
+              checked={alwaysOnTop}
+              onCheckedChange={(v) => void toggleAlwaysOnTop(v)}
+              aria-label="Toggle always on top"
+            />
+          </div>
 
           <Field label="Copy format">
             <Select value={copyFormat} onValueChange={(v) => setCopyFormat(v as CopyFormat)}>
@@ -204,7 +208,7 @@ export function SettingsSidebar() {
 
         <Divider />
 
-        <Group icon={<Info className="h-3.5 w-3.5" />} title="About">
+        <Group icon={<Info className="size-3.5" />} title="About">
           <div className="space-y-2">
             <InfoRow label="Installed" value={`v${VERSION}`} />
             {updateInfo?.latest && (
@@ -215,11 +219,11 @@ export function SettingsSidebar() {
                     v{updateInfo.latest}
                     {updateInfo.hasUpdate ? (
                       <span className="inline-flex items-center gap-1 text-[10px] rounded bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5">
-                        <Sparkles className="h-2.5 w-2.5" />
+                        <Sparkles className="size-2.5" />
                         new
                       </span>
                     ) : (
-                      <Check className="h-3 w-3 text-muted-foreground" />
+                      <Check className="size-3 text-muted-foreground" />
                     )}
                   </span>
                 }
@@ -242,15 +246,15 @@ export function SettingsSidebar() {
                 disabled={updateChecking}
               >
                 {updateChecking ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="size-3 animate-spin" />
                 ) : (
-                  <RotateCw className="h-3 w-3" />
+                  <RotateCw className="size-3" />
                 )}
                 Check for updates
               </Button>
               {updateInfo?.hasUpdate && (
                 <Button size="sm" className="h-7" onClick={() => openUrl(updateInfo.url)}>
-                  <Download className="h-3 w-3" />
+                  <Download className="size-3" />
                   Get it
                 </Button>
               )}
@@ -261,10 +265,10 @@ export function SettingsSidebar() {
 
       <footer className="flex items-center justify-center gap-1 px-4 py-3 border-t border-sidebar-border">
         <SocialIcon title="GitHub" onClick={() => openUrl(GITHUB_URL)}>
-          <GithubIcon className="h-4 w-4" />
+          <GithubIcon className="size-4" />
         </SocialIcon>
         <SocialIcon title="Ko-fi" onClick={() => openUrl(KOFI_URL)}>
-          <KofiIcon className="h-4 w-4" />
+          <KofiIcon className="size-4" />
         </SocialIcon>
       </footer>
     </aside>
@@ -350,7 +354,7 @@ function SocialIcon({
     <button
       onClick={onClick}
       title={title}
-      className="h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+      className="size-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
     >
       {children}
     </button>
