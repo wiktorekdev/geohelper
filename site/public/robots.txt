@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://geohelper.vercel.app/sitemap.xml
+Sitemap: https://geohelperapp.vercel.app/sitemap.xml
