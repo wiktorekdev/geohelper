@@ -1,6 +1,6 @@
 [package]
 name = "geohelper"
-version = "0.13.0"
+version = "0.13.1"
 description = "GeoGuessr Steam helper"
 edition = "2021"
 rust-version = "1.77"

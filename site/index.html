@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>GeoHelper — Live Coordinates for GeoGuessr on Steam</title>
+    <title>GeoHelper - GeoGuessr Steam Coordinates Helper</title>
     <meta
       name="description"
-      content="Free desktop tool that shows live coordinates, country, road and postcode while you play GeoGuessr on Steam. No browser extension, no scripts. Windows, macOS, Linux. Open source."
+      content="GeoHelper helps GeoGuessr Steam players view live coordinates, country, road and postcode data for solo practice and location analysis. Free, open source and available for Windows, macOS and Linux."
     />
     <meta
       name="keywords"
-      content="geoguessr helper, geoguessr tool, geoguessr steam helper, geoguessr coordinates, geoguessr cheat tool, geoguessr practice, geoguessr custom maps, geoguessr location helper, street view coordinates, geoguessr desktop app"
+      content="geohelper, geoguessr helper, geoguessr steam helper, geoguessr coordinates, geoguessr steam coordinates, geoguessr location helper, geoguessr practice tool, street view coordinates, geoguessr desktop app"
     />
     <link rel="canonical" href="https://geohelperapp.vercel.app/" />
 
@@ -21,10 +21,10 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://geohelperapp.vercel.app/" />
-    <meta property="og:title" content="GeoHelper — Live Coordinates for GeoGuessr" />
+    <meta property="og:title" content="GeoHelper - GeoGuessr Steam Coordinates Helper" />
     <meta
       property="og:description"
-      content="A tiny desktop helper that reads GeoGuessr's own traffic and shows where the Street View pano actually is. Free, open source, no API keys needed."
+      content="View live coordinates and location data while practicing GeoGuessr on Steam. Free, open source, no API keys needed."
     />
     <meta property="og:image" content="https://geohelperapp.vercel.app/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -33,10 +33,10 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GeoHelper — Live Coordinates for GeoGuessr" />
+    <meta name="twitter:title" content="GeoHelper - GeoGuessr Steam Coordinates Helper" />
     <meta
       name="twitter:description"
-      content="Free desktop tool that shows live coordinates while you play GeoGuessr on Steam. Open source, no API keys."
+      content="Free desktop GeoGuessr helper for Steam coordinates, country, road and postcode data. Open source, no API keys."
     />
     <meta name="twitter:image" content="https://geohelperapp.vercel.app/og-image.png" />
 
@@ -53,7 +53,7 @@
         "name": "GeoHelper",
         "operatingSystem": "Windows, macOS, Linux",
         "applicationCategory": "GameApplication",
-        "description": "A tiny desktop helper that reads GeoGuessr's own traffic and tells you where the current Street View pano actually is. No browser extension, no scripts inside the game.",
+        "description": "GeoHelper is a GeoGuessr Steam helper for live coordinates, country, road and postcode data during solo practice and location analysis.",
         "url": "https://geohelperapp.vercel.app",
         "downloadUrl": "https://github.com/wiktorekdev/geohelper/releases/latest",
         "softwareVersion": "0.13",
@@ -69,6 +69,46 @@
           "name": "wiktorekdev",
           "url": "https://github.com/wiktorekdev"
         }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Will I get banned?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "If you use it in ranked or online multiplayer, eventually yes. GeoHelper is built for solo play, custom maps and training. Read GeoGuessr's ToS."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on Mac and Linux?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Builds are produced for all three OSes. Your GeoGuessr Steam client still needs to expose CDP on localhost:9222 the same way it does on Windows. If that works for you, GeoHelper works."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why macOS shows a security warning",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Because the build is not code-signed with an Apple Developer ID. Right-click the app and pick Open once, or run xattr -dr com.apple.quarantine on it. After that it launches normally."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work with GeoGuessr in the browser?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The browser version doesn't expose a CDP endpoint to the outside world the way the Steam client does with those launch flags. Steam only for now. A browser extension is on the roadmap."
+            }
+          }
+        ]
       }
     </script>
 

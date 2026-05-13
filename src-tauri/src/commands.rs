@@ -1,4 +1,4 @@
-use tauri::{State, WebviewWindow};
+use tauri::{AppHandle, Emitter, State, WebviewWindow};
 
 use crate::state::{Shared, Snapshot};
 
@@ -8,18 +8,20 @@ pub fn get_state(state: State<'_, Shared>) -> Snapshot {
 }
 
 #[tauri::command]
-pub fn reset_current(state: State<'_, Shared>) {
+pub fn reset_current(app: AppHandle, state: State<'_, Shared>) {
     state.reset();
+    let _ = app.emit("state", &state.snapshot());
 }
 
 #[tauri::command]
-pub fn clear_history(state: State<'_, Shared>) {
+pub fn clear_history(app: AppHandle, state: State<'_, Shared>) {
     state.clear_history();
+    let _ = app.emit("state", &state.snapshot());
 }
 
 #[tauri::command]
 pub fn reconnect(state: State<'_, Shared>) {
-    state.kick.notify_waiters();
+    state.reconnect();
 }
 
 #[tauri::command]

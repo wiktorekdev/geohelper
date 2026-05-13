@@ -2,6 +2,23 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.13.1] - 2026-05-13
+
+### Added
+- Google Maps API key validation in settings after typing stops or the input loses focus.
+
+### Changed
+- Improved landing page metadata, sitemap freshness and FAQ structured data for search engines.
+
+### Fixed
+- CDP reconnect now interrupts an active connection instead of waiting for the socket to close.
+- CDP response handling no longer stalls behind network event backpressure.
+- Failed CDP sends now clean up pending response waiters.
+- Google Maps markers appear correctly when the map script finishes loading after coordinates already exist.
+- Google Maps reloads cleanly when the API key changes.
+- Always-on-top setting rolls back if the native window call fails.
+- Countries with plain `UTC` timezone data now show local time.
+
 ## [0.13.0] — 2026-05-11
 
 ### Added

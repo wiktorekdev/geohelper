@@ -63,6 +63,8 @@ export function fetchCountryDetails(code: string): Promise<CountryDetails | null
 
 export function localTimeFromOffset(utcOffset?: string): string | undefined {
   if (!utcOffset) return undefined;
+  if (utcOffset === "UTC") return formatLocalTime(0);
+
   const m = utcOffset.match(/UTC([+-])(\d{2}):(\d{2})/);
   if (!m) return undefined;
 
@@ -71,6 +73,10 @@ export function localTimeFromOffset(utcOffset?: string): string | undefined {
   const min = parseInt(m[3], 10);
   const offsetMinutes = sign * (h * 60 + min);
 
+  return formatLocalTime(offsetMinutes);
+}
+
+function formatLocalTime(offsetMinutes: number): string {
   const now = new Date();
   const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
   const local = new Date(utcMs + offsetMinutes * 60_000);

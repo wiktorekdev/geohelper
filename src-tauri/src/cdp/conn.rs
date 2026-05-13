@@ -38,7 +38,10 @@ impl Conn {
         let payload = json!({ "id": id, "method": method, "params": params });
         {
             let mut w = self.writer.lock().await;
-            w.send(Message::Text(payload.to_string())).await?;
+            if let Err(e) = w.send(Message::Text(payload.to_string())).await {
+                self.pending.lock().remove(&id);
+                return Err(e.into());
+            }
         }
 
         match tokio::time::timeout(Duration::from_secs(10), rx).await {

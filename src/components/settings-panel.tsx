@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   Check,
   Download,
@@ -34,6 +35,13 @@ import { ipc } from "@/lib/ipc";
 import { cn } from "@/lib/utils";
 import { GITHUB_URL, KOFI_URL, VERSION } from "@/lib/links";
 import { GithubIcon, KofiIcon } from "@/components/brand-icons";
+import { validateGoogleApiKey } from "@/lib/google-api-key";
+
+type KeyValidation =
+  | { state: "idle"; message: string | null }
+  | { state: "checking"; message: string | null }
+  | { state: "valid"; message: string }
+  | { state: "invalid"; message: string };
 
 export function SettingsSidebar() {
   const close = useStore((s) => s.closeSettings);
@@ -60,8 +68,39 @@ export function SettingsSidebar() {
 
   const [draft, setDraft] = useState(apiKey);
   const [reveal, setReveal] = useState(false);
+  const [keyValidation, setKeyValidation] = useState<KeyValidation>(() =>
+    apiKey.trim()
+      ? { state: "idle", message: null }
+      : { state: "invalid", message: "Google Maps API key is required." },
+  );
+  const validationAbort = useRef<AbortController | null>(null);
+  const validationSeq = useRef(0);
 
   const hasKey = apiKey.trim().length > 0;
+
+  useEffect(() => {
+    setDraft(apiKey);
+  }, [apiKey]);
+
+  useEffect(() => {
+    const key = draft.trim();
+    validationAbort.current?.abort();
+
+    if (!key) {
+      setKeyValidation({ state: "invalid", message: "Google Maps API key is required." });
+      return;
+    }
+
+    setKeyValidation({ state: "idle", message: "Waiting to validate..." });
+    const t = window.setTimeout(() => {
+      void runKeyValidation(key);
+    }, 700);
+
+    return () => {
+      window.clearTimeout(t);
+      validationAbort.current?.abort();
+    };
+  }, [draft]);
 
   function updateKey(value: string) {
     setDraft(value);
@@ -73,11 +112,41 @@ export function SettingsSidebar() {
     }
   }
 
+  async function runKeyValidation(key = draft.trim()) {
+    validationAbort.current?.abort();
+    if (!key) {
+      setKeyValidation({ state: "invalid", message: "Google Maps API key is required." });
+      return;
+    }
+
+    const seq = ++validationSeq.current;
+    const controller = new AbortController();
+    validationAbort.current = controller;
+    setKeyValidation({ state: "checking", message: "Checking Google API key..." });
+
+    try {
+      const result = await validateGoogleApiKey(key, controller.signal);
+      if (seq !== validationSeq.current) return;
+      setKeyValidation({
+        state: result.ok ? "valid" : "invalid",
+        message: result.message,
+      });
+    } catch (e) {
+      if (controller.signal.aborted || seq !== validationSeq.current) return;
+      setKeyValidation({
+        state: "invalid",
+        message: e instanceof Error ? e.message : "Could not validate Google API key.",
+      });
+    }
+  }
+
   async function toggleAlwaysOnTop(v: boolean) {
+    const previous = alwaysOnTop;
     setAlwaysOnTop(v);
     try {
       await ipc.setAlwaysOnTop(v);
     } catch (e) {
+      setAlwaysOnTop(previous);
       console.warn("setAlwaysOnTop failed:", e);
     }
   }
@@ -146,6 +215,7 @@ export function SettingsSidebar() {
                   placeholder="AIzaSy..."
                   value={draft}
                   onChange={(e) => updateKey(e.target.value)}
+                  onBlur={() => void runKeyValidation()}
                   className="pr-9 h-9"
                 />
                 <button
@@ -166,6 +236,7 @@ export function SettingsSidebar() {
               Get a key on Google Cloud
               <ExternalLink className="size-3" />
             </button>
+            <KeyValidationMessage validation={keyValidation} />
           </Field>
         </Group>
 
@@ -272,6 +343,26 @@ export function SettingsSidebar() {
         </SocialIcon>
       </footer>
     </aside>
+  );
+}
+
+function KeyValidationMessage({ validation }: { validation: KeyValidation }) {
+  if (!validation.message) return null;
+
+  return (
+    <div
+      className={cn(
+        "mt-1.5 inline-flex items-start gap-1.5 text-[11px]",
+        validation.state === "valid" && "text-emerald-400",
+        validation.state === "invalid" && "text-amber-300",
+        validation.state !== "valid" && validation.state !== "invalid" && "text-muted-foreground",
+      )}
+    >
+      {validation.state === "checking" && <Loader2 className="mt-0.5 size-3 animate-spin" />}
+      {validation.state === "valid" && <Check className="mt-0.5 size-3" />}
+      {validation.state === "invalid" && <AlertTriangle className="mt-0.5 size-3" />}
+      <span>{validation.message}</span>
+    </div>
   );
 }
 

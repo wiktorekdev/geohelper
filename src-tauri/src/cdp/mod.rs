@@ -32,11 +32,16 @@ pub async fn run(app: AppHandle, state: Shared) {
     let mut retry_delay = RETRY_MIN;
 
     loop {
+        let reconnect_epoch = state.reconnect_epoch();
         state.set_conn(ConnState::Searching);
         emit_status(&app, &state);
 
-        match attempt(&app, &state).await {
-            Ok(()) => {
+        match attempt(&app, &state, reconnect_epoch).await {
+            Ok(AttemptEnd::ReconnectRequested) => {
+                retry_delay = RETRY_MIN;
+                log_line(&app, "info", "Reconnect requested");
+            }
+            Ok(AttemptEnd::Ended) => {
                 retry_delay = RETRY_MIN;
             }
             Err(e) => {
@@ -60,7 +65,12 @@ pub async fn run(app: AppHandle, state: Shared) {
     }
 }
 
-async fn attempt(app: &AppHandle, state: &Shared) -> Result<()> {
+enum AttemptEnd {
+    Ended,
+    ReconnectRequested,
+}
+
+async fn attempt(app: &AppHandle, state: &Shared, reconnect_epoch: u64) -> Result<AttemptEnd> {
     let target = target::find().await?;
     log_line(
         app,
@@ -79,7 +89,7 @@ async fn attempt(app: &AppHandle, state: &Shared) -> Result<()> {
     let (write, mut read) = ws.split();
     let conn = Conn::new(write);
 
-    let (evt_tx, evt_rx) = mpsc::channel::<NetworkEvent>(256);
+    let (evt_tx, evt_rx) = mpsc::channel::<NetworkEvent>(1024);
     let (close_tx, mut close_rx) = mpsc::channel::<()>(1);
 
     let conn_clone = conn.clone();
@@ -96,8 +106,10 @@ async fn attempt(app: &AppHandle, state: &Shared) -> Result<()> {
                 conn_clone.resolve(id, v);
             } else if let Some(method) = v.get("method").and_then(|m| m.as_str()) {
                 if let Some(evt) = parse_event(method, &v) {
-                    if evt_tx.send(evt).await.is_err() {
-                        break;
+                    match evt_tx.try_send(evt) {
+                        Ok(()) => {}
+                        Err(mpsc::error::TrySendError::Full(_)) => {}
+                        Err(mpsc::error::TrySendError::Closed(_)) => break,
                     }
                 }
             }
@@ -112,12 +124,22 @@ async fn attempt(app: &AppHandle, state: &Shared) -> Result<()> {
     conn.call("Network.enable", json!({})).await?;
 
     let result = tokio::select! {
-        res = controller(app.clone(), state.clone(), conn.clone(), evt_rx) => res,
+        res = controller(app.clone(), state.clone(), conn.clone(), evt_rx) => res.map(|_| AttemptEnd::Ended),
         _ = close_rx.recv() => Err(anyhow::anyhow!("WebSocket closed")),
+        _ = wait_for_reconnect(state.clone(), reconnect_epoch) => Ok(AttemptEnd::ReconnectRequested),
     };
 
     reader.abort();
     result
+}
+
+async fn wait_for_reconnect(state: Shared, seen_epoch: u64) {
+    loop {
+        state.kick.notified().await;
+        if state.reconnect_epoch() != seen_epoch {
+            return;
+        }
+    }
 }
 
 #[derive(Debug)]

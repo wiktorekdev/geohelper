@@ -13,9 +13,14 @@ export function GoogleMapView({ apiKey, mapTypeId, center }: Props) {
   const mapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    mapRef.current = null;
+    markerRef.current = null;
+    if (containerRef.current) containerRef.current.replaceChildren();
+    setMapReady(false);
     setError(null);
     loadGoogleMaps(apiKey)
       .then(() => {
@@ -34,6 +39,7 @@ export function GoogleMapView({ apiKey, mapTypeId, center }: Props) {
             zoomControl: false,
           });
         }
+        setMapReady(true);
       })
       .catch((e) => !cancelled && setError(e.message));
     return () => {
@@ -47,7 +53,7 @@ export function GoogleMapView({ apiKey, mapTypeId, center }: Props) {
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !center) return;
+    if (!mapReady || !map || !center) return;
 
     if (!markerRef.current) {
       markerRef.current = new google.maps.Marker({
@@ -67,7 +73,7 @@ export function GoogleMapView({ apiKey, mapTypeId, center }: Props) {
     }
 
     map.panTo(center);
-  }, [center?.lat, center?.lng]);
+  }, [center?.lat, center?.lng, mapReady]);
 
   if (error) {
     return (

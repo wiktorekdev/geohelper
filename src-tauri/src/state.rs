@@ -37,6 +37,7 @@ pub struct Snapshot {
 pub struct State {
     inner: Mutex<Inner>,
     pub kick: Notify,
+    reconnect_epoch: std::sync::atomic::AtomicU64,
 }
 
 struct Inner {
@@ -58,6 +59,7 @@ impl State {
                 round_counter: 0,
             }),
             kick: Notify::new(),
+            reconnect_epoch: std::sync::atomic::AtomicU64::new(0),
         })
     }
 
@@ -99,5 +101,16 @@ impl State {
         g.history.clear();
         g.round_counter = 0;
         g.current = None;
+    }
+
+    pub fn reconnect(&self) {
+        self.reconnect_epoch
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.kick.notify_waiters();
+    }
+
+    pub fn reconnect_epoch(&self) -> u64 {
+        self.reconnect_epoch
+            .load(std::sync::atomic::Ordering::Relaxed)
     }
 }
