@@ -1,19 +1,19 @@
 import { Download, ExternalLink, Loader2, RotateCw, X } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-import { useStore } from "@/lib/store";
+import { useUpdateStore } from "@/lib/update-store";
 import { Button } from "@/components/ui/button";
 
 export function UpdateBanner() {
-  const info = useStore((s) => s.updateInfo);
-  const dismissed = useStore((s) => s.updateDismissed);
-  const dismiss = useStore((s) => s.dismissUpdate);
-  const install = useStore((s) => s.installUpdate);
-  const installState = useStore((s) => s.installState);
-  const installError = useStore((s) => s.installError);
-  const downloaded = useStore((s) => s.downloadedBytes);
-  const total = useStore((s) => s.totalBytes);
-  const isInstalled = useStore((s) => s.isInstalled);
+  const info = useUpdateStore((s) => s.updateInfo);
+  const dismissed = useUpdateStore((s) => s.updateDismissed);
+  const dismiss = useUpdateStore((s) => s.dismissUpdate);
+  const install = useUpdateStore((s) => s.installUpdate);
+  const installState = useUpdateStore((s) => s.installState);
+  const installError = useUpdateStore((s) => s.installError);
+  const downloaded = useUpdateStore((s) => s.downloadedBytes);
+  const total = useUpdateStore((s) => s.totalBytes);
+  const isInstalled = useUpdateStore((s) => s.isInstalled);
 
   if (!info?.hasUpdate) return null;
   if (info.latest === dismissed && installState === "idle") return null;

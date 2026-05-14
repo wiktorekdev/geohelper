@@ -5,7 +5,6 @@ import type { CopyFormat, Theme } from "./store";
 export const STORAGE_KEYS = {
   provider: "geohelper.provider",
   geocodeProvider: "geohelper.geocodeProvider",
-  googleApiKey: "geohelper.googleApiKey",
   copyFormat: "geohelper.copyFormat",
   theme: "geohelper.theme",
   alwaysOnTop: "geohelper.alwaysOnTop",

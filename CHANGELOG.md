@@ -2,6 +2,23 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.14.0] - 2026-05-14
+
+Chunky release: CDP integration with GeoGuessr was reworked, map and settings code reorganized, and the Google Maps API key moved out of the WebView’s `localStorage` into a small Tauri-backed store file (one-time migration on first launch if a key was already saved).
+
+### Added
+- Safer storage for the Maps API key via the Tauri Store plugin, with a one-time copy from the old `localStorage` value.
+- Lazy-loaded map panel so the first screen loads a bit lighter.
+- Settings split into clearer sections (about, look and feel, data sources); sidebar got small UX touches like a proper empty state and clearer connection/geocode feedback.
+- ESLint flat config for the main `src/` tree.
+
+### Changed
+- CDP pipeline reworked end to end: better picking of the actual game tab, saner batching and limits when resolving Street View panos, clearer errors when debugging isn’t on or port 9222 is wrong..
+- App state is split into Zustand slices, and the map/settings components use dedicated hooks so the UI logic is easier to follow.
+- Geocoding and location display behaves more predictably.
+- Tauri permissions are tighter: the app can only open the handful of URLs it needs (GitHub, Ko-fi, Google Cloud console, Maps).
+- Couple bug fixes
+
 ## [0.13.1] - 2026-05-13
 
 ### Added

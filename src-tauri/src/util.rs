@@ -39,6 +39,11 @@ impl<T: Eq + Hash + Clone> LimitedSet<T> {
             }
         }
     }
+
+    pub fn clear(&mut self) {
+        self.order.clear();
+        self.items.clear();
+    }
 }
 
 pub struct LimitedMap<K: Eq + Hash + Clone, V: Clone> {

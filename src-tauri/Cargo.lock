@@ -1253,7 +1253,7 @@ dependencies = [
 
 [[package]]
 name = "geohelper"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1268,6 +1268,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-opener",
  "tauri-plugin-process",
+ "tauri-plugin-store",
  "tauri-plugin-updater",
  "thiserror 2.0.18",
  "tokio",
@@ -3962,6 +3963,22 @@ checksum = "d55511a7bf6cd70c8767b02c97bf8134fa434daf3926cfc1be0a0f94132d165a"
 dependencies = [
  "tauri",
  "tauri-plugin",
+]
+
+[[package]]
+name = "tauri-plugin-store"
+version = "2.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c72dda16786eb4a3f903e43a17b64d8d78dc0f00fe2aa4b757c28f617a8630b"
+dependencies = [
+ "dunce",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

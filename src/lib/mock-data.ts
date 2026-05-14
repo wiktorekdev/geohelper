@@ -6,7 +6,7 @@ import { useStore } from "./store";
 
 export const MOCK_SOURCE = "mock";
 
-const MOCK_COORDS: Coords = {
+export const MOCK_COORDS: Coords = {
   lat: 48.8566,
   lng: 2.3522,
   source: MOCK_SOURCE,
@@ -47,7 +47,5 @@ export function injectMockIfEmpty(): void {
 export function clearMockIfPresent(): void {
   const s = useStore.getState();
   if (s.current?.source !== MOCK_SOURCE) return;
-  s.setSnapshot({ conn: s.conn, current: null, history: s.history });
-  s.setPlace({});
-  s.setCountryDetails(null);
+  s.clearLocation();
 }

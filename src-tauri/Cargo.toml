@@ -1,9 +1,9 @@
 [package]
 name = "geohelper"
-version = "0.13.1"
+version = "0.14.0"
 description = "GeoGuessr Steam helper"
 edition = "2021"
-rust-version = "1.77"
+rust-version = "1.77.2"
 
 [lib]
 name = "geohelper_lib"
@@ -32,6 +32,7 @@ regex = "1"
 parking_lot = "0.12"
 once_cell = "1"
 base64 = "0.22"
+tauri-plugin-store = "2"
 
 [profile.release]
 opt-level = "z"

@@ -23,7 +23,10 @@ export function loadGoogleMaps(apiKey: string): Promise<void> {
   loaderKey = key;
 
   loader = new Promise<void>((resolve, reject) => {
-    window.__geohelperGmapsReady = () => resolve();
+    window.__geohelperGmapsReady = () => {
+      Reflect.deleteProperty(window, CALLBACK);
+      resolve();
+    };
 
     document.querySelectorAll<HTMLScriptElement>("script[data-geohelper-gmaps]").forEach((s) => {
       s.remove();
@@ -37,6 +40,7 @@ export function loadGoogleMaps(apiKey: string): Promise<void> {
     script.onerror = () => {
       loader = null;
       loaderKey = "";
+      Reflect.deleteProperty(window, CALLBACK);
       reject(new Error("failed to load Google Maps"));
     };
     document.head.appendChild(script);

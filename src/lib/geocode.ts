@@ -11,7 +11,11 @@ const CACHE = new Map<string, { value: ReverseGeocodeResult; expiresAt: number }
 const MAX_CACHE = 250;
 const CACHE_TTL_MS = 30 * 60 * 1000;
 
-export async function reverseGeocode(lat: number, lng: number): Promise<ReverseGeocodeResult> {
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+  signal?: AbortSignal,
+): Promise<ReverseGeocodeResult> {
   const { geocodeProvider, googleApiKey } = useStore.getState();
   const provider: GeocodeProviderId =
     geocodeProvider === "google" && !googleApiKey.trim() ? "nominatim" : geocodeProvider;
@@ -25,7 +29,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<ReverseG
   if (cached && cached.expiresAt > Date.now()) return cached.value;
   if (cached) CACHE.delete(key);
 
-  const result = await runGeocode(provider, lat, lng, googleApiKey);
+  const result = await runGeocode(provider, lat, lng, googleApiKey, signal);
   CACHE.set(key, { value: result, expiresAt: Date.now() + CACHE_TTL_MS });
   trimCache();
   return result;

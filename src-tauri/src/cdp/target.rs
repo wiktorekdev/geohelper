@@ -1,13 +1,18 @@
 use serde::Deserialize;
 use thiserror::Error;
+use tokio::time::Duration;
 
 const CDP_URL: &str = "http://localhost:9222/json";
 const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222 --remote-allow-origins=*";
 
 #[derive(Debug, Error)]
 pub enum TargetError {
-    #[error("CDP port is not reachable. Add Steam launch options: {LAUNCH_FLAGS}")]
-    PortUnavailable(#[source] reqwest::Error),
+    #[error("{diagnostic}")]
+    PortUnavailable {
+        diagnostic: String,
+        #[source]
+        source: reqwest::Error,
+    },
     #[error("GeoGuessr is not active. Start GeoGuessr on Steam or open a game round.")]
     GeoGuessrNotActive,
     #[error("CDP target list is invalid: {0}")]
@@ -32,11 +37,15 @@ pub async fn find() -> Result<Target, TargetError> {
         .build()
         .map_err(TargetError::InvalidTargetList)?;
 
-    let res = client
-        .get(CDP_URL)
-        .send()
-        .await
-        .map_err(TargetError::PortUnavailable)?;
+    let res = match client.get(CDP_URL).send().await {
+        Ok(res) => res,
+        Err(source) => {
+            return Err(TargetError::PortUnavailable {
+                diagnostic: launch_diagnostic().await,
+                source,
+            });
+        }
+    };
     let targets: Vec<Target> = res.json().await?;
 
     let game_iframe = targets
@@ -81,4 +90,97 @@ fn looks_like_game(t: &Target) -> bool {
         || u.contains("/challenge")
         || u.contains("/quiz")
         || u.contains("/play")
+}
+
+async fn launch_diagnostic() -> String {
+    match detect_launch_options().await {
+        LaunchOptions::DetectedWithPort => {
+            "CDP port is not reachable, but GeoGuessr has the 9222 launch flag. Restart GeoGuessr or check whether another process owns the port.".into()
+        }
+        LaunchOptions::DetectedWithoutPort => {
+            format!("CDP port is not reachable. GeoGuessr is running without the required Steam launch options: {LAUNCH_FLAGS}")
+        }
+        LaunchOptions::DetectedOtherPort(port) => {
+            format!("CDP port 9222 is not reachable. GeoGuessr is running with remote debugging port {port}; use {LAUNCH_FLAGS} or make the app configurable.")
+        }
+        LaunchOptions::NotRunning => {
+            format!("CDP port is not reachable and GeoGuessr.exe is not running. Start GeoGuessr with Steam launch options: {LAUNCH_FLAGS}")
+        }
+        LaunchOptions::Unknown => {
+            format!("CDP port is not reachable. Add Steam launch options: {LAUNCH_FLAGS}")
+        }
+    }
+}
+
+enum LaunchOptions {
+    DetectedWithPort,
+    DetectedWithoutPort,
+    DetectedOtherPort(String),
+    NotRunning,
+    Unknown,
+}
+
+#[cfg(target_os = "windows")]
+async fn detect_launch_options() -> LaunchOptions {
+    let output = tokio::time::timeout(
+        Duration::from_secs(2),
+        tokio::process::Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-Command",
+                "Get-CimInstance Win32_Process -Filter \"name='GeoGuessr.exe'\" | Select-Object -ExpandProperty CommandLine",
+            ])
+            .output(),
+    )
+    .await;
+
+    let Ok(Ok(output)) = output else {
+        return LaunchOptions::Unknown;
+    };
+    if !output.status.success() {
+        return LaunchOptions::Unknown;
+    }
+
+    let text = String::from_utf8_lossy(&output.stdout);
+    let command_lines: Vec<&str> = text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect();
+    if command_lines.is_empty() {
+        return LaunchOptions::NotRunning;
+    }
+    if command_lines
+        .iter()
+        .any(|line| line.contains("--remote-debugging-port=9222"))
+    {
+        return LaunchOptions::DetectedWithPort;
+    }
+    if let Some(port) = command_lines
+        .iter()
+        .find_map(|line| remote_debugging_port(line))
+    {
+        return LaunchOptions::DetectedOtherPort(port);
+    }
+
+    LaunchOptions::DetectedWithoutPort
+}
+
+#[cfg(not(target_os = "windows"))]
+async fn detect_launch_options() -> LaunchOptions {
+    LaunchOptions::Unknown
+}
+
+fn remote_debugging_port(command_line: &str) -> Option<String> {
+    let marker = "--remote-debugging-port=";
+    let start = command_line.find(marker)? + marker.len();
+    let port = command_line[start..]
+        .split_whitespace()
+        .next()
+        .unwrap_or("")
+        .trim_matches('"');
+    if port.is_empty() {
+        None
+    } else {
+        Some(port.to_string())
+    }
 }

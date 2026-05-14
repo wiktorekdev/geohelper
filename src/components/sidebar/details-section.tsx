@@ -1,6 +1,6 @@
 import { useStore } from "@/lib/store";
 import { localTimeFromOffset } from "@/lib/country-info";
-import { cn } from "@/lib/utils";
+import { InfoRow } from "./info-row";
 
 export function DetailsSection() {
   const details = useStore((s) => s.countryDetails);
@@ -21,21 +21,12 @@ export function DetailsSection() {
   return (
     <div className="px-5 py-3 space-y-1 border-t border-sidebar-border">
       {details.languages && details.languages.length > 0 && (
-        <Row label="Language" value={details.languages.slice(0, 2).join(", ")} />
+        <InfoRow label="Language" value={details.languages.slice(0, 2).join(", ")} />
       )}
-      {details.currency && <Row label="Currency" value={details.currency} />}
-      {details.callingCode && <Row label="Phone" value={details.callingCode} />}
-      {localTime && <Row label="Local time" value={localTime} />}
-      {details.capital && <Row label="Capital" value={details.capital} />}
-    </div>
-  );
-}
-
-function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={cn("truncate ml-2", mono && "font-mono")}>{value}</span>
+      {details.currency && <InfoRow label="Currency" value={details.currency} />}
+      {details.callingCode && <InfoRow label="Phone" value={details.callingCode} />}
+      {localTime && <InfoRow label="Local time" value={localTime} />}
+      {details.capital && <InfoRow label="Capital" value={details.capital} />}
     </div>
   );
 }

@@ -1,82 +1,82 @@
 import { useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 
-import { useStore } from "@/lib/store";
+import { latLngClose } from "@/lib/coords";
+import { errorMessage } from "@/lib/errors";
 import { ipc } from "@/lib/ipc";
-import { reverseGeocode } from "@/lib/geocode";
-import { fetchCountryDetails } from "@/lib/country-info";
-import type { Coords, Round, Snapshot } from "@/types";
+import { enrichLocation } from "@/lib/location-enrichment";
+import { useStore } from "@/lib/store";
+import type { Coords, Snapshot } from "@/types";
 
 export function useBridge() {
   const setSnapshot = useStore((s) => s.setSnapshot);
   const pushCoords = useStore((s) => s.pushCoords);
-  const pushRound = useStore((s) => s.pushRound);
   const setConn = useStore((s) => s.setConn);
 
   useEffect(() => {
     let mounted = true;
     const unsubs: Array<() => void> = [];
     let enrichToken = 0;
+    let enrichmentAbort: AbortController | null = null;
+
+    function nextEnrichmentSignal() {
+      if (enrichmentAbort) enrichmentAbort.abort();
+      enrichmentAbort = new AbortController();
+      return enrichmentAbort.signal;
+    }
 
     (async () => {
       try {
         const listeners = await Promise.all([
-          listen<Snapshot>("state", (e) => setSnapshot(e.payload)),
-          listen<Snapshot["conn"]>("conn", (e) => setConn(e.payload)),
-          listen<Coords>("coords", (e) => {
-            const c = e.payload;
+          listen<Snapshot>("state", (event) => setSnapshot(event.payload)),
+          listen<Coords>("coords", (event) => {
+            const coords = event.payload;
+            const prev = useStore.getState().current;
+            if (prev && latLngClose(prev.lat, prev.lng, coords.lat, coords.lng)) return;
+
             const token = ++enrichToken;
-            pushCoords(c);
-            void enrichLocation(c, () => mounted && token === enrichToken);
+            const signal = nextEnrichmentSignal();
+            pushCoords(coords);
+            void enrichLocation(
+              coords,
+              () => mounted && token === enrichToken,
+              signal,
+            );
           }),
-          listen<Round>("round", (e) => pushRound(e.payload)),
         ]);
 
         if (!mounted) {
-          listeners.forEach((u) => u());
+          listeners.forEach((unsubscribe) => unsubscribe());
           return;
         }
         unsubs.push(...listeners);
 
-        const snap = await ipc.getState();
+        const snapshot = await ipc.getState();
         if (mounted) {
-          setSnapshot(snap);
-          if (snap.current) {
+          setSnapshot(snapshot);
+          if (snapshot.current) {
             const token = ++enrichToken;
-            void enrichLocation(snap.current, () => mounted && token === enrichToken);
+            const signal = nextEnrichmentSignal();
+            void enrichLocation(
+              snapshot.current,
+              () => mounted && token === enrichToken,
+              signal,
+            );
           }
         }
-      } catch (e) {
-        if (mounted) setConn({ kind: "disconnected", reason: describeError(e) });
+      } catch (error) {
+        if (mounted) {
+          setConn({ kind: "disconnected", reason: errorMessage(error, "Bridge setup failed") });
+        }
       }
     })();
 
     return () => {
       mounted = false;
       enrichToken++;
-      unsubs.forEach((u) => u());
+      enrichmentAbort?.abort();
+      unsubs.forEach((unsubscribe) => unsubscribe());
     };
-  }, [setSnapshot, pushCoords, pushRound, setConn]);
+  }, [setSnapshot, pushCoords, setConn]);
 }
 
-async function enrichLocation(coords: Coords, isCurrent: () => boolean) {
-  if (!isCurrent()) return;
-  const { place, error } = await reverseGeocode(coords.lat, coords.lng);
-  if (!isCurrent()) return;
-
-  useStore.getState().setPlace(place);
-  useStore.getState().setGeocodeError(error);
-
-  if (place.countryCode) {
-    const details = await fetchCountryDetails(place.countryCode);
-    if (isCurrent() && useStore.getState().place.countryCode === place.countryCode) {
-      useStore.getState().setCountryDetails(details);
-    }
-  } else {
-    useStore.getState().setCountryDetails(null);
-  }
-}
-
-function describeError(e: unknown): string {
-  return e instanceof Error ? e.message : "Bridge setup failed";
-}

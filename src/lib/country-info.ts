@@ -1,11 +1,15 @@
 import type { CountryDetails } from "@/types";
+import { timeoutSignal } from "./fetch-timeout";
 
 const CACHE = new Map<string, CountryDetails | null>();
 const INFLIGHT = new Map<string, Promise<CountryDetails | null>>();
 
 const FIELDS = "flag,capital,subregion,languages,currencies,idd,timezones";
 
-export function fetchCountryDetails(code: string): Promise<CountryDetails | null> {
+export function fetchCountryDetails(
+  code: string,
+  signal?: AbortSignal,
+): Promise<CountryDetails | null> {
   const cc = code.toLowerCase();
   if (CACHE.has(cc)) return Promise.resolve(CACHE.get(cc)!);
   const existing = INFLIGHT.get(cc);
@@ -15,6 +19,7 @@ export function fetchCountryDetails(code: string): Promise<CountryDetails | null
     try {
       const res = await fetch(
         `https://restcountries.com/v3.1/alpha/${cc}?fields=${FIELDS}`,
+        { signal: timeoutSignal(undefined, signal) },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -50,6 +55,7 @@ export function fetchCountryDetails(code: string): Promise<CountryDetails | null
       CACHE.set(cc, details);
       return details;
     } catch {
+      if (signal?.aborted) return null;
       CACHE.set(cc, null);
       return null;
     } finally {

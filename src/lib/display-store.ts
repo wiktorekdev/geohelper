@@ -1,5 +1,8 @@
 import { create } from "zustand";
 
+/** Inner width of the main sidebar (must match `w-[320px]` in layout components). */
+export const SIDEBAR_WIDTH_PX = 320;
+
 export type WidgetId = "country" | "road" | "details" | "coordinates";
 
 export type FontSize = "sm" | "md" | "lg";
@@ -40,6 +43,7 @@ const DEFAULT_CONFIG: DisplayConfig = {
 
 const STORAGE_KEY = "geohelper.display";
 const KNOWN_WIDGETS = new Set<WidgetId>(ALL_WIDGETS);
+const FONT_SIZES = new Set<FontSize>(["sm", "md", "lg"]);
 
 function cloneDefault(): DisplayConfig {
   return {
@@ -52,49 +56,63 @@ function cloneDefault(): DisplayConfig {
   };
 }
 
+function safeJsonParse(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function isWidgetId(value: unknown): value is WidgetId {
+  return typeof value === "string" && KNOWN_WIDGETS.has(value as WidgetId);
+}
+
+function normalizeDisplayConfig(raw: unknown): DisplayConfig {
+  if (!raw || typeof raw !== "object") return cloneDefault();
+  const parsed = raw as Partial<DisplayConfig>;
+
+  const order = Array.isArray(parsed.order) ? parsed.order.filter(isWidgetId) : [];
+  const ordered = new Set(order);
+  for (const widget of ALL_WIDGETS) {
+    if (!ordered.has(widget)) order.push(widget);
+  }
+
+  const visibility: Record<WidgetId, boolean> = { ...DEFAULT_CONFIG.visibility };
+  if (parsed.visibility && typeof parsed.visibility === "object") {
+    for (const widget of ALL_WIDGETS) {
+      const value = (parsed.visibility as Record<string, unknown>)[widget];
+      if (typeof value === "boolean") visibility[widget] = value;
+    }
+  }
+
+  const styles = cloneDefault().styles;
+  if (parsed.styles && typeof parsed.styles === "object") {
+    for (const widget of ALL_WIDGETS) {
+      const style = (parsed.styles as Record<string, unknown>)[widget] as
+        | Partial<WidgetStyle>
+        | undefined;
+      if (!style || typeof style !== "object") continue;
+      styles[widget] = {
+        color: typeof style.color === "string" ? style.color : null,
+        bold: style.bold === true,
+        fontSize: FONT_SIZES.has(style.fontSize as FontSize) ? (style.fontSize as FontSize) : "md",
+      };
+    }
+  }
+
+  return {
+    order,
+    visibility,
+    styles,
+    mapVisible: typeof parsed.mapVisible === "boolean" ? parsed.mapVisible : true,
+  };
+}
+
 function load(): DisplayConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return cloneDefault();
-    const parsed = JSON.parse(raw) as Partial<DisplayConfig> | null;
-    if (!parsed) return cloneDefault();
-
-    const orderRaw = Array.isArray(parsed.order) ? parsed.order : [];
-    const order = orderRaw.filter((w): w is WidgetId => KNOWN_WIDGETS.has(w as WidgetId));
-    const ordered = new Set(order);
-    for (const w of ALL_WIDGETS) {
-      if (!ordered.has(w)) order.push(w);
-    }
-
-    const visibility: Record<WidgetId, boolean> = { ...DEFAULT_CONFIG.visibility };
-    if (parsed.visibility && typeof parsed.visibility === "object") {
-      for (const w of ALL_WIDGETS) {
-        const v = (parsed.visibility as Record<string, unknown>)[w];
-        if (typeof v === "boolean") visibility[w] = v;
-      }
-    }
-
-    const styles = cloneDefault().styles;
-    if (parsed.styles && typeof parsed.styles === "object") {
-      for (const w of ALL_WIDGETS) {
-        const s = (parsed.styles as Record<string, unknown>)[w] as Partial<WidgetStyle> | undefined;
-        if (s && typeof s === "object") {
-          styles[w] = {
-            color: typeof s.color === "string" ? s.color : null,
-            bold: s.bold === true,
-            fontSize:
-              s.fontSize === "sm" || s.fontSize === "md" || s.fontSize === "lg" ? s.fontSize : "md",
-          };
-        }
-      }
-    }
-
-    return {
-      order,
-      visibility,
-      styles,
-      mapVisible: typeof parsed.mapVisible === "boolean" ? parsed.mapVisible : true,
-    };
+    return raw ? normalizeDisplayConfig(safeJsonParse(raw)) : cloneDefault();
   } catch {
     return cloneDefault();
   }
@@ -115,6 +133,7 @@ function save(state: DisplayConfig): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(selectConfig(state)));
   } catch {
+    return;
   }
 }
 
@@ -139,27 +158,32 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   stopEditing: () => set({ editing: false }),
 
   setOrder: (order) => {
-    set({ order });
-    save(get());
+    const next = { ...get(), order };
+    set(next);
+    save(next);
   },
   setVisibility: (id, visible) => {
-    const visibility = { ...get().visibility, [id]: visible };
-    set({ visibility });
-    save(get());
+    const next = { ...get(), visibility: { ...get().visibility, [id]: visible } };
+    set(next);
+    save(next);
   },
   setStyle: (id, patch) => {
-    const styles = { ...get().styles, [id]: { ...get().styles[id], ...patch } };
-    set({ styles });
-    save(get());
+    const next = {
+      ...get(),
+      styles: { ...get().styles, [id]: { ...get().styles[id], ...patch } },
+    };
+    set(next);
+    save(next);
   },
   setMapVisible: (visible) => {
-    set({ mapVisible: visible });
-    save(get());
+    const next = { ...get(), mapVisible: visible };
+    set(next);
+    save(next);
   },
   resetWidget: (id) => {
-    const styles = { ...get().styles, [id]: { ...DEFAULT_STYLE } };
-    set({ styles });
-    save(get());
+    const next = { ...get(), styles: { ...get().styles, [id]: { ...DEFAULT_STYLE } } };
+    set(next);
+    save(next);
   },
   resetAll: () => {
     const fresh = cloneDefault();

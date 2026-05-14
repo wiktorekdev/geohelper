@@ -1,15 +1,21 @@
 import type { PlaceInfo } from "@/types";
 import { continentFrom } from "./continents";
+import { errorMessage } from "./errors";
+import { timeoutSignal } from "./fetch-timeout";
 
 export type GeocodeProviderId = "nominatim" | "bigdatacloud" | "google";
 
-export const GEOCODE_PROVIDERS: Record<
-  GeocodeProviderId,
-  { name: string; needsKey: boolean }
-> = {
-  nominatim: { name: "OpenStreetMap (Nominatim)", needsKey: false },
-  bigdatacloud: { name: "BigDataCloud", needsKey: false },
-  google: { name: "Google Geocoding", needsKey: true },
+export type GeocodeProvider = {
+  id: GeocodeProviderId;
+  name: string;
+  needsKey: boolean;
+  reverse: (
+    lat: number,
+    lng: number,
+    apiKey: string,
+    fallbackContinent?: string,
+    signal?: AbortSignal,
+  ) => Promise<PlaceInfo>;
 };
 
 export type GeocodeResult = {
@@ -17,49 +23,70 @@ export type GeocodeResult = {
   error: string | null;
 };
 
+export const GEOCODE_PROVIDERS: Record<GeocodeProviderId, GeocodeProvider> = {
+  nominatim: {
+    id: "nominatim",
+    name: "OpenStreetMap (Nominatim)",
+    needsKey: false,
+    reverse: (lat, lng, _apiKey, fallbackContinent, signal) =>
+      nominatim(lat, lng, fallbackContinent, signal),
+  },
+  bigdatacloud: {
+    id: "bigdatacloud",
+    name: "BigDataCloud",
+    needsKey: false,
+    reverse: (lat, lng, _apiKey, fallbackContinent, signal) =>
+      bigDataCloud(lat, lng, fallbackContinent, signal),
+  },
+  google: {
+    id: "google",
+    name: "Google Geocoding",
+    needsKey: true,
+    reverse: google,
+  },
+};
+
 export async function runGeocode(
   provider: GeocodeProviderId,
   lat: number,
   lng: number,
   apiKey: string,
+  signal?: AbortSignal,
 ): Promise<GeocodeResult> {
   const fallbackContinent = continentFrom(undefined, lat, lng);
   try {
-    let place: PlaceInfo;
-    switch (provider) {
-      case "nominatim":
-        place = await nominatim(lat, lng, fallbackContinent);
-        break;
-      case "bigdatacloud":
-        place = await bigDataCloud(lat, lng, fallbackContinent);
-        break;
-      case "google":
-        if (!apiKey.trim()) return { place: { continent: fallbackContinent }, error: null };
-        place = await google(lat, lng, apiKey, fallbackContinent);
-        break;
+    const config = GEOCODE_PROVIDERS[provider];
+    if (config.needsKey && !apiKey.trim()) {
+      return { place: { continent: fallbackContinent }, error: null };
     }
+    const place = await config.reverse(lat, lng, apiKey, fallbackContinent, signal);
     return { place, error: null };
   } catch (e) {
+    if (signal?.aborted) return { place: { continent: fallbackContinent }, error: null };
     return {
       place: { continent: fallbackContinent },
-      error: e instanceof Error ? e.message : "Reverse geocoding failed",
+      error: errorMessage(e, "Reverse geocoding failed"),
     };
   }
 }
 
-let nominatimLast = 0;
-const NOMINATIM_MIN = 1100;
-
-async function nominatim(lat: number, lng: number, fallbackContinent?: string): Promise<PlaceInfo> {
-  const wait = Math.max(0, NOMINATIM_MIN - (Date.now() - nominatimLast));
-  if (wait > 0) await sleep(wait);
-  nominatimLast = Date.now();
-
-  // zoom=14 is detailed enough for roads / neighbourhoods when they exist.
+async function nominatim(
+  lat: number,
+  lng: number,
+  fallbackContinent?: string,
+  signal?: AbortSignal,
+): Promise<PlaceInfo> {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&accept-language=en&addressdetails=1`;
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  const res = await fetch(url, {
+    headers: { Accept: "application/json" },
+    signal: timeoutSignal(undefined, signal),
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
+  const data = (await res.json()) as {
+    error?: string;
+    address?: Record<string, string | undefined>;
+  };
+  if (data.error) throw new Error(data.error);
   const addr = data.address ?? {};
   return {
     country: addr.country,
@@ -74,9 +101,14 @@ async function nominatim(lat: number, lng: number, fallbackContinent?: string): 
   };
 }
 
-async function bigDataCloud(lat: number, lng: number, fallbackContinent?: string): Promise<PlaceInfo> {
+async function bigDataCloud(
+  lat: number,
+  lng: number,
+  fallbackContinent?: string,
+  signal?: AbortSignal,
+): Promise<PlaceInfo> {
   const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: timeoutSignal(undefined, signal) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const d = await res.json();
   return {
@@ -93,9 +125,10 @@ async function google(
   lng: number,
   apiKey: string,
   fallbackContinent?: string,
+  signal?: AbortSignal,
 ): Promise<PlaceInfo> {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${encodeURIComponent(apiKey)}&language=en`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: timeoutSignal(undefined, signal) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   if (data.status !== "OK" || !data.results?.[0]) throw new Error(data.status || "empty");
@@ -128,8 +161,4 @@ async function google(
     postcode: postcode?.long_name,
     continent: continentFrom(cc, lat, lng) ?? fallbackContinent,
   };
-}
-
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
 }

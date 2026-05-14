@@ -6,13 +6,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { GoogleMaps } from "@/components/ui/svgs/googleMaps";
-import { formatCoords, useStore } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { useDisplayStore } from "@/lib/display-store";
-import { formatCoord } from "@/lib/utils";
-
-// Fallback used while in edit mode if no real round is loaded yet. Matches
-// the mock data we inject on enter so the preview feels consistent.
-const MOCK_COORDS = { lat: 48.8566, lng: 2.3522, source: "mock", timestamp: 0 };
+import { formatCoord, formatCoords } from "@/lib/coords";
+import { MOCK_COORDS } from "@/lib/mock-data";
 
 export function CoordsSection() {
   const current = useStore((s) => s.current);

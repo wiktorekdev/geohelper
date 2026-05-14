@@ -76,6 +76,13 @@ impl State {
         self.inner.lock().conn = conn;
     }
 
+    pub fn position_delta_meters(&self, lat: f64, lng: f64) -> Option<f64> {
+        let g = self.inner.lock();
+        g.current
+            .as_ref()
+            .map(|c| distance_meters(c.lat, c.lng, lat, lng))
+    }
+
     pub fn set_current(&self, coords: Coords) -> Round {
         let mut g = self.inner.lock();
         g.round_counter += 1;
@@ -113,4 +120,14 @@ impl State {
         self.reconnect_epoch
             .load(std::sync::atomic::Ordering::Relaxed)
     }
+}
+
+fn distance_meters(a_lat: f64, a_lng: f64, b_lat: f64, b_lng: f64) -> f64 {
+    const EARTH_RADIUS_M: f64 = 6_371_000.0;
+    let d_lat = (b_lat - a_lat).to_radians();
+    let d_lng = (b_lng - a_lng).to_radians();
+    let a_lat = a_lat.to_radians();
+    let b_lat = b_lat.to_radians();
+    let h = (d_lat / 2.0).sin().powi(2) + a_lat.cos() * b_lat.cos() * (d_lng / 2.0).sin().powi(2);
+    2.0 * EARTH_RADIUS_M * h.sqrt().asin()
 }

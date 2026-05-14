@@ -1,66 +1,82 @@
 import ReactCountryFlag from "react-country-flag";
+
+import { deriveLocationDisplay } from "@/lib/location-display";
 import { useStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
 
 export function LocationSection() {
   const place = useStore((s) => s.place);
   const details = useStore((s) => s.countryDetails);
+  const geocodeError = useStore((s) => s.geocodeError);
+  const current = useStore((s) => s.current);
+  const display = deriveLocationDisplay(place, details, current, geocodeError);
 
-  if (!place.country && !place.region && !place.city) {
-    return <div className="p-5 text-sm text-muted-foreground">Locating…</div>;
-  }
-
-  const areaLine = uniqueLine(place.neighbourhood, place.city);
-
-  const regionLine = uniqueLine(place.county, place.region);
-
-  const continentLine = composeContinentLine(place.continent, details?.subregion);
-
-  return (
-    <div className="p-5 space-y-3">
-      <div className="flex items-center gap-3">
-        {place.countryCode && (
-          <ReactCountryFlag
-            countryCode={place.countryCode.toUpperCase()}
-            svg
-            style={{ width: "2.2em", height: "1.6em", borderRadius: "3px" }}
-            title={place.country}
-          />
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="text-base font-semibold truncate">{place.country || "-"}</div>
-          {continentLine && (
-            <div className="text-[11px] text-muted-foreground truncate">{continentLine}</div>
-          )}
+  switch (display.kind) {
+    case "error":
+      return (
+        <div className="p-5 text-sm text-muted-foreground">
+          Couldn't show named geography. See the notice above this list for the error detail.
         </div>
-      </div>
+      );
+    case "sparse":
+      return (
+        <div className="space-y-2 p-5">
+          <div className="text-sm font-medium leading-snug">{display.primary}</div>
+          {display.continent && (
+            <div className="text-[11px] text-muted-foreground">{display.continent}</div>
+          )}
+          <div className="text-[11px] text-muted-foreground">Settlement name not in geocoder data.</div>
+        </div>
+      );
+    case "continent":
+      return (
+        <div className="space-y-2 p-5">
+          <div className="text-base font-semibold">{display.continent}</div>
+          <div className="text-[11px] leading-relaxed text-muted-foreground">
+            Only a coarse region was returned (remote or sparse map data). Coordinates on the map are
+            still exact.
+          </div>
+        </div>
+      );
+    case "loading":
+      return (
+        <div className="space-y-1 p-5 text-sm text-muted-foreground">
+          {display.rough ? <div className="text-[13px] text-foreground/90">{display.rough}</div> : null}
+          <div className="text-[11px]">Fetching address...</div>
+        </div>
+      );
+    case "empty":
+      return <div className="p-5 text-sm text-muted-foreground">-</div>;
+    case "settlement":
+      return (
+        <div className="space-y-3 p-5">
+          <div className="flex items-center gap-3">
+            {display.countryCode && (
+              <ReactCountryFlag
+                countryCode={display.countryCode.toUpperCase()}
+                svg
+                style={{ width: "2.2em", height: "1.6em", borderRadius: "3px" }}
+                title={display.country}
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-base font-semibold">{display.country}</div>
+              {display.continentLine && (
+                <div className="truncate text-[11px] text-muted-foreground">
+                  {display.continentLine}
+                </div>
+              )}
+            </div>
+          </div>
 
-      <div className="space-y-0.5">
-        {areaLine && <div className="text-sm truncate">{areaLine}</div>}
-        {regionLine && (
-          <div className={cn("text-[11px] text-muted-foreground truncate")}>{regionLine}</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function uniqueLine(...values: Array<string | undefined>): string {
-  const seen = new Set<string>();
-  const parts: string[] = [];
-  for (const value of values) {
-    if (!value || seen.has(value)) continue;
-    seen.add(value);
-    parts.push(value);
+          <div className="space-y-0.5">
+            {display.areaLine && <div className="truncate text-sm">{display.areaLine}</div>}
+            {display.regionLine && (
+              <div className="truncate text-[11px] text-muted-foreground">
+                {display.regionLine}
+              </div>
+            )}
+          </div>
+        </div>
+      );
   }
-  return parts.join(" - ");
-}
-
-function composeContinentLine(continent?: string, subregion?: string): string {
-  if (!continent && !subregion) return "";
-  if (!continent) return subregion!;
-  if (!subregion) return continent;
-  if (subregion === continent) return continent;
-  if (subregion.toLowerCase().includes(continent.toLowerCase())) return subregion;
-  return `${continent} - ${subregion}`;
 }

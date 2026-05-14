@@ -10,7 +10,7 @@ export async function validateGoogleApiKey(
   if (!key) return { ok: false, message: "Google Maps API key is required." };
 
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=0,0&key=${encodeURIComponent(key)}&language=en`;
-  const res = await fetch(url, { signal });
+  const res = await fetch(url, { signal: timeoutSignal(undefined, signal) });
   if (!res.ok) return { ok: false, message: `Google returned HTTP ${res.status}.` };
 
   const data = (await res.json()) as {
@@ -39,3 +39,4 @@ export async function validateGoogleApiKey(
       };
   }
 }
+import { timeoutSignal } from "./fetch-timeout";

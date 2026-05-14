@@ -16,7 +16,6 @@ import {
   Monitor,
   Palette,
   Shield,
-  Sparkles,
   Terminal,
   X,
   Zap,
@@ -187,10 +186,10 @@ function Hero() {
           className="group mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1 pr-3 text-[11px] text-neutral-300 transition hover:border-white/20 hover:bg-white/[0.05]"
         >
           <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-red-300">
-            <Sparkles className="size-3" />
-            v0.13
+            <Download className="size-3" />
+            v{__GEOHELPER_VERSION__}
           </span>
-          <span>New: layout editor, customize what you see</span>
+          <span>Latest GeoHelper release</span>
           <ArrowRight className="size-3 text-neutral-500 transition group-hover:translate-x-0.5 group-hover:text-white" />
         </a>
 
@@ -210,7 +209,7 @@ function Hero() {
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <DownloadButton />
           <a
-            href={RELEASES_LATEST_URL}
+            href={GITHUB_URL}
             className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-5 py-3 text-white transition hover:bg-white/5"
           >
             <Github className="size-[18px]" />
@@ -354,7 +353,7 @@ function Features() {
     {
       icon: <Box className="size-[22px]" />,
       title: "Three platforms",
-      body: "Signed Windows installer, .deb and AppImage for Linux, .dmg for macOS.",
+      body: "Windows installer, .deb and AppImage for Linux, .dmg for macOS.",
     },
     {
       icon: <MapPin className="size-[22px]" />,
@@ -369,7 +368,7 @@ function Features() {
     {
       icon: <Code2 className="size-[22px]" />,
       title: "Open source, MIT",
-      body: "Read the code, fork it, or send a pull request. No telemetry, ever.",
+      body: "Read the code, fork it, or send a pull request. The desktop app has no telemetry.",
     },
   ];
 

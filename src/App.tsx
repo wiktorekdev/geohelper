@@ -6,30 +6,37 @@ import { Sidebar } from "@/components/sidebar";
 import { SettingsSidebar } from "@/components/settings-panel";
 import { MapView } from "@/components/map-view";
 import { EditToolbar } from "@/components/display/edit-toolbar";
+import { useMapWindowLayout } from "@/hooks/use-map-window-layout";
 import { useStore } from "@/lib/store";
+import { useUpdateStore } from "@/lib/update-store";
 import { useDisplayStore } from "@/lib/display-store";
 import { ipc } from "@/lib/ipc";
+import { logger } from "@/lib/logger";
 
 export default function App() {
   useBridge();
   useTheme();
 
   const settingsOpen = useStore((s) => s.settingsOpen);
-  const runUpdateCheck = useStore((s) => s.runUpdateCheck);
-  const detectInstallKind = useStore((s) => s.detectInstallKind);
+  const loadSecureSettings = useStore((s) => s.loadSecureSettings);
   const alwaysOnTop = useStore((s) => s.alwaysOnTop);
+  const runUpdateCheck = useUpdateStore((s) => s.runUpdateCheck);
+  const detectInstallKind = useUpdateStore((s) => s.detectInstallKind);
 
   const mapVisible = useDisplayStore((s) => s.mapVisible);
+
+  useMapWindowLayout();
 
   useEffect(() => {
     runUpdateCheck();
     detectInstallKind();
-  }, [runUpdateCheck, detectInstallKind]);
+    void loadSecureSettings();
+  }, [runUpdateCheck, detectInstallKind, loadSecureSettings]);
 
   useEffect(() => {
     const t = setTimeout(() => {
       ipc.setAlwaysOnTop(alwaysOnTop).catch((e) => {
-        console.warn("setAlwaysOnTop failed:", e);
+        logger.warn("setAlwaysOnTop failed:", e);
       });
     }, 50);
     return () => clearTimeout(t);
@@ -51,7 +58,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
-      {settingsOpen ? <SettingsSidebar /> : <Sidebar />}
+      {settingsOpen ? <SettingsSidebar fullWidth={!mapVisible} /> : <Sidebar fullWidth={!mapVisible} />}
       {mapVisible && (
         <main className="flex min-w-0 flex-1 flex-col">
           <MapView />
