@@ -1,10 +1,11 @@
-import { Check, Download, Info, Loader2, RotateCw, Sparkles } from "lucide-react";
+import { Check, Download, ExternalLink, Info, Loader2, RotateCw } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { Button } from "@/components/ui/button";
 import { Group, InfoRow } from "./settings-primitives";
 import { VERSION } from "@/lib/links";
 import type { UpdateInfo } from "@/lib/update-check";
+import { useUpdateStore } from "@/lib/update-store";
 
 type Props = {
   updateInfo: UpdateInfo | null;
@@ -19,6 +20,18 @@ export function AboutSection({
   updateError,
   runUpdateCheck,
 }: Props) {
+  const installUpdate = useUpdateStore((s) => s.installUpdate);
+  const installState = useUpdateStore((s) => s.installState);
+  const installError = useUpdateStore((s) => s.installError);
+  const downloaded = useUpdateStore((s) => s.downloadedBytes);
+  const total = useUpdateStore((s) => s.totalBytes);
+  const isInstalled = useUpdateStore((s) => s.isInstalled);
+
+  const canAutoInstall = isInstalled === true;
+  const pct =
+    total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null;
+  const showInstallFlow = Boolean(updateInfo?.hasUpdate);
+
   return (
     <Group icon={<Info className="size-3.5" />} title="About">
       <div className="space-y-2">
@@ -29,14 +42,7 @@ export function AboutSection({
             value={
               <span className="inline-flex items-center gap-1.5">
                 v{updateInfo.latest}
-                {updateInfo.hasUpdate ? (
-                  <span className="inline-flex items-center gap-1 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-400">
-                    <Sparkles className="size-2.5" />
-                    new
-                  </span>
-                ) : (
-                  <Check className="size-3 text-muted-foreground" />
-                )}
+                {!updateInfo.hasUpdate && <Check className="size-3 text-muted-foreground" />}
               </span>
             }
           />
@@ -49,13 +55,62 @@ export function AboutSection({
             Could not check for updates.
           </div>
         )}
+
+        {showInstallFlow && installState === "downloading" && (
+          <div className="space-y-1 rounded border border-sidebar-border bg-background/40 px-2 py-1.5">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>Downloading…</span>
+              <span className="font-mono tabular-nums">
+                {pct !== null ? `${pct}%` : formatBytes(downloaded)}
+              </span>
+            </div>
+            <div className="h-1 overflow-hidden rounded bg-accent">
+              <div
+                className="h-full bg-emerald-500 transition-[width] duration-200"
+                style={{ width: pct !== null ? `${pct}%` : "40%" }}
+              />
+            </div>
+          </div>
+        )}
+
+        {showInstallFlow && installState === "installing" && (
+          <div className="flex items-center gap-1.5 rounded border border-sidebar-border bg-background/40 px-2 py-1.5 text-[11px] text-muted-foreground">
+            <Loader2 className="size-3 animate-spin" />
+            Installing, relaunching…
+          </div>
+        )}
+
+        {showInstallFlow && installState === "error" && updateInfo && (
+          <div className="space-y-1.5 rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1.5 text-[10px] text-amber-300">
+            <div>
+              {installError || "Update failed"}.{" "}
+              <button
+                type="button"
+                onClick={() => void openUrl(updateInfo.url)}
+                className="underline underline-offset-2 hover:text-amber-200"
+              >
+                Download manually
+              </button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-full text-xs"
+              onClick={() => void installUpdate()}
+            >
+              <RotateCw className="size-3" />
+              Try again
+            </Button>
+          </div>
+        )}
+
         <div className="flex gap-2 pt-1">
           <Button
             size="sm"
             variant="outline"
             className="h-7 flex-1"
             onClick={runUpdateCheck}
-            disabled={updateChecking}
+            disabled={updateChecking || installState === "downloading" || installState === "installing"}
           >
             {updateChecking ? (
               <Loader2 className="size-3 animate-spin" />
@@ -64,14 +119,26 @@ export function AboutSection({
             )}
             Check for updates
           </Button>
-          {updateInfo?.hasUpdate && (
-            <Button size="sm" className="h-7" onClick={() => openUrl(updateInfo.url)}>
+          {updateInfo?.hasUpdate && installState === "idle" && canAutoInstall && (
+            <Button size="sm" className="h-7 shrink-0" onClick={() => void installUpdate()}>
               <Download className="size-3" />
-              Get it
+              Install & restart
+            </Button>
+          )}
+          {updateInfo?.hasUpdate && installState === "idle" && !canAutoInstall && (
+            <Button size="sm" className="h-7 shrink-0" onClick={() => void openUrl(updateInfo.url)}>
+              <ExternalLink className="size-3" />
+              Download v{updateInfo.latest}
             </Button>
           )}
         </div>
       </div>
     </Group>
   );
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

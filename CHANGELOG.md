@@ -2,6 +2,15 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.14.1] - 2026-05-15
+
+### Changed
+- **About → updates:** on an installed build, **Install & restart** now runs the same Tauri updater flow as the update banner (download, install, relaunch) instead of opening the GitHub release page. Portable builds still get a **Download v…** button that opens the release.
+- While an update runs from About, the panel shows **download progress**, **installing**, and on failure **Try again** plus **Download manually**—matching the banner behaviour.
+
+### Removed
+- The decorative **“new”** badge next to the **Latest** version line in About.
+
 ## [0.14.0] - 2026-05-14
 
 Chunky release: CDP integration with GeoGuessr was reworked, map and settings code reorganized, and the Google Maps API key moved out of the WebView’s `localStorage` into a small Tauri-backed store file (one-time migration on first launch if a key was already saved).
