@@ -20,7 +20,7 @@ export function EmptyState({ conn }: { conn: ConnState }) {
         <div className="mx-auto max-w-[260px] rounded-md border border-sidebar-border bg-background/50 p-3 text-left text-[11px] leading-relaxed text-muted-foreground">
           Add these Steam launch options:
           <code className="mt-1.5 block break-all rounded bg-accent px-2 py-1 font-mono text-[10px]">
-            --remote-debugging-port=9222 --remote-allow-origins=*
+            --remote-debugging-port=9222
           </code>
         </div>
       )}

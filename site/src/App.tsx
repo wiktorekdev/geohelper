@@ -431,7 +431,7 @@ function Customizer() {
 
 function GetStarted() {
   const [copied, setCopied] = useState(false);
-  const flags = "--remote-debugging-port=9222 --remote-allow-origins=*";
+  const flags = "--remote-debugging-port=9222";
 
   async function copy() {
     try {

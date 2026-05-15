@@ -2,6 +2,18 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.14.2] - 2026-05-15
+
+### Security
+- Removed the unnecessary `--remote-allow-origins=*` launch option from the README, website, in-app setup hint, and backend diagnostics. GeoHelper only needs `--remote-debugging-port=9222`.
+- Added strict validation for returned CDP WebSocket targets: GeoHelper now only accepts DevTools WebSocket URLs on loopback port `9222` with a normal `/devtools/` path.
+
+### Upgrade note
+- If you copied the old Steam launch options, remove `--remote-allow-origins=*` and leave only:
+  ```
+  --remote-debugging-port=9222
+  ```
+
 ## [0.14.1] - 2026-05-15
 
 ### Changed

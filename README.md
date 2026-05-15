@@ -28,7 +28,7 @@ Built for custom maps, solo play and learning. Don't use it in ranked.
 1. Download from [Releases](../../releases/latest) and run it.
 2. In Steam → right-click **GeoGuessr** → **Properties** → **Launch Options**, paste:
    ```
-   --remote-debugging-port=9222 --remote-allow-origins=*
+   --remote-debugging-port=9222
    ```
 3. Start GeoGuessr, start GeoHelper. Dot goes green, coordinates appear.
 

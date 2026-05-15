@@ -3,7 +3,7 @@ use thiserror::Error;
 use tokio::time::Duration;
 
 const CDP_URL: &str = "http://localhost:9222/json";
-const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222 --remote-allow-origins=*";
+const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222";
 
 #[derive(Debug, Error)]
 pub enum TargetError {
@@ -17,6 +17,8 @@ pub enum TargetError {
     GeoGuessrNotActive,
     #[error("CDP target list is invalid: {0}")]
     InvalidTargetList(#[from] reqwest::Error),
+    #[error("CDP WebSocket target is invalid: {0}")]
+    InvalidWebSocketTarget(String),
 }
 
 #[derive(Debug, Deserialize)]
@@ -66,12 +68,13 @@ pub async fn find() -> Result<Target, TargetError> {
         .or(any_iframe)
         .or(any_page)
         .ok_or(TargetError::GeoGuessrNotActive)?;
+    let ws_url = validate_ws_url(&picked.ws_url)?;
 
     Ok(Target {
         r#type: picked.r#type.clone(),
         url: picked.url.clone(),
         title: picked.title.clone(),
-        ws_url: picked.ws_url.clone(),
+        ws_url,
     })
 }
 
@@ -90,6 +93,53 @@ fn looks_like_game(t: &Target) -> bool {
         || u.contains("/challenge")
         || u.contains("/quiz")
         || u.contains("/play")
+}
+
+fn validate_ws_url(raw: &str) -> Result<String, TargetError> {
+    let url =
+        reqwest::Url::parse(raw).map_err(|e| TargetError::InvalidWebSocketTarget(e.to_string()))?;
+
+    match url.scheme() {
+        "ws" | "wss" => {}
+        _ => {
+            return Err(TargetError::InvalidWebSocketTarget(
+                "expected ws:// or wss:// scheme".into(),
+            ));
+        }
+    }
+
+    match url.host_str() {
+        Some("localhost") | Some("127.0.0.1") | Some("[::1]") | Some("::1") => {}
+        _ => {
+            return Err(TargetError::InvalidWebSocketTarget(
+                "expected a loopback DevTools host".into(),
+            ));
+        }
+    }
+
+    if url.port_or_known_default() != Some(9222) {
+        return Err(TargetError::InvalidWebSocketTarget(
+            "expected DevTools port 9222".into(),
+        ));
+    }
+
+    if !url.path().starts_with("/devtools/") {
+        return Err(TargetError::InvalidWebSocketTarget(
+            "expected a DevTools WebSocket path".into(),
+        ));
+    }
+
+    if !url.username().is_empty()
+        || url.password().is_some()
+        || url.query().is_some()
+        || url.fragment().is_some()
+    {
+        return Err(TargetError::InvalidWebSocketTarget(
+            "unexpected credentials or URL components".into(),
+        ));
+    }
+
+    Ok(raw.to_string())
 }
 
 async fn launch_diagnostic() -> String {
@@ -182,5 +232,40 @@ fn remote_debugging_port(command_line: &str) -> Option<String> {
         None
     } else {
         Some(port.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{validate_ws_url, TargetError};
+
+    #[test]
+    fn accepts_loopback_devtools_target_on_expected_port() {
+        let raw = "ws://127.0.0.1:9222/devtools/page/ABC";
+        assert_eq!(validate_ws_url(raw).unwrap(), raw);
+    }
+
+    #[test]
+    fn rejects_alternate_websocket_port() {
+        assert!(matches!(
+            validate_ws_url("ws://127.0.0.1:9876/devtools/page/ABC"),
+            Err(TargetError::InvalidWebSocketTarget(_))
+        ));
+    }
+
+    #[test]
+    fn rejects_non_devtools_path() {
+        assert!(matches!(
+            validate_ws_url("ws://127.0.0.1:9222/attacker-controlled"),
+            Err(TargetError::InvalidWebSocketTarget(_))
+        ));
+    }
+
+    #[test]
+    fn rejects_non_loopback_host() {
+        assert!(matches!(
+            validate_ws_url("ws://example.com:9222/devtools/page/ABC"),
+            Err(TargetError::InvalidWebSocketTarget(_))
+        ));
     }
 }
