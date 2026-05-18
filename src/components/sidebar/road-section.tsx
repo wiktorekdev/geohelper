@@ -7,8 +7,10 @@ export function RoadSection() {
 
   return (
     <div className="px-5 py-3 space-y-1 border-t border-sidebar-border">
-      {place.road && <InfoRow label="Road" value={place.road} />}
-      {place.postcode && <InfoRow label="Postcode" value={place.postcode} mono />}
+      {place.road && <InfoRow id="road.road" label="Road" value={place.road} />}
+      {place.postcode && (
+        <InfoRow id="road.postcode" label="Postcode" value={place.postcode} mono />
+      )}
     </div>
   );
 }

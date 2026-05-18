@@ -3,13 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { cn } from "@/lib/utils";
-import {
-  FONT_SIZE_PX,
-  useDisplayStore,
-  WIDGET_LABELS,
-  type WidgetId,
-} from "@/lib/display-store";
-import { SectionStylePopover } from "./section-style-popover";
+import { useDisplayStore, WIDGET_LABELS, type WidgetId } from "@/lib/display-store";
 
 type Props = {
   id: WidgetId;
@@ -18,8 +12,18 @@ type Props = {
 
 export function SortableSection({ id, children }: Props) {
   const editing = useDisplayStore((s) => s.editing);
-  const visible = useDisplayStore((s) => s.visibility[id]);
-  const style = useDisplayStore((s) => s.styles[id]);
+  const selection = useDisplayStore((s) => s.selection);
+  const selectWidget = useDisplayStore((s) => s.selectWidget);
+  const registeredIds = useDisplayStore((s) => s.registeredIds);
+  const hiddenTexts = useDisplayStore((s) => s.hiddenTexts);
+
+  const sectionSelected =
+    selection.length > 0 && selection.every((sid) => sid.startsWith(`${id}.`));
+
+  // The section is "effectively hidden" when at least one text is registered
+  // for it AND every registered text is in hiddenTexts.
+  const sectionIds = Object.keys(registeredIds).filter((rid) => rid.startsWith(`${id}.`));
+  const allHidden = sectionIds.length > 0 && sectionIds.every((rid) => hiddenTexts[rid]);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
@@ -31,15 +35,9 @@ export function SortableSection({ id, children }: Props) {
     transition,
   };
 
-  const contentStyle: React.CSSProperties = {
-    color: style.color ?? undefined,
-    fontWeight: style.bold ? 600 : undefined,
-    fontSize: FONT_SIZE_PX[style.fontSize],
-  };
-
   if (!editing) {
-    if (!visible) return null;
-    return <div style={contentStyle}>{children}</div>;
+    if (allHidden) return null;
+    return <>{children}</>;
   }
 
   return (
@@ -50,11 +48,16 @@ export function SortableSection({ id, children }: Props) {
         "mx-3 my-1.5 overflow-hidden rounded-md border border-dashed transition-colors",
         isDragging
           ? "z-10 border-brand/60 bg-background/80 shadow-lg"
-          : "border-sidebar-border/70 bg-background/30",
-        !visible && "opacity-60",
+          : sectionSelected
+            ? "border-brand/50 bg-brand/[0.04]"
+            : "border-sidebar-border/70 bg-background/30",
+        allHidden && "opacity-50",
       )}
     >
-      <div className="flex items-center gap-1 border-b border-sidebar-border/50 bg-background/40 px-1.5 py-1">
+      <div
+        data-no-marquee
+        className="flex items-center gap-1 border-b border-sidebar-border/50 bg-background/40 px-1.5 py-1"
+      >
         <button
           {...attributes}
           {...listeners}
@@ -63,13 +66,22 @@ export function SortableSection({ id, children }: Props) {
         >
           <GripVertical className="size-3.5" />
         </button>
-        <span className="flex-1 truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <button
+          type="button"
+          onClick={(event) => selectWidget(id, event.shiftKey || event.ctrlKey || event.metaKey)}
+          className={cn(
+            "flex-1 truncate rounded px-1 py-0.5 text-left text-[10px] font-medium uppercase tracking-wide transition-colors",
+            sectionSelected
+              ? "text-brand"
+              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+          )}
+          aria-label={`Select all texts in ${WIDGET_LABELS[id]}`}
+        >
           {WIDGET_LABELS[id]}
-        </span>
-        <SectionStylePopover id={id} />
+        </button>
       </div>
 
-      <div style={contentStyle}>{children}</div>
+      <div>{children}</div>
     </div>
   );
 }

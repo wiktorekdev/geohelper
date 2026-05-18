@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 import { SettingsSidebar } from "@/components/settings-panel";
 import { MapView } from "@/components/map-view";
 import { EditToolbar } from "@/components/display/edit-toolbar";
+import { SelectionToolbar } from "@/components/display/selection-toolbar";
 import { useMapWindowLayout } from "@/hooks/use-map-window-layout";
 import { useStore } from "@/lib/store";
 import { useUpdateStore } from "@/lib/update-store";
@@ -58,13 +59,14 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
-      {settingsOpen ? <SettingsSidebar fullWidth={!mapVisible} /> : <Sidebar fullWidth={!mapVisible} />}
+      {settingsOpen ? <SettingsSidebar /> : <Sidebar />}
       {mapVisible && (
-        <main className="flex min-w-0 flex-1 flex-col">
+        <main key="map" className="map-appear flex min-w-0 flex-1 flex-col">
           <MapView />
         </main>
       )}
       <EditToolbar />
+      <SelectionToolbar />
     </div>
   );
 }

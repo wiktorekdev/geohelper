@@ -56,30 +56,6 @@ export function Divider() {
   return <div className="mx-4 h-px bg-sidebar-border" />;
 }
 
-export function ThemeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "h-9 rounded-md border text-sm transition-colors",
-        active
-          ? "border-foreground/20 bg-accent text-foreground"
-          : "border-border text-muted-foreground hover:bg-accent/60",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 export function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs">

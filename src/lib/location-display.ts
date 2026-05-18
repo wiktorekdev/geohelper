@@ -21,8 +21,21 @@ export function deriveLocationDisplay(
   details: CountryDetails | null,
   current: Coords | null,
   geocodeError: string | null,
+  loading: boolean,
 ): LocationDisplay {
   const hasSettlement = !!(place.country || place.region || place.city);
+
+  // If loading and we have previous data, keep showing it instead of intermediate states
+  if (loading && hasSettlement) {
+    return {
+      kind: "settlement",
+      country: place.country || "-",
+      countryCode: place.countryCode,
+      areaLine: uniqueLine(place.neighbourhood, place.city),
+      regionLine: uniqueLine(place.county, place.region),
+      continentLine: composeContinentLine(place.continent, details?.subregion),
+    };
+  }
 
   if (!hasSettlement) {
     if (geocodeError) return { kind: "error" };

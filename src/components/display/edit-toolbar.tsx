@@ -12,6 +12,7 @@ export function EditToolbar() {
   const resetAll = useDisplayStore((s) => s.resetAll);
   const mapVisible = useDisplayStore((s) => s.mapVisible);
   const setMapVisible = useDisplayStore((s) => s.setMapVisible);
+  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
 
   if (!editing) return null;
 
@@ -21,7 +22,10 @@ export function EditToolbar() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-50 flex justify-center px-2">
+    <div
+      className="pointer-events-none fixed inset-x-0 z-[2000] flex justify-center px-2 transition-[bottom,left] duration-300"
+      style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 12 : 64 }}
+    >
       <div className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
         <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
           <Pencil className="size-3.5 text-brand" />

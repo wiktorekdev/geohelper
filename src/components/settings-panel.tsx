@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGoogleApiKeyValidation } from "@/hooks/use-google-api-key-validation";
 import { GITHUB_URL, KOFI_URL } from "@/lib/links";
+import { useDisplayStore } from "@/lib/display-store";
 import { useStore } from "@/lib/store";
 import { useUpdateStore } from "@/lib/update-store";
 
-export function SettingsSidebar({ fullWidth = false }: { fullWidth?: boolean }) {
+export function SettingsSidebar() {
   const close = useStore((s) => s.closeSettings);
+  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
 
   const mapProvider = useStore((s) => s.mapProvider);
   const setMapProvider = useStore((s) => s.setMapProvider);
@@ -24,9 +26,6 @@ export function SettingsSidebar({ fullWidth = false }: { fullWidth?: boolean }) 
 
   const apiKey = useStore((s) => s.googleApiKey);
   const setApiKey = useStore((s) => s.setGoogleApiKey);
-
-  const copyFormat = useStore((s) => s.copyFormat);
-  const setCopyFormat = useStore((s) => s.setCopyFormat);
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
   const alwaysOnTop = useStore((s) => s.alwaysOnTop);
@@ -59,7 +58,7 @@ export function SettingsSidebar({ fullWidth = false }: { fullWidth?: boolean }) 
   }
 
   return (
-    <aside className={fullWidth ? "flex h-full w-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar" : "flex h-full w-[320px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar"}>
+    <aside className="flex h-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar" style={{ width: sidebarWidth }}>
       <header className="flex items-center gap-2 p-3">
         <Button size="icon" variant="ghost" className="size-8" onClick={close}>
           <ArrowLeft className="size-4" />
@@ -85,10 +84,8 @@ export function SettingsSidebar({ fullWidth = false }: { fullWidth?: boolean }) 
         <AppearanceSection
           theme={theme}
           alwaysOnTop={alwaysOnTop}
-          copyFormat={copyFormat}
           setTheme={setTheme}
           setAlwaysOnTop={setAlwaysOnTop}
-          setCopyFormat={setCopyFormat}
         />
         <Divider />
         <AboutSection

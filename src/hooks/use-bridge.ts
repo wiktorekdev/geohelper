@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { latLngClose } from "@/lib/coords";
@@ -18,6 +19,13 @@ export function useBridge() {
     const unsubs: Array<() => void> = [];
     let enrichToken = 0;
     let enrichmentAbort: AbortController | null = null;
+
+    if (!isTauri()) {
+      setConn({ kind: "disconnected", reason: "Waiting for the Tauri desktop bridge." });
+      return () => {
+        mounted = false;
+      };
+    }
 
     function nextEnrichmentSignal() {
       if (enrichmentAbort) enrichmentAbort.abort();
@@ -79,4 +87,3 @@ export function useBridge() {
     };
   }, [setSnapshot, pushCoords, setConn]);
 }
-

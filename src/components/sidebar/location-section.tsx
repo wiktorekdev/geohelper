@@ -2,13 +2,16 @@ import ReactCountryFlag from "react-country-flag";
 
 import { deriveLocationDisplay } from "@/lib/location-display";
 import { useStore } from "@/lib/store";
+import { SelectableText } from "@/components/display/selectable-text";
+import { FLAG_SIZE, useDisplayStore } from "@/lib/display-store";
 
 export function LocationSection() {
   const place = useStore((s) => s.place);
   const details = useStore((s) => s.countryDetails);
   const geocodeError = useStore((s) => s.geocodeError);
   const current = useStore((s) => s.current);
-  const display = deriveLocationDisplay(place, details, current, geocodeError);
+  const locationLoading = useStore((s) => s.locationLoading);
+  const display = deriveLocationDisplay(place, details, current, geocodeError, locationLoading);
 
   switch (display.kind) {
     case "error":
@@ -47,36 +50,68 @@ export function LocationSection() {
     case "empty":
       return <div className="p-5 text-sm text-muted-foreground">-</div>;
     case "settlement":
-      return (
-        <div className="space-y-3 p-5">
-          <div className="flex items-center gap-3">
-            {display.countryCode && (
+      return <SettlementView display={display} />;
+  }
+}
+
+function SettlementView({
+  display,
+}: {
+  display: Extract<ReturnType<typeof deriveLocationDisplay>, { kind: "settlement" }>;
+}) {
+  const flagStyle = useDisplayStore((s) => s.textStyles["country.flag"]);
+  const flagSize = FLAG_SIZE[flagStyle?.fontSize ?? "md"];
+  const fontSizePx = flagStyle?.fontSize ? { sm: 11, md: 13, lg: 15 }[flagStyle.fontSize] : 13;
+
+  return (
+    <div className="space-y-3 p-5">
+      <div className="flex items-center gap-3">
+        {display.countryCode && (
+          <SelectableText id="country.flag">
+            <span
+              className="inline-flex align-middle"
+              style={{
+                width: flagSize.width,
+                height: flagSize.height,
+                borderRadius: `${fontSizePx * 0.18}px`,
+                overflow: "hidden",
+                isolation: "isolate",
+                fontSize: `${fontSizePx}px`,
+              }}
+            >
               <ReactCountryFlag
                 countryCode={display.countryCode.toUpperCase()}
                 svg
-                style={{ width: "2.2em", height: "1.6em", borderRadius: "3px" }}
+                style={{ width: "100%", height: "100%", display: "block" }}
                 title={display.country}
               />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-base font-semibold">{display.country}</div>
-              {display.continentLine && (
-                <div className="truncate text-[11px] text-muted-foreground">
-                  {display.continentLine}
-                </div>
-              )}
+            </span>
+          </SelectableText>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-base font-semibold">
+            <SelectableText id="country.title">{display.country}</SelectableText>
+          </div>
+          {display.continentLine && (
+            <div className="truncate text-[11px] text-muted-foreground">
+              <SelectableText id="country.continent">{display.continentLine}</SelectableText>
             </div>
-          </div>
-
-          <div className="space-y-0.5">
-            {display.areaLine && <div className="truncate text-sm">{display.areaLine}</div>}
-            {display.regionLine && (
-              <div className="truncate text-[11px] text-muted-foreground">
-                {display.regionLine}
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      );
-  }
+      </div>
+
+      <div className="space-y-0.5">
+        {display.areaLine && (
+          <div className="truncate text-sm">
+            <SelectableText id="country.area">{display.areaLine}</SelectableText>
+          </div>
+        )}
+        {display.regionLine && (
+          <div className="truncate text-[11px] text-muted-foreground">
+            <SelectableText id="country.region">{display.regionLine}</SelectableText>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

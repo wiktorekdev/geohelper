@@ -2,6 +2,30 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.15.0] - 2026-05-18
+
+### Added
+- **Per-element styling** — click any text in the sidebar to make it bold, change its size, pick a custom color, or hide it entirely.
+- **Multi-select** — drag a marquee to select several elements at once, then style them together from the floating toolbar.
+- **Section shortcuts** — select everything in a section, reset its look, or hide the whole section in one click.
+- **Resizable sidebar** — in edit mode, drag the grip on the right edge to set your preferred width between 320px and 700px. The choice is saved across sessions.
+- Clearer theme buttons with Moon and Sun icons.
+
+### Improved
+- **Smoother map toggle** — hiding the map no longer shrinks the sidebar, and the window resize waits for the animation to finish so nothing jumps.
+- Toolbars move out of the way when the map is hidden so they do not overlap the footer buttons.
+- Google Maps API key input shows a green border when valid and red when invalid — no more extra validation text.
+- Selection toolbar adapts to what you have selected; for example, bold and color controls hide when only the flag is selected.
+
+### Removed
+- BigDataCloud geocoding provider.
+- CartoDB (Dark, Light, Voyager), Esri Satellite, and OpenTopoMap map layers.
+- Old section-style popover — replaced by the new click-to-select workflow.
+
+### Fixed
+- Flag keeps its rounded corners at the largest size.
+- Window restores to the correct height when bringing the map back after hiding it.
+
 ## [0.14.2] - 2026-05-15
 
 ### Security

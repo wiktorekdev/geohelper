@@ -8,16 +8,7 @@
     "core:window:allow-set-size",
     "core:window:allow-set-min-size",
     {
-      "identifier": "opener:allow-open-url",
-      "scope": {
-        "allow": [
-          { "url": "https://github.com/wiktorekdev/geohelper*" },
-          { "url": "https://ko-fi.com/wiktorekdev*" },
-          { "url": "https://console.cloud.google.com/google/maps-apis/credentials*" },
-          { "url": "https://www.google.com/maps*" },
-          { "url": "https://maps.google.com*" }
-        ]
-      }
+      "identifier": "opener:allow-open-url"
     },
     "updater:default",
     "process:allow-restart",

@@ -10,6 +10,7 @@ import { useStore } from "@/lib/store";
 import { useDisplayStore } from "@/lib/display-store";
 import { formatCoord, formatCoords } from "@/lib/coords";
 import { MOCK_COORDS } from "@/lib/mock-data";
+import { SelectableText } from "@/components/display/selectable-text";
 
 export function CoordsSection() {
   const current = useStore((s) => s.current);
@@ -43,38 +44,48 @@ export function CoordsSection() {
   return (
     <div className="mx-4 my-3 rounded-md border border-sidebar-border bg-background/40 p-3">
       <div className="grid grid-cols-2 gap-2">
-        <Value label="Lat" value={lat} />
-        <Value label="Lng" value={lng} />
+        <Value id="coordinates.lat" label="Lat" value={lat} />
+        <Value id="coordinates.lng" label="Lng" value={lng} />
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Action onClick={copy}>
-              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              {copied ? "Copied" : "Copy"}
-            </Action>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Copy lat/lng to clipboard</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Action onClick={openInGoogleMaps}>
-              <GoogleMaps className="size-3.5" />
-              Google Maps
-            </Action>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Open in Google Maps</TooltipContent>
-        </Tooltip>
+        <SelectableText id="coordinates.action.copy" className="block">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Action onClick={copy}>
+                {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                {copied ? "Copied" : "Copy"}
+              </Action>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Copy lat/lng to clipboard</TooltipContent>
+          </Tooltip>
+        </SelectableText>
+        <SelectableText id="coordinates.action.maps" className="block">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Action onClick={openInGoogleMaps}>
+                <GoogleMaps className="size-3.5" />
+                Google Maps
+              </Action>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Open in Google Maps</TooltipContent>
+          </Tooltip>
+        </SelectableText>
       </div>
     </div>
   );
 }
 
-function Value({ label, value }: { label: string; value: string }) {
+function Value({ id, label, value }: { id: string; label: string; value: string }) {
   return (
     <div className="rounded border border-sidebar-border bg-background/50 px-2.5 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="mt-0.5 truncate font-mono text-[12px] tabular-nums">{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+        <SelectableText id={`${id}.label`}>{label}</SelectableText>
+      </div>
+      <div className="mt-0.5 truncate font-mono text-[12px] tabular-nums">
+        <SelectableText id={`${id}.value`} mono>
+          {value}
+        </SelectableText>
+      </div>
     </div>
   );
 }
@@ -85,7 +96,7 @@ function Action({ onClick, children }: { onClick: () => void; children: React.Re
       variant="outline"
       size="sm"
       onClick={onClick}
-      className="h-8 gap-1.5 border-sidebar-border text-xs text-muted-foreground hover:text-foreground"
+      className="h-8 w-full gap-1.5 border-sidebar-border text-xs text-muted-foreground hover:text-foreground"
     >
       {children}
     </Button>

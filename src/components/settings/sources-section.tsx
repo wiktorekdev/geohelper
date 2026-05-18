@@ -1,4 +1,4 @@
-import { ExternalLink, Eye, EyeOff, Layers, Lock } from "lucide-react";
+import { ExternalLink, Eye, EyeOff, Layers, Loader2, Lock } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { KeyValidationMessage, Field, Group } from "./settings-primitives";
+import { Field, Group } from "./settings-primitives";
 import { MAP_PROVIDERS, type MapProviderId } from "@/lib/map-providers";
 import { GEOCODE_PROVIDERS, type GeocodeProviderId } from "@/lib/geocode-providers";
 import type { KeyValidation } from "@/hooks/use-google-api-key-validation";
+import { cn } from "@/lib/utils";
 
 type Props = {
   mapProvider: MapProviderId;
@@ -97,15 +98,28 @@ export function SourcesSection({
               value={draft}
               onChange={(event) => updateKey(event.target.value)}
               onBlur={() => runKeyValidation()}
-              className="h-9 pr-9"
+              className={cn(
+                "h-9 pr-16 transition-colors",
+                keyValidation.state === "valid" &&
+                  "border-emerald-500/60 focus-visible:border-emerald-500/80 focus-visible:ring-emerald-500/30",
+                keyValidation.state === "invalid" &&
+                  draft.trim().length > 0 &&
+                  "border-red-500/60 focus-visible:border-red-500/80 focus-visible:ring-red-500/30",
+              )}
             />
-            <button
-              type="button"
-              onClick={() => setReveal((value) => !value)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              {reveal ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-            </button>
+            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+              {keyValidation.state === "checking" && (
+                <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+              )}
+              <button
+                type="button"
+                onClick={() => setReveal((value) => !value)}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label={reveal ? "Hide key" : "Show key"}
+              >
+                {reveal ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+              </button>
+            </div>
           </div>
         </div>
         <button
@@ -115,7 +129,6 @@ export function SourcesSection({
           Get a key on Google Cloud
           <ExternalLink className="size-3" />
         </button>
-        <KeyValidationMessage validation={keyValidation} />
       </Field>
     </Group>
   );

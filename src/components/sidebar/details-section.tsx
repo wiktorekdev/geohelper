@@ -21,12 +21,20 @@ export function DetailsSection() {
   return (
     <div className="px-5 py-3 space-y-1 border-t border-sidebar-border">
       {details.languages && details.languages.length > 0 && (
-        <InfoRow label="Language" value={details.languages.slice(0, 2).join(", ")} />
+        <InfoRow
+          id="details.language"
+          label="Language"
+          value={details.languages.slice(0, 2).join(", ")}
+        />
       )}
-      {details.currency && <InfoRow label="Currency" value={details.currency} />}
-      {details.callingCode && <InfoRow label="Phone" value={details.callingCode} />}
-      {localTime && <InfoRow label="Local time" value={localTime} />}
-      {details.capital && <InfoRow label="Capital" value={details.capital} />}
+      {details.currency && (
+        <InfoRow id="details.currency" label="Currency" value={details.currency} />
+      )}
+      {details.callingCode && (
+        <InfoRow id="details.phone" label="Phone" value={details.callingCode} />
+      )}
+      {localTime && <InfoRow id="details.localTime" label="Local time" value={localTime} />}
+      {details.capital && <InfoRow id="details.capital" label="Capital" value={details.capital} />}
     </div>
   );
 }

@@ -8,12 +8,14 @@ export type LocationSlice = {
   place: PlaceInfo;
   countryDetails: CountryDetails | null;
   geocodeError: string | null;
+  locationLoading: boolean;
 
   setCurrent: (coords: Coords | null) => void;
   pushCoords: (coords: Coords) => void;
   setPlace: (place: PlaceInfo) => void;
   setCountryDetails: (details: CountryDetails | null) => void;
   setGeocodeError: (error: string | null) => void;
+  setLocationLoading: (loading: boolean) => void;
   clearLocation: () => void;
 };
 
@@ -22,11 +24,13 @@ export const createLocationSlice: StateCreator<Store, [], [], LocationSlice> = (
   place: {},
   countryDetails: null,
   geocodeError: null,
+  locationLoading: false,
 
   setCurrent: (current) => set({ current }),
   pushCoords: (current) => set({ current }),
   setPlace: (place) => set({ place }),
   setCountryDetails: (countryDetails) => set({ countryDetails }),
   setGeocodeError: (geocodeError) => set({ geocodeError }),
-  clearLocation: () => set({ current: null, place: {}, countryDetails: null, geocodeError: null }),
+  setLocationLoading: (locationLoading) => set({ locationLoading }),
+  clearLocation: () => set({ current: null, place: {}, countryDetails: null, geocodeError: null, locationLoading: false }),
 });

@@ -3,7 +3,7 @@ import { continentFrom } from "./continents";
 import { errorMessage } from "./errors";
 import { timeoutSignal } from "./fetch-timeout";
 
-export type GeocodeProviderId = "nominatim" | "bigdatacloud" | "google";
+export type GeocodeProviderId = "nominatim" | "google";
 
 export type GeocodeProvider = {
   id: GeocodeProviderId;
@@ -30,13 +30,6 @@ export const GEOCODE_PROVIDERS: Record<GeocodeProviderId, GeocodeProvider> = {
     needsKey: false,
     reverse: (lat, lng, _apiKey, fallbackContinent, signal) =>
       nominatim(lat, lng, fallbackContinent, signal),
-  },
-  bigdatacloud: {
-    id: "bigdatacloud",
-    name: "BigDataCloud",
-    needsKey: false,
-    reverse: (lat, lng, _apiKey, fallbackContinent, signal) =>
-      bigDataCloud(lat, lng, fallbackContinent, signal),
   },
   google: {
     id: "google",
@@ -98,25 +91,6 @@ async function nominatim(
     road: addr.road,
     postcode: addr.postcode,
     continent: continentFrom(addr.country_code, lat, lng) ?? fallbackContinent,
-  };
-}
-
-async function bigDataCloud(
-  lat: number,
-  lng: number,
-  fallbackContinent?: string,
-  signal?: AbortSignal,
-): Promise<PlaceInfo> {
-  const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`;
-  const res = await fetch(url, { signal: timeoutSignal(undefined, signal) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const d = await res.json();
-  return {
-    country: d.countryName || undefined,
-    countryCode: d.countryCode?.toLowerCase(),
-    region: d.principalSubdivision || undefined,
-    city: d.city || d.locality || undefined,
-    continent: d.continent || continentFrom(d.countryCode, lat, lng) || fallbackContinent,
   };
 }
 

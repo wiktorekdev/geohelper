@@ -1,32 +1,21 @@
 import { useEffect, useRef } from "react";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 
-import { SIDEBAR_WIDTH_PX, useDisplayStore } from "@/lib/display-store";
+import { useDisplayStore } from "@/lib/display-store";
 
 const MIN_WITH_MAP_W = 960;
 const MIN_WITH_MAP_H = 640;
 const MIN_MAP_HIDDEN_H = 400;
-const SAVED_WIDTH_KEY = "geohelper.mapWindowWidth";
-
-function loadSavedWidth(): number | null {
-  const value = Number(localStorage.getItem(SAVED_WIDTH_KEY));
-  return Number.isFinite(value) && value >= MIN_WITH_MAP_W ? value : null;
-}
-
-function saveWidth(width: number): void {
-  if (Number.isFinite(width) && width >= MIN_WITH_MAP_W) {
-    localStorage.setItem(SAVED_WIDTH_KEY, String(Math.round(width)));
-  }
-}
 
 /**
- * Keep native resize constraints in sync with map visibility. The React layout fills the
- * window when the map is hidden, so we do not force-shrink the window anymore.
+ * Keep native resize constraints in sync with map visibility. The sidebar is the stable
+ * surface; hiding the map collapses the native window to the sidebar width, and showing
+ * the map lets the map fill the remaining space.
  */
 export function useMapWindowLayout() {
   const mapVisible = useDisplayStore((s) => s.mapVisible);
+  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
   const firstRun = useRef(true);
-  const savedInnerWidthRef = useRef<number | null>(loadSavedWidth());
   const resizeSeqRef = useRef(0);
 
   useEffect(() => {
@@ -39,6 +28,8 @@ export function useMapWindowLayout() {
     }
 
     let cancelled = false;
+    let timeout = 0;
+
     void (async () => {
       try {
         const win = getCurrentWindow();
@@ -48,21 +39,31 @@ export function useMapWindowLayout() {
         const scale = await win.scaleFactor();
         if (cancelled) return;
 
-        const wLog = inner.width / scale;
         const hLog = inner.height / scale;
+        const wLog = inner.width / scale;
 
         if (!mapVisible) {
-          if (wLog > SIDEBAR_WIDTH_PX + 12) {
-            savedInnerWidthRef.current = wLog;
-            saveWidth(wLog);
-          }
-          await win.setMinSize(new LogicalSize(SIDEBAR_WIDTH_PX, MIN_MAP_HIDDEN_H));
+          await win.setMinSize(new LogicalSize(sidebarWidth, MIN_MAP_HIDDEN_H));
+          if (cancelled || isStale()) return;
+          await win.setSize(new LogicalSize(sidebarWidth, Math.max(MIN_MAP_HIDDEN_H, hLog)));
         } else {
-          const restore = Math.max(MIN_WITH_MAP_W, savedInnerWidthRef.current ?? 1280);
           await win.setMinSize(new LogicalSize(MIN_WITH_MAP_W, MIN_WITH_MAP_H));
           if (cancelled || isStale()) return;
-          if (wLog < MIN_WITH_MAP_W) {
-            await win.setSize(new LogicalSize(restore, Math.max(MIN_WITH_MAP_H, hLog)));
+          // If the window is currently sidebar-narrow (we just unhid the map),
+          // grow it back so the map area has room without the user having to drag.
+          // Delay slightly so the CSS mount animation finishes before the window grows,
+          // avoiding the visual jump at the end of the transition.
+          const needsResize = wLog < MIN_WITH_MAP_W || hLog < MIN_WITH_MAP_H;
+          if (needsResize) {
+            timeout = window.setTimeout(async () => {
+              if (cancelled || isStale()) return;
+              await win.setSize(
+                new LogicalSize(
+                  Math.max(MIN_WITH_MAP_W, wLog),
+                  Math.max(MIN_WITH_MAP_H, hLog),
+                ),
+              );
+            }, 300);
           }
         }
       } catch {
@@ -72,6 +73,7 @@ export function useMapWindowLayout() {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
     };
-  }, [mapVisible]);
+  }, [mapVisible, sidebarWidth]);
 }
