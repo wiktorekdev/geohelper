@@ -133,4 +133,3 @@ pub fn handle_corrupted_store(app: AppHandle, path: String) {
         let _ = std::fs::rename(&target_path, &corrupted_path);
     }
 }
-
