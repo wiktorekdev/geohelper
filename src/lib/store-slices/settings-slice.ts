@@ -4,15 +4,12 @@ import type { GeocodeProviderId } from "@/lib/geocode-providers";
 import type { MapProviderId } from "@/lib/map-providers";
 import type { Store } from "@/lib/store";
 import {
-  loadBool,
-  loadCopyFormat,
-  loadGeocodeProvider,
-  loadProvider,
-  saveBool,
-  saveString,
-  STORAGE_KEYS,
+  getSettingsStore,
+  saveSetting,
+  loadProviderFallback,
+  loadGeocodeProviderFallback,
+  loadCopyFormatFallback,
 } from "@/lib/settings-persistence";
-import { loadGoogleApiKey, saveGoogleApiKey } from "@/lib/secure-settings";
 
 export type CopyFormat = "lat,lng" | "lat, lng" | "lng,lat";
 
@@ -29,43 +26,59 @@ export type SettingsSlice = {
   setGoogleApiKey: (key: string) => void;
   setCopyFormat: (format: CopyFormat) => void;
   setAlwaysOnTop: (value: boolean) => void;
-  loadSecureSettings: () => Promise<void>;
+  hydrateSettings: () => Promise<void>;
   openSettings: () => void;
   closeSettings: () => void;
 };
 
 export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (set) => ({
-  mapProvider: loadProvider(),
-  geocodeProvider: loadGeocodeProvider(),
+  mapProvider: loadProviderFallback(),
+  geocodeProvider: loadGeocodeProviderFallback(),
   googleApiKey: "",
-  copyFormat: loadCopyFormat(),
-  alwaysOnTop: loadBool(STORAGE_KEYS.alwaysOnTop, false),
+  copyFormat: loadCopyFormatFallback(),
+  alwaysOnTop: false,
   settingsOpen: false,
 
   setMapProvider: (mapProvider) => {
-    saveString(STORAGE_KEYS.provider, mapProvider);
+    void saveSetting("mapProvider", mapProvider);
     set({ mapProvider });
   },
   setGeocodeProvider: (geocodeProvider) => {
-    saveString(STORAGE_KEYS.geocodeProvider, geocodeProvider);
+    void saveSetting("geocodeProvider", geocodeProvider);
     set({ geocodeProvider, geocodeError: null });
   },
   setGoogleApiKey: (value) => {
     const googleApiKey = value.trim();
-    void saveGoogleApiKey(googleApiKey);
+    void saveSetting("googleApiKey", googleApiKey);
     set({ googleApiKey, geocodeError: null });
   },
   setCopyFormat: (copyFormat) => {
-    saveString(STORAGE_KEYS.copyFormat, copyFormat);
+    void saveSetting("copyFormat", copyFormat);
     set({ copyFormat });
   },
   setAlwaysOnTop: (alwaysOnTop) => {
-    saveBool(STORAGE_KEYS.alwaysOnTop, alwaysOnTop);
+    void saveSetting("alwaysOnTop", alwaysOnTop);
     set({ alwaysOnTop });
   },
-  loadSecureSettings: async () => {
-    const googleApiKey = await loadGoogleApiKey();
-    set({ googleApiKey });
+  hydrateSettings: async () => {
+    try {
+      const store = await getSettingsStore();
+      const mapProvider = (await store.get<MapProviderId>("mapProvider")) ?? loadProviderFallback();
+      const geocodeProvider = (await store.get<GeocodeProviderId>("geocodeProvider")) ?? loadGeocodeProviderFallback();
+      const copyFormat = (await store.get<CopyFormat>("copyFormat")) ?? loadCopyFormatFallback();
+      const alwaysOnTop = (await store.get<boolean>("alwaysOnTop")) ?? false;
+      const googleApiKey = (await store.get<string>("googleApiKey")) ?? "";
+
+      set({
+        mapProvider,
+        geocodeProvider,
+        copyFormat,
+        alwaysOnTop,
+        googleApiKey,
+      });
+    } catch (e) {
+      console.error("Failed to hydrate settings slice:", e);
+    }
   },
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),

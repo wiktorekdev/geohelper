@@ -36,8 +36,6 @@ export type Theme = {
    * Takes precedence over both `icon` and `emoji`.
    */
   iconUrl?: string;
-  /** A short two-line subtitle for the picker. */
-  description?: string;
   /** CSS variable overrides applied after the base palette. */
   vars?: ThemeVars;
   /** Optional font family. Applied to `body { font-family }`. */

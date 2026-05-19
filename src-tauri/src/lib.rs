@@ -22,6 +22,29 @@ pub fn run() {
                 cdp::run(handle, shared).await;
             });
 
+            let mut builder = tauri::webview::WebviewWindowBuilder::new(
+                app,
+                "main",
+                tauri::WebviewUrl::App("index.html".into()),
+            )
+            .title("GeoHelper")
+            .inner_size(1280.0, 820.0)
+            .min_inner_size(960.0, 640.0)
+            .resizable(true)
+            .fullscreen(false)
+            .shadow(true);
+
+            if util::is_portable() {
+                if let Ok(exe_path) = std::env::current_exe() {
+                    if let Some(exe_dir) = exe_path.parent() {
+                        let webview_dir = exe_dir.join("data").join("webview");
+                        builder = builder.data_directory(webview_dir);
+                    }
+                }
+            }
+
+            let _window = builder.build()?;
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -31,6 +54,8 @@ pub fn run() {
             commands::reconnect,
             commands::set_always_on_top,
             commands::is_installed,
+            commands::get_store_path,
+            commands::handle_corrupted_store,
         ])
         .run(tauri::generate_context!())
         .expect("failed to start GeoHelper");

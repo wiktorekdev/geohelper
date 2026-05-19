@@ -40,7 +40,18 @@ export class ErrorBoundary extends Component<Props, State> {
               size="sm"
               onClick={() => {
                 localStorage.removeItem("geohelper.display");
-                window.location.reload();
+                import("@/lib/settings-persistence").then(async ({ getSettingsStore }) => {
+                  try {
+                    const store = await getSettingsStore();
+                    await store.delete("displayConfig");
+                    await store.save();
+                  } catch (err) {
+                    console.error(err);
+                  }
+                  window.location.reload();
+                }).catch(() => {
+                  window.location.reload();
+                });
               }}
             >
               {t("error.resetLayout")}

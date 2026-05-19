@@ -4,6 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { GoogleMaps } from "@/components/ui/svgs/googleMaps";
 import { useStore } from "@/lib/store";
@@ -43,7 +44,7 @@ export function CoordsSection() {
   }
 
   return (
-    <div className="mx-4 my-3 rounded-md border border-sidebar-border bg-background/40 p-3">
+    <Card className="mx-4 my-2 p-3">
       <div className="grid grid-cols-2 gap-2">
         <Value id="coordinates.lat" label={t("coordinates.lat")} value={lat} />
         <Value id="coordinates.lng" label={t("coordinates.lng")} value={lng} />
@@ -72,7 +73,7 @@ export function CoordsSection() {
           </Tooltip>
         </SelectableText>
       </div>
-    </div>
+    </Card>
   );
 }
 

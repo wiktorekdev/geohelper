@@ -2,6 +2,22 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.17.0] - 2026-05-19
+
+### Added
+- **Settings Auto-Recovery** — Safely detects and recovers from corrupted JSON settings/themes configuration files without locking up the app.
+- **Custom Theme Documentation** — Added a detailed theme guide (`docs/themes.md`) explaining OKLCH color mappings, custom icons, and background gradients.
+- **Theme Example Template** — Added a pre-configured `themes.examples.json` template file to the repository.
+
+### Changed
+- **Unified Settings Storage** — Migrated display configurations, language selections, and updater states from browser `localStorage` into a single, portable `settings.json` file.
+- **Isolated Custom Themes** — Moved custom theme user profiles to `themes.json`, keeping them independent of core configuration.
+- **Compact Theme Dropdown** — Refactored the theme picker styling to match the compact dimensions, padding, and layout of the language dropdown.
+- **Unified Bun Workflows** — Completely removed `package-lock.json` and migrated all local and CI/CD pipelines (GitHub Actions) to build with Bun, improving CI build speeds by ~30 seconds.
+
+### Removed
+- **Unused Theme Presets** — Sunset and Forest built-in themes have been removed to keep the out-of-the-box appearance clean and focused.
+
 ## [0.16.0] - 2026-05-19
 
 ### Added

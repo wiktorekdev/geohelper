@@ -3,7 +3,7 @@ import type { Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
 import { ipc } from "./ipc";
-import { loadString, saveString, STORAGE_KEYS } from "./settings-persistence";
+import { getSettingsStore, saveSetting } from "./settings-persistence";
 import { checkForUpdate, type UpdateInfo } from "./update-check";
 import { errorMessage } from "./errors";
 import { t } from "@/lib/i18n";
@@ -24,12 +24,13 @@ type UpdateStore = {
   dismissUpdate: () => void;
   installUpdate: () => Promise<void>;
   detectInstallKind: () => Promise<void>;
+  hydrate: () => Promise<void>;
 };
 
 export const useUpdateStore = create<UpdateStore>((set, get) => ({
   updateInfo: null,
   updateChecking: false,
-  updateDismissed: loadString(STORAGE_KEYS.updateDismissed),
+  updateDismissed: "",
   updateError: null,
   updateHandle: null,
   installState: "idle",
@@ -61,7 +62,7 @@ export const useUpdateStore = create<UpdateStore>((set, get) => ({
   },
   dismissUpdate: () => {
     const latest = get().updateInfo?.latest ?? "";
-    saveString(STORAGE_KEYS.updateDismissed, latest);
+    void saveSetting("updateDismissed", latest);
     set({ updateDismissed: latest });
   },
   installUpdate: async () => {
@@ -106,6 +107,17 @@ export const useUpdateStore = create<UpdateStore>((set, get) => ({
       set({ isInstalled: installed });
     } catch {
       set({ isInstalled: null });
+    }
+  },
+  hydrate: async () => {
+    try {
+      const store = await getSettingsStore();
+      const stored = await store.get<string>("updateDismissed");
+      if (stored) {
+        set({ updateDismissed: stored });
+      }
+    } catch {
+      /* ignore */
     }
   },
 }));

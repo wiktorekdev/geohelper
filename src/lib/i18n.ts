@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import en from "@/locales/en.json";
 import pl from "@/locales/pl.json";
+import { getSettingsStore, saveSetting } from "./settings-persistence";
 
 export type Locale = "en" | "pl";
 
@@ -19,32 +20,29 @@ export const SUPPORTED_LOCALES: LocaleMeta[] = [
 
 const SUPPORTED_IDS = new Set<Locale>(SUPPORTED_LOCALES.map((l) => l.id));
 const DEFAULT_LOCALE: Locale = "en";
-const STORAGE_KEY = "geohelper.locale";
-
-function loadLocale(): Locale {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw && SUPPORTED_IDS.has(raw as Locale)) return raw as Locale;
-  } catch {
-    /* ignore */
-  }
-  return DEFAULT_LOCALE;
-}
 
 type I18nStore = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  hydrate: () => Promise<void>;
 };
 
 export const useI18n = create<I18nStore>((set) => ({
-  locale: loadLocale(),
+  locale: DEFAULT_LOCALE,
   setLocale: (locale) => {
+    void saveSetting("locale", locale);
+    set({ locale });
+  },
+  hydrate: async () => {
     try {
-      localStorage.setItem(STORAGE_KEY, locale);
+      const store = await getSettingsStore();
+      const stored = await store.get<Locale>("locale");
+      if (stored && SUPPORTED_IDS.has(stored)) {
+        set({ locale: stored });
+      }
     } catch {
       /* ignore */
     }
-    set({ locale });
   },
 }));
 

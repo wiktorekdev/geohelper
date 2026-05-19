@@ -41,7 +41,7 @@ export function ThemeSelector() {
           aria-controls="theme-listbox"
           className={cn(
             "inline-flex h-9 w-full items-center justify-between gap-2 rounded-md",
-            "border border-input bg-background px-2.5 text-xs",
+            "border border-input bg-background px-3 text-xs",
             "transition-colors hover:bg-accent/40",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           )}
@@ -79,17 +79,15 @@ export function ThemeSelector() {
                   className="gap-2"
                 >
                   <ThemeSwatch theme={th} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-xs">{th.name}</div>
-                    {th.description && (
-                      <div className="truncate text-[10px] text-muted-foreground">
-                        {th.description}
-                      </div>
-                    )}
-                  </div>
+                  <span className="truncate text-xs min-w-0 flex-1">{th.name}</span>
+                  {!th.builtin && (
+                    <span className="rounded-sm bg-accent px-1 text-[8px] uppercase tracking-wide text-muted-foreground shrink-0">
+                      {t("settings.appearance.themeCustom")}
+                    </span>
+                  )}
                   <Check
                     className={cn(
-                      "size-3.5 shrink-0",
+                      "ml-auto size-3.5 shrink-0",
                       activeId === th.id ? "opacity-100 text-brand" : "opacity-0",
                     )}
                   />
@@ -111,7 +109,7 @@ function ThemeSwatch({ theme }: { theme: Theme }) {
     <span
       aria-hidden
       className={cn(
-        "inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md",
+        "inline-flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-md",
         "border border-sidebar-border shadow-inner",
       )}
       style={{ background: bg, color: fg }}
@@ -127,7 +125,7 @@ function ThemeIcon({ theme }: { theme: Theme }) {
       <img
         src={theme.iconUrl}
         alt=""
-        className="size-4 object-contain"
+        className="size-3 object-contain"
         draggable={false}
       />
     );
@@ -135,12 +133,12 @@ function ThemeIcon({ theme }: { theme: Theme }) {
 
   if (theme.icon) {
     const Icon = (LucideIcons as unknown as Record<string, LucideIcon | undefined>)[theme.icon];
-    if (Icon) return <Icon className="size-3.5" strokeWidth={2} />;
+    if (Icon) return <Icon className="size-3" strokeWidth={2} />;
   }
 
   if (theme.emoji) {
-    return <span className="text-[12px] leading-none">{theme.emoji}</span>;
+    return <span className="text-[10px] leading-none">{theme.emoji}</span>;
   }
 
-  return <Palette className="size-3.5 opacity-70" strokeWidth={2} />;
+  return <Palette className="size-3 opacity-70" strokeWidth={2} />;
 }

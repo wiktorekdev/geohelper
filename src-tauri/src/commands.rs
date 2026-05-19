@@ -90,3 +90,47 @@ fn install_kind() -> InstallKind {
 fn install_kind() -> InstallKind {
     InstallKind::Portable
 }
+
+#[tauri::command]
+pub fn get_store_path(filename: Option<String>) -> String {
+    let name = filename.unwrap_or_else(|| "settings.json".to_string());
+    if crate::util::is_portable() {
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                // Ensure data directory exists
+                let data_dir = exe_dir.join("data");
+                if !data_dir.exists() {
+                    let _ = std::fs::create_dir_all(&data_dir);
+                }
+                return data_dir.join(&name).to_string_lossy().to_string();
+            }
+        }
+    }
+    name
+}
+
+#[tauri::command]
+pub fn handle_corrupted_store(app: AppHandle, path: String) {
+    use tauri::Manager;
+    let target_path = if std::path::Path::new(&path).is_absolute() {
+        std::path::PathBuf::from(&path)
+    } else {
+        if let Ok(config_dir) = app.path().app_config_dir() {
+            config_dir.join(&path)
+        } else {
+            return;
+        }
+    };
+
+    if target_path.exists() {
+        let corrupted_path = target_path.with_extension(format!(
+            "json.corrupted-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0)
+        ));
+        let _ = std::fs::rename(&target_path, &corrupted_path);
+    }
+}
+

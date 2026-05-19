@@ -1,28 +1,16 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "GeoHelper",
-  "version": "0.16.0",
-  "identifier": "dev.geohelper.desktop",
+  "version": "0.17.0",
+  "identifier": "geohelper",
   "build": {
-    "beforeDevCommand": "npm run vite:dev",
+    "beforeDevCommand": "bun run vite:dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run vite:build",
+    "beforeBuildCommand": "bun run vite:build",
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [
-      {
-        "title": "GeoHelper",
-        "width": 1280,
-        "height": 820,
-        "minWidth": 960,
-        "minHeight": 640,
-        "resizable": true,
-        "fullscreen": false,
-        "theme": "Dark",
-        "shadow": true
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": "default-src 'self'; script-src 'self' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' asset: data: blob: https://cdn.jsdelivr.net https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://maps.googleapis.com https://maps.gstatic.com; connect-src ipc: http://ipc.localhost https://api.github.com https://nominatim.openstreetmap.org https://maps.googleapis.com https://restcountries.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org; font-src 'self' data:"
     }

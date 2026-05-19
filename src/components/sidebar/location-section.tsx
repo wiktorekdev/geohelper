@@ -1,5 +1,6 @@
 import ReactCountryFlag from "react-country-flag";
 
+import { Card } from "@/components/ui/card";
 import { deriveLocationDisplay } from "@/lib/location-display";
 import { useStore } from "@/lib/store";
 import { SelectableText } from "@/components/display/selectable-text";
@@ -17,29 +18,29 @@ export function LocationSection() {
   switch (display.kind) {
     case "error":
       return (
-        <div className="p-5 text-sm text-muted-foreground">
+        <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">
           {t("location.couldNotShow")}
-        </div>
+        </Card>
       );
     case "sparse":
       return (
-        <div className="space-y-2 p-5">
+        <Card className="mx-4 my-2 p-4 space-y-2">
           <div className="text-sm font-medium leading-snug">{display.primary}</div>
           {display.continent && (
             <div className="text-[11px] text-muted-foreground">{display.continent}</div>
           )}
           <div className="text-[11px] text-muted-foreground">{t("location.settlementNotInData")}</div>
-        </div>
+        </Card>
       );
     case "loading":
       return (
-        <div className="space-y-1 p-5 text-sm text-muted-foreground">
+        <Card className="mx-4 my-2 p-4 space-y-1 text-sm text-muted-foreground">
           {display.rough ? <div className="text-[13px] text-foreground/90">{display.rough}</div> : null}
           <div className="text-[11px]">{t("location.fetchingAddress")}</div>
-        </div>
+        </Card>
       );
     case "empty":
-      return <div className="p-5 text-sm text-muted-foreground">{t("location.empty")}</div>;
+      return <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>;
     case "settlement":
       return <SettlementView display={display} />;
   }
@@ -58,7 +59,7 @@ function SettlementView({
   const flagRadius = Math.round(fontSizePx * 0.28);
 
   return (
-    <div className="space-y-3 p-5">
+    <Card className="mx-4 my-2 p-4 space-y-3">
       <div className="flex items-center gap-3">
         {display.countryCode && (
           <SelectableText id="country.flag">
@@ -106,6 +107,6 @@ function SettlementView({
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

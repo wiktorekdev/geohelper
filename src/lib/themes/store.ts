@@ -1,32 +1,46 @@
 import { create } from "zustand";
 import { Store as TauriStore } from "@tauri-apps/plugin-store";
+import { invoke } from "@tauri-apps/api/core";
 
+import { getSettingsStore } from "../settings-persistence";
 import { BUILTIN_THEMES } from "./builtin";
 import type { Theme } from "./types";
 
-/**
- * Theme persistence layout (`%APPDATA%/dev.geohelper.desktop/themes.json`):
- *
- *   {
- *     "active": "femboy",
- *     "userThemes": [{...Theme}],
- *     "hiddenBuiltins": ["mocha"]
- *   }
- *
- * Built-in themes always come from `BUILTIN_THEMES` in code so updates ship
- * new presets automatically without overwriting anything on disk.
- */
-
-const STORE_FILE = "themes.json";
-const KEY_ACTIVE = "active";
+const KEY_ACTIVE = "activeThemeId";
 const KEY_USER = "userThemes";
 const KEY_HIDDEN = "hiddenBuiltins";
-const LEGACY_THEME_KEY = "geohelper.theme";
 
-let storePromise: Promise<TauriStore> | null = null;
-function getStore() {
-  storePromise ??= TauriStore.load(STORE_FILE, { defaults: {}, autoSave: true });
-  return storePromise;
+let themesStorePromise: Promise<TauriStore> | null = null;
+function getThemesStore(): Promise<TauriStore> {
+  if (!themesStorePromise) {
+    themesStorePromise = (async () => {
+      let storePath = "themes.json";
+      try {
+        storePath = await invoke<string>("get_store_path", { filename: "themes.json" });
+      } catch {
+        // ignore and use relative default
+      }
+
+      try {
+        return await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+      } catch (e) {
+        console.error(`Failed to load store at ${storePath}, attempting recovery:`, e);
+        try {
+          await invoke("handle_corrupted_store", { path: storePath });
+          return await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+        } catch (innerError) {
+          console.error("Critical: themes recovery failed, falling back to relative store:", innerError);
+          try {
+            await invoke("handle_corrupted_store", { path: "themes.json" });
+            return await TauriStore.load("themes.json", { defaults: {}, autoSave: true });
+          } catch {
+            return await TauriStore.load("themes.json", { defaults: {}, autoSave: true });
+          }
+        }
+      }
+    })();
+  }
+  return themesStorePromise;
 }
 
 type ThemeStoreState = {
@@ -44,18 +58,8 @@ type ThemeStoreState = {
   setBuiltinHidden: (id: string, hidden: boolean) => void;
 };
 
-function readLegacyMode(): "dark" | "light" | null {
-  try {
-    const raw = localStorage.getItem(LEGACY_THEME_KEY);
-    if (raw === "dark" || raw === "light") return raw;
-  } catch {
-    /* ignore */
-  }
-  return null;
-}
-
 export const useThemeStore = create<ThemeStoreState>((set, get) => ({
-  activeId: readLegacyMode() ?? "dark",
+  activeId: "dark",
   userThemes: [],
   hiddenBuiltins: [],
   hydrated: false,
@@ -63,14 +67,15 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
   hydrate: async () => {
     if (get().hydrated) return;
     try {
-      const store = await getStore();
-      const [active, user, hidden] = await Promise.all([
-        store.get<string>(KEY_ACTIVE),
-        store.get<Theme[]>(KEY_USER),
-        store.get<string[]>(KEY_HIDDEN),
-      ]);
+      const settingsStore = await getSettingsStore();
+      const themesStore = await getThemesStore();
+
+      const active = await settingsStore.get<string>(KEY_ACTIVE);
+      const user = await themesStore.get<Theme[]>(KEY_USER);
+      const hidden = await themesStore.get<string[]>(KEY_HIDDEN);
+
       set({
-        activeId: typeof active === "string" ? active : get().activeId,
+        activeId: typeof active === "string" ? active : "dark",
         userThemes: Array.isArray(user) ? user.filter(isTheme) : [],
         hiddenBuiltins: Array.isArray(hidden) ? hidden.filter((s) => typeof s === "string") : [],
         hydrated: true,
@@ -82,7 +87,7 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
 
   setActive: (id) => {
     set({ activeId: id });
-    void persist({ [KEY_ACTIVE]: id });
+    void persistSetting(KEY_ACTIVE, id);
   },
 
   setBuiltinHidden: (id, hidden) => {
@@ -91,22 +96,35 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
     else set1.delete(id);
     const hiddenBuiltins = Array.from(set1);
     set({ hiddenBuiltins });
-    void persist({ [KEY_HIDDEN]: hiddenBuiltins });
+    void persistThemeSetting(KEY_HIDDEN, hiddenBuiltins);
   },
 }));
 
-async function persist(values: Record<string, unknown>) {
+async function persistSetting(key: string, value: unknown) {
   try {
-    const store = await getStore();
-    for (const [key, value] of Object.entries(values)) {
-      if (value === undefined || (Array.isArray(value) && value.length === 0)) {
-        await store.delete(key);
-      } else {
-        await store.set(key, value);
-      }
+    const store = await getSettingsStore();
+    if (value === undefined) {
+      await store.delete(key);
+    } else {
+      await store.set(key, value);
     }
+    await store.save();
   } catch {
-    /* persistence failures shouldn't break the UI */
+    /* ignore */
+  }
+}
+
+async function persistThemeSetting(key: string, value: unknown) {
+  try {
+    const store = await getThemesStore();
+    if (value === undefined || (Array.isArray(value) && value.length === 0)) {
+      await store.delete(key);
+    } else {
+      await store.set(key, value);
+    }
+    await store.save();
+  } catch {
+    /* ignore */
   }
 }
 

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { t } from "@/lib/i18n";
+import { getSettingsStore } from "./settings-persistence";
 
 export const SIDEBAR_MIN_WIDTH = 320;
 export const SIDEBAR_MAX_WIDTH = 700;
@@ -44,7 +45,6 @@ const DEFAULT_CONFIG: DisplayConfig = {
   sidebarWidth: SIDEBAR_DEFAULT_WIDTH,
 };
 
-const STORAGE_KEY = "geohelper.display";
 const KNOWN_WIDGETS = new Set<WidgetId>(ALL_WIDGETS);
 const FONT_SIZES = new Set<FontSize>(["sm", "md", "lg"]);
 
@@ -56,18 +56,6 @@ function cloneDefault(): DisplayConfig {
     mapVisible: DEFAULT_CONFIG.mapVisible,
     sidebarWidth: DEFAULT_CONFIG.sidebarWidth,
   };
-}
-
-function safeJsonParse(value: string): unknown {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
-
-function isWidgetId(value: unknown): value is WidgetId {
-  return typeof value === "string" && KNOWN_WIDGETS.has(value as WidgetId);
 }
 
 function normalizeTextStyle(raw: unknown): TextStyle | null {
@@ -119,33 +107,27 @@ function normalizeDisplayConfig(raw: unknown): DisplayConfig {
   };
 }
 
+function isWidgetId(value: unknown): value is WidgetId {
+  return typeof value === "string" && KNOWN_WIDGETS.has(value as WidgetId);
+}
+
 function clampSidebar(value: number): number {
   return Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, Math.round(value)));
 }
 
-function load(): DisplayConfig {
+async function persistDisplayConfig(state: DisplayConfig) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? normalizeDisplayConfig(safeJsonParse(raw)) : cloneDefault();
-  } catch {
-    return cloneDefault();
-  }
-}
-
-function save(state: DisplayConfig): void {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        order: state.order,
-        textStyles: state.textStyles,
-        hiddenTexts: state.hiddenTexts,
-        mapVisible: state.mapVisible,
-        sidebarWidth: state.sidebarWidth,
-      }),
-    );
-  } catch {
-    return;
+    const store = await getSettingsStore();
+    await store.set("displayConfig", {
+      order: state.order,
+      textStyles: state.textStyles,
+      hiddenTexts: state.hiddenTexts,
+      mapVisible: state.mapVisible,
+      sidebarWidth: state.sidebarWidth,
+    });
+    await store.save();
+  } catch (e) {
+    console.error("Failed to save display config:", e);
   }
 }
 
@@ -154,6 +136,7 @@ type DisplayStore = DisplayConfig & {
   selection: string[];
   registeredIds: Record<string, true>;
 
+  hydrate: () => Promise<void>;
   toggleEditing: () => void;
   stopEditing: () => void;
   setOrder: (order: WidgetId[]) => void;
@@ -176,10 +159,22 @@ type DisplayStore = DisplayConfig & {
 };
 
 export const useDisplayStore = create<DisplayStore>((set, get) => ({
-  ...load(),
+  ...cloneDefault(),
   editing: false,
   selection: [],
   registeredIds: {},
+
+  hydrate: async () => {
+    try {
+      const store = await getSettingsStore();
+      const stored = await store.get<unknown>("displayConfig");
+      if (stored) {
+        set(normalizeDisplayConfig(stored));
+      }
+    } catch (e) {
+      console.error("Failed to hydrate display store:", e);
+    }
+  },
 
   registerText: (id) => {
     if (get().registeredIds[id]) return;
@@ -199,19 +194,18 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   stopEditing: () => set({ editing: false, selection: [] }),
 
   setOrder: (order) => {
-    const next = { ...get(), order };
     set({ order });
-    save(next);
+    void persistDisplayConfig(get());
   },
   setMapVisible: (mapVisible) => {
     set({ mapVisible });
-    save({ ...get(), mapVisible });
+    void persistDisplayConfig(get());
   },
   setSidebarWidth: (width) => {
     const sidebarWidth = clampSidebar(width);
     if (sidebarWidth === get().sidebarWidth) return;
     set({ sidebarWidth });
-    save({ ...get(), sidebarWidth });
+    void persistDisplayConfig(get());
   },
 
   setSelection: (ids) => set({ selection: dedupe(ids) }),
@@ -242,7 +236,7 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
       nextStyles[id] = { ...current, ...patch };
     }
     set({ textStyles: nextStyles });
-    save({ ...get(), textStyles: nextStyles });
+    void persistDisplayConfig(get());
   },
   setSelectionHidden: (hidden) => {
     const { selection, hiddenTexts } = get();
@@ -253,7 +247,7 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
       else delete next[id];
     }
     set({ hiddenTexts: next });
-    save({ ...get(), hiddenTexts: next });
+    void persistDisplayConfig(get());
   },
   resetSelection: () => {
     const { selection, textStyles } = get();
@@ -261,7 +255,7 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     const nextStyles = { ...textStyles };
     for (const id of selection) delete nextStyles[id];
     set({ textStyles: nextStyles });
-    save({ ...get(), textStyles: nextStyles });
+    void persistDisplayConfig(get());
   },
   resetWidget: (id) => {
     const prefix = `${id}.`;
@@ -278,12 +272,12 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
       hiddenTexts: nextHidden,
       selection: get().selection.filter((s) => !s.startsWith(prefix)),
     });
-    save({ ...get(), textStyles: nextStyles, hiddenTexts: nextHidden });
+    void persistDisplayConfig(get());
   },
   resetAll: () => {
     const fresh = cloneDefault();
     set({ ...fresh, selection: [] });
-    save(fresh);
+    void persistDisplayConfig(fresh);
   },
 }));
 

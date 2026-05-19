@@ -1,6 +1,7 @@
 import { useStore } from "@/lib/store";
 import { localTimeFromOffset } from "@/lib/country-info";
 import { InfoRow } from "./info-row";
+import { Card } from "@/components/ui/card";
 import { t } from "@/lib/i18n";
 
 export function DetailsSection() {
@@ -20,7 +21,7 @@ export function DetailsSection() {
     : undefined;
 
   return (
-    <div className="px-5 py-3 space-y-1 border-t border-sidebar-border">
+    <Card className="mx-4 my-2 p-3.5 space-y-1.5">
       {details.languages && details.languages.length > 0 && (
         <InfoRow
           id="details.language"
@@ -36,6 +37,6 @@ export function DetailsSection() {
       )}
       {localTime && <InfoRow id="details.localTime" label={t("location.localTime")} value={localTime} />}
       {details.capital && <InfoRow id="details.capital" label={t("location.capital")} value={details.capital} />}
-    </div>
+    </Card>
   );
 }

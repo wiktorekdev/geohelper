@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 
 import { useDisplayStore } from "@/lib/display-store";
+import { getSettingsStore, saveSetting } from "@/lib/settings-persistence";
 
 const MIN_WITH_MAP_W = 960;
 const MIN_WITH_MAP_H = 640;
-const MIN_MAP_HIDDEN_H = 400;
+const MIN_MAP_HIDDEN_H = 550;
 
 /**
  * Keep native resize constraints in sync with map visibility. The sidebar is the stable
@@ -18,6 +19,36 @@ export function useMapWindowLayout() {
   const firstRun = useRef(true);
   const resizeSeqRef = useRef(0);
 
+  // Track and save the custom window width resized by the user while the map is visible
+  useEffect(() => {
+    if (!mapVisible) return;
+
+    let timeoutId = 0;
+    const handleResize = () => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(async () => {
+        try {
+          const win = getCurrentWindow();
+          if ((await win.isFullscreen()) || (await win.isMaximized())) return;
+          const inner = await win.innerSize();
+          const scale = await win.scaleFactor();
+          const wLog = inner.width / scale;
+          if (wLog >= MIN_WITH_MAP_W) {
+            void saveSetting("lastWindowWidth", Math.round(wLog));
+          }
+        } catch {
+          /* not running in Tauri webview */
+        }
+      }, 150);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.clearTimeout(timeoutId);
+    };
+  }, [mapVisible]);
+
   useEffect(() => {
     const seq = ++resizeSeqRef.current;
     const isStale = () => seq !== resizeSeqRef.current;
@@ -28,7 +59,6 @@ export function useMapWindowLayout() {
     }
 
     let cancelled = false;
-    let timeout = 0;
 
     void (async () => {
       try {
@@ -49,12 +79,22 @@ export function useMapWindowLayout() {
         } else {
           await win.setMinSize(new LogicalSize(MIN_WITH_MAP_W, MIN_WITH_MAP_H));
           if (cancelled || isStale()) return;
+
+          // Retrieve last stored window width or default to MIN_WITH_MAP_W
+          const store = await getSettingsStore();
+          const storedWidth = await store.get<number>("lastWindowWidth");
+          if (cancelled || isStale()) return;
+
+          const targetWidth = storedWidth 
+            ? Math.max(MIN_WITH_MAP_W, storedWidth) 
+            : MIN_WITH_MAP_W;
+
           // Resize immediately to allow the CSS/Motion transition to fill the space.
-          const needsResize = wLog < MIN_WITH_MAP_W || hLog < MIN_WITH_MAP_H;
+          const needsResize = wLog < targetWidth || hLog < MIN_WITH_MAP_H;
           if (needsResize) {
             await win.setSize(
               new LogicalSize(
-                Math.max(MIN_WITH_MAP_W, wLog),
+                Math.max(targetWidth, wLog),
                 Math.max(MIN_WITH_MAP_H, hLog),
               ),
             );
@@ -67,7 +107,6 @@ export function useMapWindowLayout() {
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeout);
     };
   }, [mapVisible, sidebarWidth]);
 }

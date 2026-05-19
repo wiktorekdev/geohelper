@@ -77,3 +77,12 @@ impl<K: Eq + Hash + Clone, V: Clone> LimitedMap<K, V> {
         }
     }
 }
+
+pub fn is_portable() -> bool {
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            return exe_dir.join("portable").exists() || exe_dir.join("data").is_dir();
+        }
+    }
+    false
+}
