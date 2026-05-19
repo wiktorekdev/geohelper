@@ -46,12 +46,7 @@ export const useI18n = create<I18nStore>((set) => ({
   },
 }));
 
-/**
- * Translate a key. Falls back to the English bundle, then to the key itself.
- * Variables: t("hello.user", { name: "Alice" }) replaces {name}.
- */
-export function t(key: string, vars?: Record<string, string | number>): string {
-  const locale = useI18n.getState().locale;
+function translate(locale: Locale, key: string, vars?: Record<string, string | number>): string {
   const value = BUNDLES[locale]?.[key] ?? BUNDLES.en?.[key] ?? key;
   if (!vars) return value;
   return value.replace(/\{(\w+)\}/g, (_, name) =>
@@ -59,14 +54,19 @@ export function t(key: string, vars?: Record<string, string | number>): string {
   );
 }
 
+/**
+ * Translate a key. Falls back to the English bundle, then to the key itself.
+ * Variables: t("hello.user", { name: "Alice" }) replaces {name}.
+ */
+export function t(key: string, vars?: Record<string, string | number>): string {
+  const locale = useI18n.getState().locale;
+  return translate(locale, key, vars);
+}
+
 /** Hook variant — re-renders when the user switches locale. */
 export function useT() {
   const locale = useI18n((s) => s.locale);
   return (key: string, vars?: Record<string, string | number>) => {
-    const value = BUNDLES[locale]?.[key] ?? BUNDLES.en?.[key] ?? key;
-    if (!vars) return value;
-    return value.replace(/\{(\w+)\}/g, (_, name) =>
-      name in vars ? String(vars[name]) : `{${name}}`,
-    );
+    return translate(locale, key, vars);
   };
 }
