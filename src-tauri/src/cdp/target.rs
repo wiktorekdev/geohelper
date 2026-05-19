@@ -199,9 +199,7 @@ fn detect_launch_options() -> LaunchOptions {
     use sysinfo::{ProcessRefreshKind, RefreshKind, System, UpdateKind};
 
     let mut sys = System::new_with_specifics(
-        RefreshKind::new().with_processes(
-            ProcessRefreshKind::new().with_cmd(UpdateKind::Always),
-        ),
+        RefreshKind::new().with_processes(ProcessRefreshKind::new().with_cmd(UpdateKind::Always)),
     );
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
 
