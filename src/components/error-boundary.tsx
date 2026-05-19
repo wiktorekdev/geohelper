@@ -2,6 +2,7 @@ import { Component, type ReactNode } from "react";
 import { RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
+import { t } from "@/lib/i18n";
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };
@@ -23,10 +24,9 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background p-8">
         <div className="max-w-md space-y-4 text-center">
-          <h1 className="text-lg font-semibold">Something went wrong</h1>
+          <h1 className="text-lg font-semibold">{t("error.title")}</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            GeoHelper hit an unexpected error. Reloading usually fixes it. If it keeps happening,
-            resetting the layout settings often helps.
+            {t("error.message")}
           </p>
           <pre className="max-h-32 overflow-auto rounded-md border border-sidebar-border bg-sidebar p-3 text-left text-[11px] text-muted-foreground font-mono">
             {this.state.error.message}
@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="flex items-center justify-center gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
               <RotateCw className="size-3.5 mr-1.5" />
-              Reload
+              {t("error.reload")}
             </Button>
             <Button
               size="sm"
@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 window.location.reload();
               }}
             >
-              Reset layout & reload
+              {t("error.resetLayout")}
             </Button>
           </div>
         </div>

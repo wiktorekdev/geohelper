@@ -1,9 +1,13 @@
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
+
+use once_cell::sync::Lazy;
 use serde::Deserialize;
 use thiserror::Error;
-use tokio::time::Duration;
 
 const CDP_URL: &str = "http://localhost:9222/json";
 const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222";
+const LAUNCH_PROBE_TTL: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Error)]
 pub enum TargetError {
@@ -143,7 +147,7 @@ fn validate_ws_url(raw: &str) -> Result<String, TargetError> {
 }
 
 async fn launch_diagnostic() -> String {
-    match detect_launch_options().await {
+    match cached_launch_options().await {
         LaunchOptions::DetectedWithPort => {
             "CDP port is not reachable, but GeoGuessr has the 9222 launch flag. Restart GeoGuessr or check whether another process owns the port.".into()
         }
@@ -162,6 +166,7 @@ async fn launch_diagnostic() -> String {
     }
 }
 
+#[derive(Clone)]
 enum LaunchOptions {
     DetectedWithPort,
     DetectedWithoutPort,
@@ -170,32 +175,53 @@ enum LaunchOptions {
     Unknown,
 }
 
-#[cfg(target_os = "windows")]
-async fn detect_launch_options() -> LaunchOptions {
-    let output = tokio::time::timeout(
-        Duration::from_secs(2),
-        tokio::process::Command::new("powershell")
-            .args([
-                "-NoProfile",
-                "-Command",
-                "Get-CimInstance Win32_Process -Filter \"name='GeoGuessr.exe'\" | Select-Object -ExpandProperty CommandLine",
-            ])
-            .output(),
-    )
-    .await;
+static LAUNCH_PROBE_CACHE: Lazy<Mutex<Option<(Instant, LaunchOptions)>>> =
+    Lazy::new(|| Mutex::new(None));
 
-    let Ok(Ok(output)) = output else {
-        return LaunchOptions::Unknown;
-    };
-    if !output.status.success() {
-        return LaunchOptions::Unknown;
+async fn cached_launch_options() -> LaunchOptions {
+    if let Some((at, opts)) = LAUNCH_PROBE_CACHE.lock().ok().and_then(|g| g.clone()) {
+        if at.elapsed() < LAUNCH_PROBE_TTL {
+            return opts;
+        }
     }
 
-    let text = String::from_utf8_lossy(&output.stdout);
-    let command_lines: Vec<&str> = text
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .collect();
+    let opts = tokio::task::spawn_blocking(detect_launch_options)
+        .await
+        .unwrap_or(LaunchOptions::Unknown);
+
+    if let Ok(mut guard) = LAUNCH_PROBE_CACHE.lock() {
+        *guard = Some((Instant::now(), opts.clone()));
+    }
+    opts
+}
+
+fn detect_launch_options() -> LaunchOptions {
+    use sysinfo::{ProcessRefreshKind, RefreshKind, System, UpdateKind};
+
+    let mut sys = System::new_with_specifics(
+        RefreshKind::new().with_processes(
+            ProcessRefreshKind::new().with_cmd(UpdateKind::Always),
+        ),
+    );
+    sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+
+    let mut command_lines: Vec<String> = Vec::new();
+    for process in sys.processes().values() {
+        let name = process.name().to_string_lossy().to_lowercase();
+        if !name.starts_with("geoguessr") {
+            continue;
+        }
+        let cmd = process
+            .cmd()
+            .iter()
+            .map(|s| s.to_string_lossy().into_owned())
+            .collect::<Vec<_>>()
+            .join(" ");
+        if !cmd.trim().is_empty() {
+            command_lines.push(cmd);
+        }
+    }
+
     if command_lines.is_empty() {
         return LaunchOptions::NotRunning;
     }
@@ -213,11 +239,6 @@ async fn detect_launch_options() -> LaunchOptions {
     }
 
     LaunchOptions::DetectedWithoutPort
-}
-
-#[cfg(not(target_os = "windows"))]
-async fn detect_launch_options() -> LaunchOptions {
-    LaunchOptions::Unknown
 }
 
 fn remote_debugging_port(command_line: &str) -> Option<String> {

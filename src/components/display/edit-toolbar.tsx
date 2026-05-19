@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDisplayStore } from "@/lib/display-store";
 import { clearMockIfPresent } from "@/lib/mock-data";
+import { t } from "@/lib/i18n";
 
 export function EditToolbar() {
   const editing = useDisplayStore((s) => s.editing);
@@ -12,7 +13,6 @@ export function EditToolbar() {
   const resetAll = useDisplayStore((s) => s.resetAll);
   const mapVisible = useDisplayStore((s) => s.mapVisible);
   const setMapVisible = useDisplayStore((s) => s.setMapVisible);
-  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
 
   if (!editing) return null;
 
@@ -22,14 +22,11 @@ export function EditToolbar() {
   }
 
   return (
-    <div
-      className="pointer-events-none fixed inset-x-0 z-[2000] flex justify-center px-2 transition-[bottom,left] duration-300"
-      style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 12 : 64 }}
-    >
-      <div className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-[2000] flex justify-center px-2">
+      <div className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
         <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
           <Pencil className="size-3.5 text-brand" />
-          <span className="leading-tight">Editing layout</span>
+          <span className="leading-tight">{t("toolbar.editing")}</span>
         </div>
 
         <Tooltip>
@@ -41,11 +38,11 @@ export function EditToolbar() {
               onClick={() => setMapVisible(!mapVisible)}
             >
               {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
-              {mapVisible ? "Hide map" : "Show map"}
+              {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
-            {mapVisible ? "Hide the map to save tile requests" : "Bring the map back"}
+            {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
           </TooltipContent>
         </Tooltip>
 
@@ -57,14 +54,14 @@ export function EditToolbar() {
               className="h-7 gap-1.5 rounded-full px-2 text-xs"
               onClick={() => {
                 resetAll();
-                toast.success("Layout reset");
+                toast.success(t("toolbar.resetSuccess"));
               }}
             >
               <RotateCcw className="size-3.5" />
-              Reset
+              {t("toolbar.reset")}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top">Reset all sections</TooltipContent>
+          <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
         </Tooltip>
 
         <Button
@@ -73,7 +70,7 @@ export function EditToolbar() {
           onClick={finishEditing}
         >
           <Check className="size-3.5" />
-          Done
+          {t("toolbar.done")}
         </Button>
       </div>
     </div>

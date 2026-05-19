@@ -6,6 +6,7 @@ import { Group, InfoRow } from "./settings-primitives";
 import { VERSION } from "@/lib/links";
 import type { UpdateInfo } from "@/lib/update-check";
 import { useUpdateStore } from "@/lib/update-store";
+import { t } from "@/lib/i18n";
 
 type Props = {
   updateInfo: UpdateInfo | null;
@@ -33,12 +34,12 @@ export function AboutSection({
   const showInstallFlow = Boolean(updateInfo?.hasUpdate);
 
   return (
-    <Group icon={<Info className="size-3.5" />} title="About">
+    <Group icon={<Info className="size-3.5" />} title={t("settings.about.title")}>
       <div className="space-y-2">
-        <InfoRow label="Installed" value={`v${VERSION}`} />
+        <InfoRow label={t("settings.about.installed")} value={`v${VERSION}`} />
         {updateInfo?.latest && (
           <InfoRow
-            label="Latest"
+            label={t("settings.about.latest")}
             value={
               <span className="inline-flex items-center gap-1.5">
                 v{updateInfo.latest}
@@ -52,14 +53,14 @@ export function AboutSection({
             title={updateError}
             className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1.5 text-[11px] text-amber-300"
           >
-            Could not check for updates.
+            {t("settings.about.checkFailed")}
           </div>
         )}
 
         {showInstallFlow && installState === "downloading" && (
           <div className="space-y-1 rounded border border-sidebar-border bg-background/40 px-2 py-1.5">
             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-              <span>Downloading…</span>
+              <span>{t("settings.about.downloading")}</span>
               <span className="font-mono tabular-nums">
                 {pct !== null ? `${pct}%` : formatBytes(downloaded)}
               </span>
@@ -76,20 +77,20 @@ export function AboutSection({
         {showInstallFlow && installState === "installing" && (
           <div className="flex items-center gap-1.5 rounded border border-sidebar-border bg-background/40 px-2 py-1.5 text-[11px] text-muted-foreground">
             <Loader2 className="size-3 animate-spin" />
-            Installing, relaunching…
+            {t("settings.about.installing")}
           </div>
         )}
 
         {showInstallFlow && installState === "error" && updateInfo && (
           <div className="space-y-1.5 rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1.5 text-[10px] text-amber-300">
             <div>
-              {installError || "Update failed"}.{" "}
+              {installError || t("settings.about.updateFailed")}.{" "}
               <button
                 type="button"
                 onClick={() => void openUrl(updateInfo.url)}
                 className="underline underline-offset-2 hover:text-amber-200"
               >
-                Download manually
+                {t("settings.about.downloadManually")}
               </button>
             </div>
             <Button
@@ -99,7 +100,7 @@ export function AboutSection({
               onClick={() => void installUpdate()}
             >
               <RotateCw className="size-3" />
-              Try again
+              {t("settings.about.tryAgain")}
             </Button>
           </div>
         )}
@@ -117,18 +118,18 @@ export function AboutSection({
             ) : (
               <RotateCw className="size-3" />
             )}
-            Check for updates
+            {t("settings.about.checkUpdates")}
           </Button>
           {updateInfo?.hasUpdate && installState === "idle" && canAutoInstall && (
             <Button size="sm" className="h-7 shrink-0" onClick={() => void installUpdate()}>
               <Download className="size-3" />
-              Install & restart
+              {t("settings.about.installRestart")}
             </Button>
           )}
           {updateInfo?.hasUpdate && installState === "idle" && !canAutoInstall && (
             <Button size="sm" className="h-7 shrink-0" onClick={() => void openUrl(updateInfo.url)}>
               <ExternalLink className="size-3" />
-              Download v{updateInfo.latest}
+              {t("settings.about.downloadVersion", { version: updateInfo.latest })}
             </Button>
           )}
         </div>

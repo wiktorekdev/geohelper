@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { errorMessage } from "@/lib/errors";
 import { validateGoogleApiKey } from "@/lib/google-api-key";
+import { t } from "@/lib/i18n";
 
 export type KeyValidation =
   | { state: "idle"; message: string | null }
@@ -13,7 +14,7 @@ export function useGoogleApiKeyValidation(draft: string) {
   const [validation, setValidation] = useState<KeyValidation>(() =>
     draft.trim()
       ? { state: "idle", message: null }
-      : { state: "invalid", message: "Google Maps API key is required." },
+      : { state: "invalid", message: t("validation.required") },
   );
   const abortRef = useRef<AbortController | null>(null);
   const seqRef = useRef(0);
@@ -21,14 +22,14 @@ export function useGoogleApiKeyValidation(draft: string) {
   const validate = useCallback(async (key = draft.trim()) => {
     abortRef.current?.abort();
     if (!key) {
-      setValidation({ state: "invalid", message: "Google Maps API key is required." });
+      setValidation({ state: "invalid", message: t("validation.required") });
       return;
     }
 
     const seq = ++seqRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
-    setValidation({ state: "checking", message: "Checking Google API key..." });
+    setValidation({ state: "checking", message: t("validation.checking") });
 
     try {
       const result = await validateGoogleApiKey(key, controller.signal);
@@ -41,7 +42,7 @@ export function useGoogleApiKeyValidation(draft: string) {
       if (controller.signal.aborted || seq !== seqRef.current) return;
       setValidation({
         state: "invalid",
-        message: errorMessage(error, "Could not validate Google API key."),
+        message: errorMessage(error, t("validation.error")),
       });
     }
   }, [draft]);
@@ -51,11 +52,11 @@ export function useGoogleApiKeyValidation(draft: string) {
     abortRef.current?.abort();
 
     if (!key) {
-      setValidation({ state: "invalid", message: "Google Maps API key is required." });
+      setValidation({ state: "invalid", message: t("validation.required") });
       return;
     }
 
-    setValidation({ state: "idle", message: "Waiting to validate..." });
+    setValidation({ state: "idle", message: t("validation.waiting") });
     const timeout = window.setTimeout(() => {
       void validate(key);
     }, 700);

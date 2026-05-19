@@ -1,12 +1,22 @@
 import { useEffect } from "react";
-import { useStore } from "@/lib/store";
+
+import { applyTheme } from "@/lib/themes/apply";
+import { selectActiveTheme, useThemeStore } from "@/lib/themes/store";
 
 export function useTheme() {
-  const theme = useStore((s) => s.theme);
+  const hydrate = useThemeStore((s) => s.hydrate);
+  const theme = useThemeStore(selectActiveTheme);
+  // Re-apply when the user themes list or hidden set changes too — editing
+  // the active theme should reflect immediately.
+  const userThemes = useThemeStore((s) => s.userThemes);
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [theme]);
+    void hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    applyTheme(theme);
+    // userThemes is part of the dependency so live edits to the active user
+    // theme re-apply without a page reload.
+  }, [theme, userThemes]);
 }

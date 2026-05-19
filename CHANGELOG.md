@@ -2,6 +2,28 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.16.0] - 2026-05-19
+
+### Added
+- **Localization** — English and Polish, with a language picker under Settings → Appearance.
+- **Themes** — **Sunset** and **Forest** presets, plus a searchable theme picker. Your previous dark/light choice migrates automatically.
+- **Map toggle** — show or hide the map from the sidebar header at any time (edit-toolbar control remains as well).
+
+### Changed
+- **Map hidden layout** — the sidebar fills the window instead of leaving empty space beside it; the width grip only appears while the map is visible.
+- **Appearance** — Moon/Sun theme buttons replaced by the searchable picker above.
+- **Color picker** — rebuilt for the layout editor: hex/RGB input, paste, and eyedropper where supported.
+- **Connection status** — the last error stays visible while CDP retries; launch-flag detection reads the GeoGuessr process directly (no PowerShell) and distinguishes “not running” from “running without port 9222”.
+- **Update banner** — refreshed layout and translated strings.
+
+### Removed
+- **Providers** — BigDataCloud geocoding; CartoDB (Dark, Light, Voyager), Esri Satellite, and OpenTopoMap map layers. OpenStreetMap and Google Maps remain.
+
+### Fixed
+- Color picker no longer loops or crashes on open; reset returns white instead of black.
+- Edit toolbar placement when the map is shown or hidden.
+- A few small connection-status and window-resize tweaks.
+
 ## [0.15.0] - 2026-05-18
 
 ### Added

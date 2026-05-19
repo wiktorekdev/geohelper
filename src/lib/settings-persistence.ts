@@ -1,18 +1,16 @@
 import { GEOCODE_PROVIDERS, type GeocodeProviderId } from "./geocode-providers";
 import { MAP_PROVIDERS, type MapProviderId } from "./map-providers";
-import type { CopyFormat, Theme } from "./store";
+import type { CopyFormat } from "./store";
 
 export const STORAGE_KEYS = {
   provider: "geohelper.provider",
   geocodeProvider: "geohelper.geocodeProvider",
   copyFormat: "geohelper.copyFormat",
-  theme: "geohelper.theme",
   alwaysOnTop: "geohelper.alwaysOnTop",
   updateDismissed: "geohelper.updateDismissed",
 };
 
 const COPY_FORMATS: CopyFormat[] = ["lat,lng", "lat, lng", "lng,lat"];
-const THEMES: Theme[] = ["dark", "light"];
 
 function read(key: string): string | null {
   try {
@@ -53,10 +51,6 @@ export function loadGeocodeProvider(): GeocodeProviderId {
 
 export function loadCopyFormat(): CopyFormat {
   return oneOf(read(STORAGE_KEYS.copyFormat), COPY_FORMATS, "lat, lng");
-}
-
-export function loadTheme(): Theme {
-  return oneOf(read(STORAGE_KEYS.theme), THEMES, "dark");
 }
 
 export function loadString(key: string, fallback = ""): string {

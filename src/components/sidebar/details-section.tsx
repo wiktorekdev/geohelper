@@ -1,6 +1,7 @@
 import { useStore } from "@/lib/store";
 import { localTimeFromOffset } from "@/lib/country-info";
 import { InfoRow } from "./info-row";
+import { t } from "@/lib/i18n";
 
 export function DetailsSection() {
   const details = useStore((s) => s.countryDetails);
@@ -23,18 +24,18 @@ export function DetailsSection() {
       {details.languages && details.languages.length > 0 && (
         <InfoRow
           id="details.language"
-          label="Language"
+          label={t("location.language")}
           value={details.languages.slice(0, 2).join(", ")}
         />
       )}
       {details.currency && (
-        <InfoRow id="details.currency" label="Currency" value={details.currency} />
+        <InfoRow id="details.currency" label={t("location.currency")} value={details.currency} />
       )}
       {details.callingCode && (
-        <InfoRow id="details.phone" label="Phone" value={details.callingCode} />
+        <InfoRow id="details.phone" label={t("location.phone")} value={details.callingCode} />
       )}
-      {localTime && <InfoRow id="details.localTime" label="Local time" value={localTime} />}
-      {details.capital && <InfoRow id="details.capital" label="Capital" value={details.capital} />}
+      {localTime && <InfoRow id="details.localTime" label={t("location.localTime")} value={localTime} />}
+      {details.capital && <InfoRow id="details.capital" label={t("location.capital")} value={details.capital} />}
     </div>
   );
 }

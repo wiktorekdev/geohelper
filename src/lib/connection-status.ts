@@ -1,4 +1,5 @@
 import type { ConnState } from "@/types";
+import { t } from "@/lib/i18n";
 
 export type ConnectionDetails = {
   title: string;
@@ -6,55 +7,64 @@ export type ConnectionDetails = {
   showFlags: boolean;
 };
 
-export function connectionDetails(conn: ConnState): ConnectionDetails {
-  if (conn.kind === "searching" || conn.kind === "idle") {
-    return {
-      title: "Looking for GeoGuessr",
-      body: "Start GeoGuessr on Steam and open a round.",
-      showFlags: false,
-    };
+function detailsForReason(reason: string): ConnectionDetails {
+  // Order matters: NotRunning's diagnostic also contains "CDP port is not reachable",
+  // so check the not-running marker first and only show the launch-flags hint when
+  // the process is actually detected.
+  if (
+    reason.includes("GeoGuessr.exe is not running") ||
+    reason.includes("GeoGuessr is not active")
+  ) {
+    return { title: t("connection.notRunning"), body: "", showFlags: false };
   }
 
-  if (conn.kind !== "disconnected") {
+  if (reason.includes("CDP port is not reachable")) {
     return {
-      title: "Not connected",
-      body: "Start GeoGuessr on Steam and open a round.",
-      showFlags: false,
-    };
-  }
-
-  if (conn.reason.includes("CDP port is not reachable")) {
-    return {
-      title: "Launch flags missing",
-      body: "GeoGuessr is not exposing localhost:9222 yet.",
+      title: t("connection.noPort"),
+      body: t("connection.body.notExposingPort"),
       showFlags: true,
     };
   }
 
-  if (conn.reason.includes("GeoGuessr is not active")) {
+  return { title: t("connection.lost"), body: reason, showFlags: false };
+}
+
+export function connectionDetails(
+  conn: ConnState,
+  stickyReason?: string | null,
+): ConnectionDetails {
+  // While searching/idle, prefer the last known disconnect reason so the UI
+  // doesn't flap between "Connecting..." and the real cause every retry loop.
+  if (conn.kind === "searching" || conn.kind === "idle") {
+    if (stickyReason) return detailsForReason(stickyReason);
     return {
-      title: "GeoGuessr is not active",
-      body: "Start GeoGuessr on Steam or open an active game round.",
+      title: t("connection.connecting"),
+      body: t("connection.body.startGame"),
       showFlags: false,
     };
   }
 
+  if (conn.kind === "disconnected") return detailsForReason(conn.reason);
+
   return {
-    title: "Connection lost",
-    body: conn.reason,
+    title: t("connection.unknown"),
+    body: t("connection.body.startGame"),
     showFlags: false,
   };
 }
 
-export function connectionTone(conn: ConnState): { tone: "ok" | "warn" | "bad"; title: string } {
+export function connectionTone(
+  conn: ConnState,
+  stickyReason?: string | null,
+): { tone: "ok" | "warn" | "bad"; title: string } {
   switch (conn.kind) {
     case "connected":
-      return { tone: "ok", title: "Connected to GeoGuessr" };
+      return { tone: "ok", title: t("connection.connected") };
     case "searching":
-      return { tone: "warn", title: "Looking for GeoGuessr" };
+      return { tone: "warn", title: connectionDetails(conn, stickyReason).title };
     case "disconnected":
-      return { tone: "bad", title: connectionDetails(conn).title };
+      return { tone: "bad", title: connectionDetails(conn, stickyReason).title };
     default:
-      return { tone: "warn", title: "Idle" };
+      return { tone: "warn", title: t("connection.idle") };
   }
 }

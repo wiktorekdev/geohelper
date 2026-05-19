@@ -4,6 +4,7 @@ import { deriveLocationDisplay } from "@/lib/location-display";
 import { useStore } from "@/lib/store";
 import { SelectableText } from "@/components/display/selectable-text";
 import { FLAG_SIZE, useDisplayStore } from "@/lib/display-store";
+import { t } from "@/lib/i18n";
 
 export function LocationSection() {
   const place = useStore((s) => s.place);
@@ -17,7 +18,7 @@ export function LocationSection() {
     case "error":
       return (
         <div className="p-5 text-sm text-muted-foreground">
-          Couldn't show named geography. See the notice above this list for the error detail.
+          {t("location.couldNotShow")}
         </div>
       );
     case "sparse":
@@ -27,28 +28,18 @@ export function LocationSection() {
           {display.continent && (
             <div className="text-[11px] text-muted-foreground">{display.continent}</div>
           )}
-          <div className="text-[11px] text-muted-foreground">Settlement name not in geocoder data.</div>
-        </div>
-      );
-    case "continent":
-      return (
-        <div className="space-y-2 p-5">
-          <div className="text-base font-semibold">{display.continent}</div>
-          <div className="text-[11px] leading-relaxed text-muted-foreground">
-            Only a coarse region was returned (remote or sparse map data). Coordinates on the map are
-            still exact.
-          </div>
+          <div className="text-[11px] text-muted-foreground">{t("location.settlementNotInData")}</div>
         </div>
       );
     case "loading":
       return (
         <div className="space-y-1 p-5 text-sm text-muted-foreground">
           {display.rough ? <div className="text-[13px] text-foreground/90">{display.rough}</div> : null}
-          <div className="text-[11px]">Fetching address...</div>
+          <div className="text-[11px]">{t("location.fetchingAddress")}</div>
         </div>
       );
     case "empty":
-      return <div className="p-5 text-sm text-muted-foreground">-</div>;
+      return <div className="p-5 text-sm text-muted-foreground">{t("location.empty")}</div>;
     case "settlement":
       return <SettlementView display={display} />;
   }
@@ -62,6 +53,9 @@ function SettlementView({
   const flagStyle = useDisplayStore((s) => s.textStyles["country.flag"]);
   const flagSize = FLAG_SIZE[flagStyle?.fontSize ?? "md"];
   const fontSizePx = flagStyle?.fontSize ? { sm: 11, md: 13, lg: 15 }[flagStyle.fontSize] : 13;
+  // Slightly non-linear so the rounding stays visually obvious at the large size
+  // where a strict proportional radius would feel harsh.
+  const flagRadius = Math.round(fontSizePx * 0.28);
 
   return (
     <div className="space-y-3 p-5">
@@ -73,7 +67,7 @@ function SettlementView({
               style={{
                 width: flagSize.width,
                 height: flagSize.height,
-                borderRadius: `${fontSizePx * 0.18}px`,
+                borderRadius: `${flagRadius}px`,
                 overflow: "hidden",
                 isolation: "isolate",
                 fontSize: `${fontSizePx}px`,

@@ -5,9 +5,9 @@ import {
   type ConnectionSlice,
 } from "@/lib/store-slices/connection-slice";
 import { createLocationSlice, type LocationSlice } from "@/lib/store-slices/location-slice";
-import { createSettingsSlice, type CopyFormat, type SettingsSlice, type Theme } from "@/lib/store-slices/settings-slice";
+import { createSettingsSlice, type CopyFormat, type SettingsSlice } from "@/lib/store-slices/settings-slice";
 
-export type { CopyFormat, Theme };
+export type { CopyFormat };
 
 export type Store = ConnectionSlice & LocationSlice & SettingsSlice;
 

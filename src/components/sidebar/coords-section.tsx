@@ -11,6 +11,7 @@ import { useDisplayStore } from "@/lib/display-store";
 import { formatCoord, formatCoords } from "@/lib/coords";
 import { MOCK_COORDS } from "@/lib/mock-data";
 import { SelectableText } from "@/components/display/selectable-text";
+import { t } from "@/lib/i18n";
 
 export function CoordsSection() {
   const current = useStore((s) => s.current);
@@ -30,9 +31,9 @@ export function CoordsSection() {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-      toast.success("Coordinates copied", { description: text });
+      toast.success(t("coordinates.copySuccess"), { description: text });
     } catch {
-      toast.error("Clipboard unavailable");
+      toast.error(t("coordinates.clipboardError"));
     }
   }
 
@@ -44,8 +45,8 @@ export function CoordsSection() {
   return (
     <div className="mx-4 my-3 rounded-md border border-sidebar-border bg-background/40 p-3">
       <div className="grid grid-cols-2 gap-2">
-        <Value id="coordinates.lat" label="Lat" value={lat} />
-        <Value id="coordinates.lng" label="Lng" value={lng} />
+        <Value id="coordinates.lat" label={t("coordinates.lat")} value={lat} />
+        <Value id="coordinates.lng" label={t("coordinates.lng")} value={lng} />
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <SelectableText id="coordinates.action.copy" className="block">
@@ -53,10 +54,10 @@ export function CoordsSection() {
             <TooltipTrigger asChild>
               <Action onClick={copy}>
                 {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                {copied ? "Copied" : "Copy"}
+                {copied ? t("coordinates.copied") : t("coordinates.copy")}
               </Action>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Copy lat/lng to clipboard</TooltipContent>
+            <TooltipContent side="bottom">{t("coordinates.copyTooltip")}</TooltipContent>
           </Tooltip>
         </SelectableText>
         <SelectableText id="coordinates.action.maps" className="block">
@@ -64,10 +65,10 @@ export function CoordsSection() {
             <TooltipTrigger asChild>
               <Action onClick={openInGoogleMaps}>
                 <GoogleMaps className="size-3.5" />
-                Google Maps
+                {t("coordinates.googleMaps")}
               </Action>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Open in Google Maps</TooltipContent>
+            <TooltipContent side="bottom">{t("coordinates.mapsTooltip")}</TooltipContent>
           </Tooltip>
         </SelectableText>
       </div>

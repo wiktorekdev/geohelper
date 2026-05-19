@@ -1,8 +1,9 @@
-import { Download, ExternalLink, Loader2, RotateCw, X } from "lucide-react";
+import { Download, ExternalLink, Loader2, RotateCw, Sparkles, X } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { useUpdateStore } from "@/lib/update-store";
 import { Button } from "@/components/ui/button";
+import { t } from "@/lib/i18n";
 
 export function UpdateBanner() {
   const info = useUpdateStore((s) => s.updateInfo);
@@ -24,99 +25,121 @@ export function UpdateBanner() {
   const canAutoInstall = isInstalled === true;
 
   return (
-    <div className="mx-3 mb-2 rounded-md border border-sidebar-border bg-background/60 px-3 py-2 text-xs">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="font-medium">Update available</div>
-          <div className="text-muted-foreground truncate">v{info.latest} is out</div>
+    <div className="relative mx-3 mb-2 overflow-hidden rounded-lg border border-sidebar-border bg-gradient-to-br from-background/80 via-background/60 to-brand/[0.04] shadow-sm">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent"
+      />
+
+      <div className="px-3 pt-2.5 pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-start gap-2">
+            <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-brand/15 text-brand">
+              <Sparkles className="size-3.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold leading-tight">
+                {t("update.available")}
+              </div>
+              <div className="truncate text-[11px] text-muted-foreground">
+                {t("update.versionOut", { version: info.latest })}
+              </div>
+            </div>
+          </div>
+          {installState === "idle" && (
+            <button
+              onClick={dismiss}
+              title={t("update.dismiss")}
+              className="-mr-1 -mt-1 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </div>
-        {installState === "idle" && (
-          <button
-            onClick={dismiss}
-            title="Dismiss"
-            className="text-muted-foreground hover:text-foreground shrink-0"
-          >
-            <X className="size-3.5" />
-          </button>
+
+        {installState === "downloading" && (
+          <div className="mt-2.5 space-y-1.5">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Loader2 className="size-3 animate-spin" />
+                {t("update.downloading")}
+              </span>
+              <span className="font-mono tabular-nums text-foreground/80">
+                {pct !== null ? `${pct}%` : formatBytes(downloaded)}
+              </span>
+            </div>
+            <div className="relative h-1.5 overflow-hidden rounded-full bg-accent/50">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand to-emerald-500 transition-[width] duration-200"
+                style={{ width: pct !== null ? `${pct}%` : "40%" }}
+              />
+              {pct === null && (
+                <div className="absolute inset-y-0 -left-1/3 w-1/3 animate-[shimmer_1.4s_ease-in-out_infinite] rounded-full bg-white/20 blur-sm" />
+              )}
+            </div>
+          </div>
         )}
-      </div>
 
-      {installState === "downloading" && (
-        <div className="mt-2 space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>Downloading…</span>
-            <span className="font-mono tabular-nums">
-              {pct !== null ? `${pct}%` : formatBytes(downloaded)}
-            </span>
+        {installState === "installing" && (
+          <div className="mt-2.5 flex items-center gap-1.5 rounded-md border border-sidebar-border bg-background/40 px-2 py-1.5 text-[11px] text-muted-foreground">
+            <Loader2 className="size-3 animate-spin text-brand" />
+            {t("update.installing")}
           </div>
-          <div className="h-1 overflow-hidden rounded bg-accent">
-            <div
-              className="h-full bg-emerald-500 transition-[width] duration-200"
-              style={{ width: pct !== null ? `${pct}%` : "40%" }}
-            />
+        )}
+
+        {installState === "error" && (
+          <div className="mt-2.5 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-1.5 text-[11px] text-amber-300">
+            <div className="font-medium">{installError || t("update.failed")}</div>
+            <button
+              onClick={() => openUrl(info.url)}
+              className="mt-0.5 inline-flex items-center gap-1 text-[10px] underline underline-offset-2 hover:text-amber-200"
+            >
+              {t("update.downloadManually")}
+              <ExternalLink className="size-2.5" />
+            </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {installState === "installing" && (
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <Loader2 className="size-3 animate-spin" />
-          Installing, relaunching…
-        </div>
-      )}
-
-      {installState === "error" && (
-        <div className="mt-2 rounded border border-amber-500/20 bg-amber-500/10 p-1.5 text-[10px] text-amber-300">
-          {installError || "Update failed"}.{" "}
-          <button
-            onClick={() => openUrl(info.url)}
-            className="underline underline-offset-2 hover:text-amber-200"
+        {installState === "idle" && canAutoInstall && (
+          <Button
+            size="sm"
+            className="mt-2.5 h-8 w-full gap-1.5 text-xs"
+            onClick={() => install()}
           >
-            Download manually
-          </button>
-        </div>
-      )}
+            <Download className="size-3.5" />
+            {t("update.installRestart")}
+          </Button>
+        )}
 
-      {installState === "idle" && canAutoInstall && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-2 h-7 w-full text-xs"
-          onClick={() => install()}
-        >
-          <Download className="size-3" />
-          Install & restart
-        </Button>
-      )}
+        {installState === "idle" && !canAutoInstall && (
+          <>
+            <div className="mt-2 text-[10px] text-muted-foreground">
+              {t("update.portableBuild")}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-1.5 h-8 w-full gap-1.5 text-xs"
+              onClick={() => openUrl(info.url)}
+            >
+              <ExternalLink className="size-3.5" />
+              {t("update.downloadVersion", { version: info.latest })}
+            </Button>
+          </>
+        )}
 
-      {installState === "idle" && !canAutoInstall && (
-        <>
-          <div className="mt-2 text-[10px] text-muted-foreground">
-            Portable build - download and replace manually.
-          </div>
+        {installState === "error" && (
           <Button
             variant="outline"
             size="sm"
-            className="mt-1 h-7 w-full text-xs"
-            onClick={() => openUrl(info.url)}
+            className="mt-2 h-8 w-full gap-1.5 text-xs"
+            onClick={() => install()}
           >
-            <ExternalLink className="size-3" />
-            Download v{info.latest}
+            <RotateCw className="size-3.5" />
+            {t("update.tryAgain")}
           </Button>
-        </>
-      )}
-
-      {installState === "error" && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-2 h-7 w-full text-xs"
-          onClick={() => install()}
-        >
-          <RotateCw className="size-3" />
-          Try again
-        </Button>
-      )}
+        )}
+      </div>
     </div>
   );
 }

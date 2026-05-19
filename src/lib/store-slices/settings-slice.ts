@@ -8,14 +8,12 @@ import {
   loadCopyFormat,
   loadGeocodeProvider,
   loadProvider,
-  loadTheme,
   saveBool,
   saveString,
   STORAGE_KEYS,
 } from "@/lib/settings-persistence";
 import { loadGoogleApiKey, saveGoogleApiKey } from "@/lib/secure-settings";
 
-export type Theme = "dark" | "light";
 export type CopyFormat = "lat,lng" | "lat, lng" | "lng,lat";
 
 export type SettingsSlice = {
@@ -23,7 +21,6 @@ export type SettingsSlice = {
   geocodeProvider: GeocodeProviderId;
   googleApiKey: string;
   copyFormat: CopyFormat;
-  theme: Theme;
   alwaysOnTop: boolean;
   settingsOpen: boolean;
 
@@ -31,7 +28,6 @@ export type SettingsSlice = {
   setGeocodeProvider: (provider: GeocodeProviderId) => void;
   setGoogleApiKey: (key: string) => void;
   setCopyFormat: (format: CopyFormat) => void;
-  setTheme: (theme: Theme) => void;
   setAlwaysOnTop: (value: boolean) => void;
   loadSecureSettings: () => Promise<void>;
   openSettings: () => void;
@@ -43,7 +39,6 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
   geocodeProvider: loadGeocodeProvider(),
   googleApiKey: "",
   copyFormat: loadCopyFormat(),
-  theme: loadTheme(),
   alwaysOnTop: loadBool(STORAGE_KEYS.alwaysOnTop, false),
   settingsOpen: false,
 
@@ -63,10 +58,6 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
   setCopyFormat: (copyFormat) => {
     saveString(STORAGE_KEYS.copyFormat, copyFormat);
     set({ copyFormat });
-  },
-  setTheme: (theme) => {
-    saveString(STORAGE_KEYS.theme, theme);
-    set({ theme });
   },
   setAlwaysOnTop: (alwaysOnTop) => {
     saveBool(STORAGE_KEYS.alwaysOnTop, alwaysOnTop);

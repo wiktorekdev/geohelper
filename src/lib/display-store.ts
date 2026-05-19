@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { t } from "@/lib/i18n";
 
 export const SIDEBAR_MIN_WIDTH = 320;
 export const SIDEBAR_MAX_WIDTH = 700;
@@ -24,12 +25,10 @@ export type DisplayConfig = {
 
 const ALL_WIDGETS: WidgetId[] = ["country", "road", "details", "coordinates"];
 
-export const WIDGET_LABELS: Record<WidgetId, string> = {
-  country: "Country & flag",
-  road: "Road & postcode",
-  details: "Country details",
-  coordinates: "Coordinates",
-};
+/** Resolve a widget label at call-time so locale switches take effect. */
+export function widgetLabel(id: WidgetId): string {
+  return t(`widget.${id}`);
+}
 
 export const DEFAULT_TEXT_STYLE: TextStyle = {
   color: null,

@@ -49,21 +49,15 @@ export function useMapWindowLayout() {
         } else {
           await win.setMinSize(new LogicalSize(MIN_WITH_MAP_W, MIN_WITH_MAP_H));
           if (cancelled || isStale()) return;
-          // If the window is currently sidebar-narrow (we just unhid the map),
-          // grow it back so the map area has room without the user having to drag.
-          // Delay slightly so the CSS mount animation finishes before the window grows,
-          // avoiding the visual jump at the end of the transition.
+          // Resize immediately to allow the CSS/Motion transition to fill the space.
           const needsResize = wLog < MIN_WITH_MAP_W || hLog < MIN_WITH_MAP_H;
           if (needsResize) {
-            timeout = window.setTimeout(async () => {
-              if (cancelled || isStale()) return;
-              await win.setSize(
-                new LogicalSize(
-                  Math.max(MIN_WITH_MAP_W, wLog),
-                  Math.max(MIN_WITH_MAP_H, hLog),
-                ),
-              );
-            }, 300);
+            await win.setSize(
+              new LogicalSize(
+                Math.max(MIN_WITH_MAP_W, wLog),
+                Math.max(MIN_WITH_MAP_H, hLog),
+              ),
+            );
           }
         }
       } catch {

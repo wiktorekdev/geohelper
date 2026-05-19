@@ -1,10 +1,12 @@
 import type { ConnState } from "@/types";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { connectionTone } from "@/lib/connection-status";
+import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function StatusDot({ conn }: { conn: ConnState }) {
-  const { tone, title } = connectionTone(conn);
+  const sticky = useStore((s) => s.lastDisconnectReason);
+  const { tone, title } = connectionTone(conn, sticky);
   return (
     <Tooltip>
       <TooltipTrigger asChild>

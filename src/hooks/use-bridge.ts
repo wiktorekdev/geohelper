@@ -8,6 +8,7 @@ import { ipc } from "@/lib/ipc";
 import { enrichLocation } from "@/lib/location-enrichment";
 import { useStore } from "@/lib/store";
 import type { Coords, Snapshot } from "@/types";
+import { t } from "@/lib/i18n";
 
 export function useBridge() {
   const setSnapshot = useStore((s) => s.setSnapshot);
@@ -21,7 +22,7 @@ export function useBridge() {
     let enrichmentAbort: AbortController | null = null;
 
     if (!isTauri()) {
-      setConn({ kind: "disconnected", reason: "Waiting for the Tauri desktop bridge." });
+      setConn({ kind: "disconnected", reason: t("bridge.waiting") });
       return () => {
         mounted = false;
       };
@@ -74,7 +75,7 @@ export function useBridge() {
         }
       } catch (error) {
         if (mounted) {
-          setConn({ kind: "disconnected", reason: errorMessage(error, "Bridge setup failed") });
+          setConn({ kind: "disconnected", reason: errorMessage(error, t("bridge.setupFailed")) });
         }
       }
     })();

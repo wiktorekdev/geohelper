@@ -14,6 +14,7 @@ import { GITHUB_URL, KOFI_URL } from "@/lib/links";
 import { useDisplayStore } from "@/lib/display-store";
 import { useStore } from "@/lib/store";
 import { useUpdateStore } from "@/lib/update-store";
+import { t } from "@/lib/i18n";
 
 export function SettingsSidebar() {
   const close = useStore((s) => s.closeSettings);
@@ -26,12 +27,11 @@ export function SettingsSidebar() {
 
   const apiKey = useStore((s) => s.googleApiKey);
   const setApiKey = useStore((s) => s.setGoogleApiKey);
-  const theme = useStore((s) => s.theme);
-  const setTheme = useStore((s) => s.setTheme);
   const alwaysOnTop = useStore((s) => s.alwaysOnTop);
   const setAlwaysOnTop = useStore((s) => s.setAlwaysOnTop);
 
   const updateInfo = useUpdateStore((s) => s.updateInfo);
+
   const updateChecking = useUpdateStore((s) => s.updateChecking);
   const updateError = useUpdateStore((s) => s.updateError);
   const runUpdateCheck = useUpdateStore((s) => s.runUpdateCheck);
@@ -63,7 +63,7 @@ export function SettingsSidebar() {
         <Button size="icon" variant="ghost" className="size-8" onClick={close}>
           <ArrowLeft className="size-4" />
         </Button>
-        <div className="text-[15px] font-semibold tracking-tight">Settings</div>
+        <div className="text-[15px] font-semibold tracking-tight">{t("settings.title")}</div>
       </header>
 
       <ScrollArea className="flex-1">
@@ -82,9 +82,7 @@ export function SettingsSidebar() {
         />
         <Divider />
         <AppearanceSection
-          theme={theme}
           alwaysOnTop={alwaysOnTop}
-          setTheme={setTheme}
           setAlwaysOnTop={setAlwaysOnTop}
         />
         <Divider />

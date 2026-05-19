@@ -7,10 +7,10 @@ import {
 } from "lucide-react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
-import { useStore } from "@/lib/store"
+import { selectActiveTheme, useThemeStore } from "@/lib/themes/store"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const theme = useStore((s) => s.theme)
+  const theme = useThemeStore((s) => selectActiveTheme(s).mode)
 
   return (
     <Sonner

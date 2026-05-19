@@ -54,9 +54,12 @@ export function SelectableText({ id, children, className, mono }: Props) {
       }}
       className={cn(
         "cursor-pointer inline-block rounded-sm outline-none transition-colors",
+        // `outline` instead of `ring` so the selection halo sits OUTSIDE the
+        // element and never combines with surrounding card borders into the
+        // double-stroke effect.
         selected
-          ? "bg-brand/15 ring-1 ring-inset ring-brand/60"
-          : "hover:bg-brand/5 hover:ring-1 hover:ring-inset hover:ring-brand/25",
+          ? "bg-brand/12 outline outline-1 outline-offset-[2px] outline-brand/55"
+          : "hover:bg-brand/[0.06] hover:outline hover:outline-1 hover:outline-offset-[2px] hover:outline-brand/20",
         hidden && "opacity-40 line-through decoration-from-font",
         // Force descendants to inherit so Button's text-xs / colors don't win.
         style &&

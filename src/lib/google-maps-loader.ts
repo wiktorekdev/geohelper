@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n";
+
 const CALLBACK = "__geohelperGmapsReady";
 
 let loader: Promise<void> | null = null;
@@ -11,7 +13,7 @@ declare global {
 
 export function loadGoogleMaps(apiKey: string): Promise<void> {
   const key = apiKey.trim();
-  if (!key) return Promise.reject(new Error("Google Maps API key is required"));
+  if (!key) return Promise.reject(new Error(t("validation.required")));
   if (window.google?.maps && loaderKey === key) return Promise.resolve();
   if (loader && loaderKey === key) return loader;
 
@@ -41,7 +43,7 @@ export function loadGoogleMaps(apiKey: string): Promise<void> {
       loader = null;
       loaderKey = "";
       Reflect.deleteProperty(window, CALLBACK);
-      reject(new Error("failed to load Google Maps"));
+      reject(new Error(t("map.loadFailed")));
     };
     document.head.appendChild(script);
   });

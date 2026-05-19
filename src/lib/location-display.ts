@@ -4,7 +4,6 @@ import { continentFrom } from "@/lib/continents";
 export type LocationDisplay =
   | { kind: "error" }
   | { kind: "sparse"; primary: string; continent?: string }
-  | { kind: "continent"; continent: string }
   | { kind: "loading"; rough?: string }
   | { kind: "empty" }
   | {
@@ -42,7 +41,6 @@ export function deriveLocationDisplay(
 
     const sparseLine = uniqueLine(place.neighbourhood, place.road, place.postcode);
     if (sparseLine) return { kind: "sparse", primary: sparseLine, continent: place.continent };
-    if (place.continent) return { kind: "continent", continent: place.continent };
     if (current) return { kind: "loading", rough: continentFrom(undefined, current.lat, current.lng) };
     return { kind: "empty" };
   }

@@ -1,23 +1,16 @@
-import { AlertTriangle, Check, Loader2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import type { KeyValidation } from "@/hooks/use-google-api-key-validation";
 
 export function KeyValidationMessage({ validation }: { validation: KeyValidation }) {
+  // Only surface error states. Valid keys stay quiet so the field doesn't flash
+  // green every keystroke.
+  if (validation.state !== "invalid") return null;
   if (!validation.message) return null;
 
   return (
-    <div
-      className={cn(
-        "mt-1.5 inline-flex items-start gap-1.5 text-[11px]",
-        validation.state === "valid" && "text-emerald-400",
-        validation.state === "invalid" && "text-amber-300",
-        validation.state !== "valid" && validation.state !== "invalid" && "text-muted-foreground",
-      )}
-    >
-      {validation.state === "checking" && <Loader2 className="mt-0.5 size-3 animate-spin" />}
-      {validation.state === "valid" && <Check className="mt-0.5 size-3" />}
-      {validation.state === "invalid" && <AlertTriangle className="mt-0.5 size-3" />}
+    <div className="mt-1.5 inline-flex items-start gap-1.5 text-[11px] text-amber-300">
+      <AlertTriangle className="mt-0.5 size-3" />
       <span>{validation.message}</span>
     </div>
   );

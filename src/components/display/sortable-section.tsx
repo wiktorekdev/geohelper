@@ -3,7 +3,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { cn } from "@/lib/utils";
-import { useDisplayStore, WIDGET_LABELS, type WidgetId } from "@/lib/display-store";
+import { useDisplayStore, widgetLabel, type WidgetId } from "@/lib/display-store";
+import { t } from "@/lib/i18n";
 
 type Props = {
   id: WidgetId;
@@ -62,7 +63,7 @@ export function SortableSection({ id, children }: Props) {
           {...attributes}
           {...listeners}
           className="inline-flex size-6 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground active:cursor-grabbing touch-none"
-          aria-label="Drag to reorder"
+          aria-label={t("section.dragToReorder")}
         >
           <GripVertical className="size-3.5" />
         </button>
@@ -75,9 +76,9 @@ export function SortableSection({ id, children }: Props) {
               ? "text-brand"
               : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
           )}
-          aria-label={`Select all texts in ${WIDGET_LABELS[id]}`}
+          aria-label={t("section.selectAllIn", { widget: widgetLabel(id) })}
         >
-          {WIDGET_LABELS[id]}
+          {widgetLabel(id)}
         </button>
       </div>
 

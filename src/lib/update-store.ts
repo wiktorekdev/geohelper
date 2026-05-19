@@ -6,6 +6,7 @@ import { ipc } from "./ipc";
 import { loadString, saveString, STORAGE_KEYS } from "./settings-persistence";
 import { checkForUpdate, type UpdateInfo } from "./update-check";
 import { errorMessage } from "./errors";
+import { t } from "@/lib/i18n";
 
 type UpdateStore = {
   updateInfo: UpdateInfo | null;
@@ -95,7 +96,7 @@ export const useUpdateStore = create<UpdateStore>((set, get) => ({
     } catch (error) {
       set({
         installState: "error",
-        installError: errorMessage(error, "Install failed"),
+        installError: errorMessage(error, t("update.installFailed")),
       });
     }
   },

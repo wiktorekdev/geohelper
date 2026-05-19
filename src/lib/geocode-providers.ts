@@ -2,6 +2,7 @@ import type { PlaceInfo } from "@/types";
 import { continentFrom } from "./continents";
 import { errorMessage } from "./errors";
 import { timeoutSignal } from "./fetch-timeout";
+import { t } from "@/lib/i18n";
 
 export type GeocodeProviderId = "nominatim" | "google";
 
@@ -58,7 +59,7 @@ export async function runGeocode(
     if (signal?.aborted) return { place: { continent: fallbackContinent }, error: null };
     return {
       place: { continent: fallbackContinent },
-      error: errorMessage(e, "Reverse geocoding failed"),
+      error: errorMessage(e, t("geocode.error")),
     };
   }
 }

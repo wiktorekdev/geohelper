@@ -1,4 +1,4 @@
-import { GripVertical, Pencil, Settings as SettingsIcon } from "lucide-react";
+import { GripVertical, Map, MapPinOff, Pencil, Settings as SettingsIcon } from "lucide-react";
 import { useRef, useCallback } from "react";
 import {
   closestCenter,
@@ -32,6 +32,7 @@ import { useDisplayStore, type WidgetId, SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } 
 import { clearMockIfPresent, injectMockIfEmpty } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 import logoUrl from "@/assets/logo.png";
 
 export function Sidebar() {
@@ -45,6 +46,8 @@ export function Sidebar() {
   const setOrder = useDisplayStore((s) => s.setOrder);
   const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
   const setSidebarWidth = useDisplayStore((s) => s.setSidebarWidth);
+  const mapVisible = useDisplayStore((s) => s.mapVisible);
+  const setMapVisible = useDisplayStore((s) => s.setMapVisible);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const dragStartX = useRef(0);
@@ -90,12 +93,13 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex h-full shrink-0 flex-col bg-sidebar border-r border-sidebar-border",
+        "relative flex h-full flex-col bg-sidebar border-r border-sidebar-border",
         editing && "ring-1 ring-inset ring-brand/20",
+        mapVisible ? "shrink-0" : "flex-1",
       )}
-      style={{ width: sidebarWidth }}
+      style={{ width: mapVisible ? sidebarWidth : undefined }}
     >
-      {editing && (
+      {editing && mapVisible && (
         <div
           className="absolute inset-y-0 right-0 z-50 flex w-4 cursor-col-resize items-center justify-center"
           onPointerDown={handlePointerDown}
@@ -110,10 +114,26 @@ export function Sidebar() {
       <header className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2.5">
           <img src={logoUrl} alt="" className="size-8 shrink-0" />
-          <div className="text-[15px] font-semibold tracking-tight">GeoHelper</div>
+          <div className="text-[15px] font-semibold tracking-tight">{t("app.name")}</div>
         </div>
         <div className="flex items-center gap-1">
           <StatusDot conn={conn} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-8"
+                onClick={() => setMapVisible(!mapVisible)}
+                aria-pressed={mapVisible}
+              >
+                {mapVisible ? <Map className="size-4" /> : <MapPinOff className="size-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -130,7 +150,7 @@ export function Sidebar() {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {editing ? "Finish editing" : "Edit layout"}
+              {editing ? t("sidebar.finishEditing") : t("sidebar.editLayout")}
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -139,7 +159,7 @@ export function Sidebar() {
                 <SettingsIcon className="size-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">Settings</TooltipContent>
+            <TooltipContent side="bottom">{t("sidebar.settings")}</TooltipContent>
           </Tooltip>
         </div>
       </header>

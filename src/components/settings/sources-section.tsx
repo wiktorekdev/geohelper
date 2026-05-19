@@ -14,6 +14,7 @@ import { MAP_PROVIDERS, type MapProviderId } from "@/lib/map-providers";
 import { GEOCODE_PROVIDERS, type GeocodeProviderId } from "@/lib/geocode-providers";
 import type { KeyValidation } from "@/hooks/use-google-api-key-validation";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 type Props = {
   mapProvider: MapProviderId;
@@ -43,8 +44,8 @@ export function SourcesSection({
   runKeyValidation,
 }: Props) {
   return (
-    <Group icon={<Layers className="size-3.5" />} title="Sources">
-      <Field label="Map provider">
+    <Group icon={<Layers className="size-3.5" />} title={t("settings.sources.title")}>
+      <Field label={t("settings.sources.mapProvider")}>
         <Select value={mapProvider} onValueChange={(value) => setMapProvider(value as MapProviderId)}>
           <SelectTrigger className="h-9">
             <SelectValue />
@@ -65,7 +66,7 @@ export function SourcesSection({
         </Select>
       </Field>
 
-      <Field label="Location provider">
+      <Field label={t("settings.sources.locationProvider")}>
         <Select
           value={geocodeProvider}
           onValueChange={(value) => setGeocodeProvider(value as GeocodeProviderId)}
@@ -89,7 +90,7 @@ export function SourcesSection({
         </Select>
       </Field>
 
-      <Field label="Google Maps API key">
+      <Field label={t("settings.sources.googleApiKey")}>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
@@ -100,8 +101,6 @@ export function SourcesSection({
               onBlur={() => runKeyValidation()}
               className={cn(
                 "h-9 pr-16 transition-colors",
-                keyValidation.state === "valid" &&
-                  "border-emerald-500/60 focus-visible:border-emerald-500/80 focus-visible:ring-emerald-500/30",
                 keyValidation.state === "invalid" &&
                   draft.trim().length > 0 &&
                   "border-red-500/60 focus-visible:border-red-500/80 focus-visible:ring-red-500/30",
@@ -115,7 +114,7 @@ export function SourcesSection({
                 type="button"
                 onClick={() => setReveal((value) => !value)}
                 className="text-muted-foreground hover:text-foreground"
-                aria-label={reveal ? "Hide key" : "Show key"}
+                aria-label={reveal ? t("settings.sources.hideKey") : t("settings.sources.showKey")}
               >
                 {reveal ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
               </button>
@@ -126,7 +125,7 @@ export function SourcesSection({
           onClick={() => openUrl("https://console.cloud.google.com/google/maps-apis/credentials")}
           className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
         >
-          Get a key on Google Cloud
+          {t("settings.sources.getKey")}
           <ExternalLink className="size-3" />
         </button>
       </Field>

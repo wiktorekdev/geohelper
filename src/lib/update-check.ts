@@ -2,6 +2,7 @@ import { check, type Update } from "@tauri-apps/plugin-updater";
 
 import { errorMessage } from "./errors";
 import { REPO } from "./links";
+import { t } from "@/lib/i18n";
 
 export type UpdateInfo = {
   latest: string;
@@ -37,7 +38,7 @@ export async function checkForUpdate(): Promise<UpdateCheckResult> {
   } catch (e) {
     return {
       ok: false,
-      error: errorMessage(e, "Update check failed"),
+      error: errorMessage(e, t("update.checkFailed")),
     };
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useBridge } from "@/hooks/use-bridge";
 import { useTheme } from "@/hooks/use-theme";
@@ -60,12 +61,23 @@ export default function App() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
       {settingsOpen ? <SettingsSidebar /> : <Sidebar />}
-      {mapVisible && (
-        <main key="map" className="map-appear flex min-w-0 flex-1 flex-col">
-          <MapView />
-        </main>
-      )}
-      <EditToolbar />
+      
+      <AnimatePresence mode="popLayout" initial={false}>
+        {mapVisible && (
+          <motion.main
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+            className="relative flex flex-1 min-w-0 flex-col overflow-hidden"
+          >
+            <MapView />
+            <EditToolbar />
+          </motion.main>
+        )}
+      </AnimatePresence>
+      
+      {!mapVisible && <EditToolbar />}
       <SelectionToolbar />
     </div>
   );

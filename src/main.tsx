@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { useStore } from "@/lib/store";
 import { useDisplayStore } from "@/lib/display-store";
+import { useI18n } from "@/lib/i18n";
 import "./index.css";
 import "leaflet/dist/leaflet.css";
 
@@ -17,13 +18,22 @@ if (import.meta.env.DEV) {
   };
 }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+function Root() {
+  // Most call sites use the non-reactive `t()` helper, so remount the tree
+  // when the locale changes to make the switch take effect everywhere.
+  const locale = useI18n((s) => s.locale);
+  return (
     <ErrorBoundary>
       <TooltipProvider delayDuration={200}>
-        <App />
+        <App key={locale} />
         <Toaster />
       </TooltipProvider>
     </ErrorBoundary>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <Root />
   </React.StrictMode>,
 );
