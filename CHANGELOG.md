@@ -17,7 +17,7 @@ All notable changes to GeoHelper are kept here.
 - **Update banner** — refreshed layout and translated strings.
 
 ### Removed
-- **Providers** — BigDataCloud geocoding; CartoDB (Dark, Light, Voyager), Esri Satellite, and OpenTopoMap map layers. OpenStreetMap and Google Maps remain.
+- **Old color picker** — Replaced the legacy color picker component with the new UI color picker supporting direct hex/RGB input and custom color styling.
 
 ### Fixed
 - Color picker no longer loops or crashes on open; reset returns white instead of black.
@@ -103,7 +103,7 @@ Chunky release: CDP integration with GeoGuessr was reworked, map and settings co
 - Always-on-top setting rolls back if the native window call fails.
 - Countries with plain `UTC` timezone data now show local time.
 
-## [0.13.0] — 2026-05-11
+## [0.13.0] - 2026-05-11
 
 ### Added
 - Layout editor (pencil icon in the sidebar header). Drag to reorder sections, per-section style options (visibility, size S/M/L, bold, custom color via picker), reset per section or all.
@@ -125,22 +125,22 @@ Chunky release: CDP integration with GeoGuessr was reworked, map and settings co
 - No changes to the CDP sniffer or updater signing — update path from 0.12.x is unchanged.
 - Linux and macOS builds remain unsigned; macOS users still need to right-click → Open on first launch.
 
-## [0.12.3] — 2026-05-10
+## [0.12.3] - 2026-05-10
 
 - Added a Street View shortcut next to the Google Maps button.
 
-## [0.12.2] — 2026-05-10
+## [0.12.2] - 2026-05-10
 
 - Detect portable vs installed builds; portable users now get a manual-download banner instead of a broken installer run.
 
-## [0.12.1] — 2026-05-10
+## [0.12.1] - 2026-05-10
 
 - Fix the Windows updater artifact: Tauri 2 signs `setup.exe` directly, not a `.nsis.zip`.
 
-## [0.12.0] — 2026-05-10
+## [0.12.0] - 2026-05-10
 
 - Auto-updater (Ed25519 signed releases, Tauri updater plugin), manifest hosted as a release asset.
 
-## [0.11.0] — 2026-05-10
+## [0.11.0] - 2026-05-10
 
 - First multi-platform release: Windows, Linux, macOS.
