@@ -13,10 +13,8 @@ const outDir = join(root, "docs", "screenshots");
 mkdirSync(outDir, { recursive: true });
 
 const RAWS = [
-  { src: "raw-paris.png",  name: "paris" },
-  { src: "raw-krakow.png", name: "krakow" },
-  { src: "raw-tokyo.png",  name: "tokyo" },
-  { src: "raw-edit.png",   name: "edit-mode" },
+  { src: "raw-paris.png", name: "paris" },
+  { src: "raw-edit.png", name: "edit-mode" },
 ];
 
 const RADIUS = 12;

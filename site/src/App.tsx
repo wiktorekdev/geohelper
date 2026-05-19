@@ -23,8 +23,6 @@ import {
 
 import logoUrl from "./assets/logo.png";
 import parisShot from "./assets/paris.png";
-import krakowShot from "./assets/krakow.png";
-import tokyoShot from "./assets/tokyo.png";
 import editShot from "./assets/edit-mode.png";
 import { GITHUB_URL, KOFI_URL, RELEASES_LATEST_URL } from "./links";
 
@@ -296,9 +294,8 @@ function DownloadButton() {
 
 function HeroScreenshot() {
   const shots = [
-    { src: parisShot, label: "Paris" },
-    { src: krakowShot, label: "Kraków" },
-    { src: tokyoShot, label: "Tokyo" },
+    { src: parisShot, label: "Normal Mode" },
+    { src: editShot, label: "Edit Mode" },
   ];
   const [idx, setIdx] = useState(0);
   const paused = useRef(false);
