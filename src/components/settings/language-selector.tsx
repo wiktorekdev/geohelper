@@ -29,6 +29,7 @@ export function LanguageSelector() {
           type="button"
           role="combobox"
           aria-expanded={open}
+          aria-controls="language-listbox"
           className={cn(
             "inline-flex h-9 w-full items-center justify-between gap-2 rounded-md",
             "border border-input bg-background px-3 text-xs",
@@ -54,7 +55,7 @@ export function LanguageSelector() {
       >
         <Command>
           <CommandInput placeholder={t("settings.appearance.languageSearch")} />
-          <CommandList>
+          <CommandList id="language-listbox">
             <CommandEmpty>{t("settings.appearance.languageEmpty")}</CommandEmpty>
             <CommandGroup>
               {SUPPORTED_LOCALES.map((l) => (

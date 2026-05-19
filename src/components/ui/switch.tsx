@@ -1,13 +1,14 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
+import type { ButtonHTMLAttributes, Ref } from "react";
 
-type Props = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> & {
+type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> & {
   checked: boolean;
   onCheckedChange: (v: boolean) => void;
+  ref?: Ref<HTMLButtonElement>;
 };
 
-export const Switch = React.forwardRef<HTMLButtonElement, Props>(
-  ({ checked, onCheckedChange, disabled, id, className, ...props }, ref) => (
+export function Switch({ checked, onCheckedChange, disabled, id, className, ref, ...props }: Props) {
+  return (
     <button
       ref={ref}
       id={id}
@@ -30,6 +31,5 @@ export const Switch = React.forwardRef<HTMLButtonElement, Props>(
         )}
       />
     </button>
-  ),
-);
-Switch.displayName = "Switch";
+  );
+}

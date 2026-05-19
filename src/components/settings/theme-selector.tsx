@@ -38,6 +38,7 @@ export function ThemeSelector() {
           type="button"
           role="combobox"
           aria-expanded={open}
+          aria-controls="theme-listbox"
           className={cn(
             "inline-flex h-9 w-full items-center justify-between gap-2 rounded-md",
             "border border-input bg-background px-2.5 text-xs",
@@ -64,7 +65,7 @@ export function ThemeSelector() {
       >
         <Command>
           <CommandInput placeholder={t("settings.appearance.themeSearch")} />
-          <CommandList>
+          <CommandList id="theme-listbox">
             <CommandEmpty>{t("settings.appearance.themeEmpty")}</CommandEmpty>
             <CommandGroup>
               {themes.map((th) => (
