@@ -48,8 +48,6 @@ jobs:
 
       - name: cache cargo
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "src-tauri -> target"
 
       - name: install linux build deps
         if: matrix.name == 'linux'

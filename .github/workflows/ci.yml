@@ -52,8 +52,6 @@ jobs:
 
       - name: cache cargo
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "src-tauri -> target"
 
       - name: cargo fmt
         run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
