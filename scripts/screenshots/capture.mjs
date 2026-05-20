@@ -6,6 +6,8 @@ import { chromium } from "playwright";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, existsSync } from "node:fs";
+import { mkdirSync } from "node:fs";
+import sharp from "sharp";
 import { SCENES } from "./scenes.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -35,6 +37,15 @@ function getGoogleMapsApiKey() {
 }
 const URL = "http://localhost:1420";
 const VIEWPORT = { width: 1280, height: 820 };
+const RADIUS = 12;
+const outDir = join(root, "docs", "screenshots");
+mkdirSync(outDir, { recursive: true });
+
+function roundedMask(w, h, r) {
+  return Buffer.from(
+    `<svg width="${w}" height="${h}"><rect width="${w}" height="${h}" rx="${r}" ry="${r}" fill="white"/></svg>`
+  );
+}
 
 /** Only the shots used in README / site hero essentials */
 const CAPTURE_KEYS = ["paris", "edit"];
@@ -129,6 +140,10 @@ async function applyScene(page, scene, apiKey) {
         gh.displayStore.getState().toggleEditing();
       }
     }
+
+    if (cfg.settings) {
+      store.openSettings();
+    }
   }, [scene, apiKey]);
 }
 
@@ -158,13 +173,15 @@ async function main() {
       // Let map tiles and layout animations settle
       await page.waitForTimeout(2500);
 
-      const rawName =
-        key === "edit" ? "raw-edit.png" : `raw-${scene.file}.png`;
-      await page.screenshot({
-        path: join(root, rawName),
-        type: "png",
-      });
-      console.log(`✓ captured ${rawName}`);
+      const buffer = await page.screenshot({ type: "png" });
+      const { width: W, height: H } = await sharp(buffer).metadata();
+
+      await sharp(buffer)
+        .composite([{ input: roundedMask(W, H, RADIUS), blend: "dest-in" }])
+        .png({ compressionLevel: 9 })
+        .toFile(join(outDir, `${scene.file}.png`));
+
+      console.log(`✓ ${scene.file}`);
     }
   } finally {
     await browser.close();
