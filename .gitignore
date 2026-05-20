@@ -20,6 +20,8 @@ src-tauri/app-icon.png
 /*.AppImage
 /*.deb
 release/
+release-zip/
+*.zip
 
 # editor / os
 .vscode/*
