@@ -2,6 +2,15 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.17.4] - 2026-05-20
+
+### Added
+- **Dynamic Geocoding User-Agent Compliance** — Implemented policy-compliant HTTP `User-Agent` headers (`GeoHelper/${VERSION}`) for the OSM Nominatim provider. This automatically references a dynamic compile-time version constant, eliminating the need to manually update geocoder strings on release.
+
+### Changed
+- **Robust Writability Checks for Portable Mode** — Enhanced Tauri backend `is_portable` check to verify folder write access before storing data in the application directory. If executed from a write-restricted directory (such as `C:\Program Files`), it safely falls back to standard local AppData storage instead of causing WebView2 startup crashes.
+- **Resilient App Hydration Bootstrapping** — Converted settings and localization store initialization from `Promise.all` to `Promise.allSettled`. This guarantees that a single corrupted theme or preferences file will not halt the application startup or leave a black screen.
+
 ## [0.17.3] - 2026-05-20
 
 ### Fixed

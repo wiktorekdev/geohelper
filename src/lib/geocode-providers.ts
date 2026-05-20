@@ -3,6 +3,7 @@ import { continentFrom } from "./continents";
 import { errorMessage } from "./errors";
 import { timeoutSignal } from "./fetch-timeout";
 import { t } from "@/lib/i18n";
+import { VERSION } from "./links";
 
 export type GeocodeProviderId = "nominatim" | "google";
 
@@ -72,7 +73,10 @@ async function nominatim(
 ): Promise<PlaceInfo> {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&accept-language=en&addressdetails=1`;
   const res = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      "User-Agent": `GeoHelper/${VERSION} (github.com/wiktorekdev/geohelper)`,
+    },
     signal: timeoutSignal(undefined, signal),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);

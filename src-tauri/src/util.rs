@@ -81,8 +81,25 @@ impl<K: Eq + Hash + Clone, V: Clone> LimitedMap<K, V> {
 pub fn is_portable() -> bool {
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
-            return exe_dir.join("portable").exists() || exe_dir.join("data").is_dir();
+            let is_marked = exe_dir.join("portable").exists() || exe_dir.join("data").is_dir();
+            return is_marked && is_dir_writable(exe_dir);
         }
     }
     false
+}
+
+fn is_dir_writable(dir: &std::path::Path) -> bool {
+    if !dir.exists() {
+        if let Some(parent) = dir.parent() {
+            return is_dir_writable(parent);
+        }
+        return false;
+    }
+    let temp_file = dir.join(".geohelper_write_test");
+    if std::fs::write(&temp_file, b"").is_ok() {
+        let _ = std::fs::remove_file(temp_file);
+        true
+    } else {
+        false
+    }
 }

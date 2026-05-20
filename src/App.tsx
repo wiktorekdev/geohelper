@@ -42,14 +42,21 @@ export default function App() {
         // 1. Perform automatic migration from legacy localStorage/themes.json
         await migrateLegacyStorage();
 
-        // 2. Hydrate all stores concurrently from settings.json
-        await Promise.all([
+        // 2. Hydrate all stores concurrently from settings.json, catching individual rejections
+        const hydrationResults = await Promise.allSettled([
           hydrateSettings(),
           hydrateDisplay(),
           useI18n.getState().hydrate(),
           useThemeStore.getState().hydrate(),
           hydrateUpdate(),
         ]);
+
+        // Safely log any partial hydration failures while allowing the app to launch
+        hydrationResults.forEach((result, index) => {
+          if (result.status === "rejected") {
+            logger.error(`Resilient Hydration: Slice index ${index} failed to load:`, result.reason);
+          }
+        });
 
         // 3. Trigger initial updates and checks
         void runUpdateCheck();

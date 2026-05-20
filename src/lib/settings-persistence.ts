@@ -26,7 +26,7 @@ export type SettingsSchema = {
   locale: string;
   lastWindowWidth: number;
   activeThemeId: string;
-  displayConfig: any;
+  displayConfig: unknown;
 };
 
 let storeInstance: TauriStore | null = null;

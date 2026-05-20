@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { GoogleMaps } from "@/components/ui/svgs/googleMaps";
 import { useStore } from "@/lib/store";
 import { useDisplayStore } from "@/lib/display-store";
-import { formatCoord, formatCoords } from "@/lib/coords";
+import { formatCoords } from "@/lib/coords";
 import { MOCK_COORDS } from "@/lib/mock-data";
 import { SelectableText } from "@/components/display/selectable-text";
 import { t } from "@/lib/i18n";
@@ -42,9 +42,6 @@ export function CoordsSection() {
 
   if (!coords) return null;
 
-  const lat = formatCoord(coords.lat);
-  const lng = formatCoord(coords.lng);
-
   return (
     <AnimatePresence mode="wait">
       {coords && (
@@ -56,42 +53,50 @@ export function CoordsSection() {
           transition={{ duration: 0.15, ease: "easeOut" }}
         >
           <Card className="mx-4 my-2 p-3">
-      <div className="grid grid-cols-2 gap-2">
-        <Value id="coordinates.lat" label={t("coordinates.lat")} value={lat} />
-        <Value id="coordinates.lng" label={t("coordinates.lng")} value={lng} />
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <SelectableText id="coordinates.action.copy" className="block">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Action onClick={copy}>
-                {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                {copied ? t("coordinates.copied") : t("coordinates.copy")}
-              </Action>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t("coordinates.copyTooltip")}</TooltipContent>
-          </Tooltip>
-        </SelectableText>
-        <SelectableText id="coordinates.action.maps" className="block">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Action onClick={openInGoogleMaps}>
-                <GoogleMaps className="size-3.5" />
-                {t("coordinates.googleMaps")}
-              </Action>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t("coordinates.mapsTooltip")}</TooltipContent>
-          </Tooltip>
-        </SelectableText>
-      </div>
-    </Card>
+            <div className="grid grid-cols-2 gap-2">
+              <Value id="coordinates.lat" label={t("coordinates.lat")} value={coords.lat} />
+              <Value id="coordinates.lng" label={t("coordinates.lng")} value={coords.lng} />
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <SelectableText id="coordinates.action.copy" className="block">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Action onClick={copy}>
+                      {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                      {copied ? t("coordinates.copied") : t("coordinates.copy")}
+                    </Action>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{t("coordinates.copyTooltip")}</TooltipContent>
+                </Tooltip>
+              </SelectableText>
+              <SelectableText id="coordinates.action.maps" className="block">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Action onClick={openInGoogleMaps}>
+                      <GoogleMaps className="size-3.5" />
+                      {t("coordinates.googleMaps")}
+                    </Action>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{t("coordinates.mapsTooltip")}</TooltipContent>
+                </Tooltip>
+              </SelectableText>
+            </div>
+          </Card>
         </m.div>
       )}
     </AnimatePresence>
   );
 }
 
-function Value({ id, label, value }: { id: string; label: string; value: string }) {
+function Value({
+  id,
+  label,
+  value,
+}: {
+  id: string;
+  label: string;
+  value: number;
+}) {
   return (
     <div className="rounded border border-sidebar-border bg-background/50 px-2.5 py-2">
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -99,7 +104,7 @@ function Value({ id, label, value }: { id: string; label: string; value: string 
       </div>
       <div className="mt-0.5 truncate font-mono text-[12px] tabular-nums">
         <SelectableText id={`${id}.value`} mono>
-          {value}
+          {value.toFixed(6)}
         </SelectableText>
       </div>
     </div>
