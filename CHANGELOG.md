@@ -2,6 +2,11 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.17.2] - 2026-05-20
+
+### Fixed
+- **Updater Loop** — `tauri.conf.json` was pinned to `0.17.0` while the crate was `0.17.1`, so installed builds reported themselves as `0.17.0` and re-prompted for the same update on every launch. All version sources are now in sync.
+
 ## [0.17.1] - 2026-05-20
 
 ### Added
