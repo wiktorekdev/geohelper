@@ -1,3 +1,4 @@
+import { m, AnimatePresence } from "framer-motion";
 import { Check, Map, MapPinOff, Pencil, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,65 +15,73 @@ export function EditToolbar() {
   const mapVisible = useDisplayStore((s) => s.mapVisible);
   const setMapVisible = useDisplayStore((s) => s.setMapVisible);
 
-  if (!editing) return null;
-
   function finishEditing() {
     clearMockIfPresent();
     stopEditing();
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-[2000] flex justify-center px-2">
-      <div className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
-        <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
-          <Pencil className="size-3.5 text-brand" />
-          <span className="leading-tight">{t("toolbar.editing")}</span>
-        </div>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1.5 rounded-full px-2 text-xs"
-              onClick={() => setMapVisible(!mapVisible)}
-            >
-              {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
-              {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
-          </TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1.5 rounded-full px-2 text-xs"
-              onClick={() => {
-                resetAll();
-                toast.success(t("toolbar.resetSuccess"));
-              }}
-            >
-              <RotateCcw className="size-3.5" />
-              {t("toolbar.reset")}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
-        </Tooltip>
-
-        <Button
-          size="sm"
-          className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
-          onClick={finishEditing}
+    <AnimatePresence>
+      {editing && (
+        <m.div
+          initial={{ opacity: 0, y: 15, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 15, scale: 0.95 }}
+          transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+          className="pointer-events-none absolute inset-x-0 bottom-3 z-[2000] flex justify-center px-2"
         >
-          <Check className="size-3.5" />
-          {t("toolbar.done")}
-        </Button>
-      </div>
-    </div>
+          <div className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
+            <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
+              <Pencil className="size-3.5 text-brand" />
+              <span className="leading-tight">{t("toolbar.editing")}</span>
+            </div>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 rounded-full px-2 text-xs"
+                  onClick={() => setMapVisible(!mapVisible)}
+                >
+                  {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
+                  {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 rounded-full px-2 text-xs"
+                  onClick={() => {
+                    resetAll();
+                    toast.success(t("toolbar.resetSuccess"));
+                  }}
+                >
+                  <RotateCcw className="size-3.5" />
+                  {t("toolbar.reset")}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
+            </Tooltip>
+
+            <Button
+              size="sm"
+              className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
+              onClick={finishEditing}
+            >
+              <Check className="size-3.5" />
+              {t("toolbar.done")}
+            </Button>
+          </div>
+        </m.div>
+      )}
+    </AnimatePresence>
   );
 }

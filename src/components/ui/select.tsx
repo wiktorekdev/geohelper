@@ -82,6 +82,32 @@ const SelectItem = ({ className, children, ref, ...props }: SelectItemProps) => 
 );
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
+interface SelectLabelProps extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label> {
+  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Label>>;
+}
+
+const SelectLabel = ({ className, ref, ...props }: SelectLabelProps) => (
+  <SelectPrimitive.Label
+    ref={ref}
+    className={cn("px-8 py-1.5 text-xs font-semibold text-muted-foreground", className)}
+    {...props}
+  />
+);
+SelectLabel.displayName = SelectPrimitive.Label.displayName;
+
+interface SelectSeparatorProps extends React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator> {
+  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Separator>>;
+}
+
+const SelectSeparator = ({ className, ref, ...props }: SelectSeparatorProps) => (
+  <SelectPrimitive.Separator
+    ref={ref}
+    className={cn("-mx-1 my-1 h-px bg-border/60", className)}
+    {...props}
+  />
+);
+SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
+
 export {
   Select,
   SelectGroup,
@@ -89,4 +115,6 @@ export {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
 };

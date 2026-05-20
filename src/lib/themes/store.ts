@@ -10,8 +10,12 @@ const KEY_ACTIVE = "activeThemeId";
 const KEY_USER = "userThemes";
 const KEY_HIDDEN = "hiddenBuiltins";
 
+let themesStoreInstance: TauriStore | null = null;
 let themesStorePromise: Promise<TauriStore> | null = null;
 function getThemesStore(): Promise<TauriStore> {
+  if (themesStoreInstance) {
+    return Promise.resolve(themesStoreInstance);
+  }
   if (!themesStorePromise) {
     themesStorePromise = (async () => {
       let storePath = "themes.json";
@@ -22,19 +26,27 @@ function getThemesStore(): Promise<TauriStore> {
       }
 
       try {
-        return await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+        const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+        themesStoreInstance = store;
+        return store;
       } catch (e) {
         console.error(`Failed to load store at ${storePath}, attempting recovery:`, e);
         try {
           await invoke("handle_corrupted_store", { path: storePath });
-          return await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+          const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+          themesStoreInstance = store;
+          return store;
         } catch (innerError) {
           console.error("Critical: themes recovery failed, falling back to relative store:", innerError);
           try {
             await invoke("handle_corrupted_store", { path: "themes.json" });
-            return await TauriStore.load("themes.json", { defaults: {}, autoSave: true });
+            const store = await TauriStore.load("themes.json", { defaults: {}, autoSave: true });
+            themesStoreInstance = store;
+            return store;
           } catch {
-            return await TauriStore.load("themes.json", { defaults: {}, autoSave: true });
+            const store = await TauriStore.load("themes.json", { defaults: {}, autoSave: true });
+            themesStoreInstance = store;
+            return store;
           }
         }
       }

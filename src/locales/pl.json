@@ -23,7 +23,7 @@
   "map.loading": "Ładowanie mapy...",
   "map.loadFailed": "Nie udało się wczytać Google Maps",
   "geocode.error": "Geokodowanie odwrotne nie powiodło się",
-  "validation.required": "Klucz API Google Maps jest wymagany.",
+  "geocode.lookupFailed": "Wyszukiwanie lokalizacji nie powiodło się: {error}",
   "validation.checking": "Sprawdzanie klucza Google API...",
   "validation.error": "Nie udało się zweryfikować klucza Google API.",
   "validation.waiting": "Oczekiwanie na walidację...",
@@ -74,6 +74,8 @@
   "settings.title": "Ustawienia",
   "settings.sources.title": "Źródła",
   "settings.sources.mapProvider": "Dostawca mapy",
+  "settings.sources.leafletGroup": "Standardowe (Darmowe)",
+  "settings.sources.googleGroup": "Google Maps (Wymaga Klucza)",
   "settings.sources.locationProvider": "Dostawca lokalizacji",
   "settings.sources.googleApiKey": "Klucz API Google Maps",
   "settings.sources.getKey": "Pobierz klucz w Google Cloud",
@@ -125,5 +127,12 @@
   "settings.appearance.language": "Język",
   "settings.appearance.languagePlaceholder": "Wybierz język",
   "settings.appearance.languageSearch": "Szukaj języka...",
-  "settings.appearance.languageEmpty": "Nie znaleziono języka."
+  "settings.appearance.languageEmpty": "Nie znaleziono języka.",
+  "marker.customizeTitle": "Personalizacja Znacznika",
+  "marker.color": "Kolor znacznika",
+  "marker.borderColor": "Kolor obramowania",
+  "marker.size": "Rozmiar znacznika",
+  "marker.presetCurated": "Gotowe kolory",
+  "marker.customHex": "Własny HEX",
+  "marker.close": "Zamknij"
 }

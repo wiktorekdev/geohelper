@@ -453,23 +453,5 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
     )
   }
 
-  return null
 }
 
-// Demo
-export function Demo() {
-  return (
-    <div className="fixed inset-0 flex items-center justify-center p-8">
-      <ColorPicker defaultValue="#6366f1" className="h-auto w-64">
-        <ColorPickerSelection className="h-40 rounded-lg" />
-        <ColorPickerHue />
-        <ColorPickerAlpha />
-        <div className="flex items-center gap-2">
-          <ColorPickerEyeDropper />
-          <ColorPickerOutput />
-          <ColorPickerFormat />
-        </div>
-      </ColorPicker>
-    </div>
-  )
-}

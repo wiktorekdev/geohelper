@@ -13,9 +13,29 @@ export const STORAGE_KEYS = {
   updateDismissed: "geohelper.updateDismissed",
 };
 
+export type SettingsSchema = {
+  mapProvider: MapProviderId;
+  geocodeProvider: GeocodeProviderId;
+  copyFormat: CopyFormat;
+  alwaysOnTop: boolean;
+  updateDismissed: string;
+  googleApiKey: string;
+  markerColor: string;
+  markerBorderColor: string;
+  markerSize: number;
+  locale: string;
+  lastWindowWidth: number;
+  activeThemeId: string;
+  displayConfig: any;
+};
+
+let storeInstance: TauriStore | null = null;
 let storePromise: Promise<TauriStore> | null = null;
 
 export function getSettingsStore(): Promise<TauriStore> {
+  if (storeInstance) {
+    return Promise.resolve(storeInstance);
+  }
   if (!storePromise) {
     storePromise = (async () => {
       let storePath = "settings.json";
@@ -26,19 +46,27 @@ export function getSettingsStore(): Promise<TauriStore> {
       }
 
       try {
-        return await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+        const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+        storeInstance = store;
+        return store;
       } catch (e) {
         console.error(`Failed to load store at ${storePath}, attempting recovery:`, e);
         try {
           await invoke("handle_corrupted_store", { path: storePath });
-          return await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+          const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true });
+          storeInstance = store;
+          return store;
         } catch (innerError) {
           console.error("Critical: settings recovery failed, falling back to relative store:", innerError);
           try {
             await invoke("handle_corrupted_store", { path: "settings.json" });
-            return await TauriStore.load("settings.json", { defaults: {}, autoSave: true });
+            const store = await TauriStore.load("settings.json", { defaults: {}, autoSave: true });
+            storeInstance = store;
+            return store;
           } catch {
-            return await TauriStore.load("settings.json", { defaults: {}, autoSave: true });
+            const store = await TauriStore.load("settings.json", { defaults: {}, autoSave: true });
+            storeInstance = store;
+            return store;
           }
         }
       }
@@ -129,7 +157,7 @@ export async function migrateLegacyStorage() {
   }
 }
 
-export async function saveSetting(key: string, value: unknown): Promise<void> {
+export async function saveSetting<K extends keyof SettingsSchema>(key: K, value: SettingsSchema[K]): Promise<void> {
   try {
     const store = await getSettingsStore();
     await store.set(key, value);

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Field, Group } from "./settings-primitives";
+import { Field, Group, KeyValidationMessage } from "./settings-primitives";
 import { MAP_PROVIDERS, type MapProviderId } from "@/lib/map-providers";
 import { GEOCODE_PROVIDERS, type GeocodeProviderId } from "@/lib/geocode-providers";
 import type { KeyValidation } from "@/hooks/use-google-api-key-validation";
@@ -46,7 +46,7 @@ export function SourcesSection({
   return (
     <Group icon={<Layers className="size-3.5" />} title={t("settings.sources.title")}>
       <Field label={t("settings.sources.mapProvider")}>
-        <Select value={mapProvider} onValueChange={(value) => setMapProvider(value as MapProviderId)}>
+        <Select value={MAP_PROVIDERS[mapProvider] ? mapProvider : "osm"} onValueChange={(value) => setMapProvider(value as MapProviderId)}>
           <SelectTrigger className="h-9">
             <SelectValue />
           </SelectTrigger>
@@ -123,11 +123,12 @@ export function SourcesSection({
         </div>
         <button
           onClick={() => openUrl("https://console.cloud.google.com/google/maps-apis/credentials")}
-          className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+          className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground mr-3"
         >
           {t("settings.sources.getKey")}
           <ExternalLink className="size-3" />
         </button>
+        <KeyValidationMessage validation={keyValidation} />
       </Field>
     </Group>
   );

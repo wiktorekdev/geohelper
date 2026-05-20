@@ -8,15 +8,17 @@ pub fn get_state(state: State<'_, Shared>) -> Snapshot {
 }
 
 #[tauri::command]
-pub fn reset_current(app: AppHandle, state: State<'_, Shared>) {
+pub fn reset_current(app: AppHandle, state: State<'_, Shared>) -> Result<(), String> {
     state.reset();
-    let _ = app.emit("state", &state.snapshot());
+    app.emit("state", &state.snapshot())
+        .map_err(|e| format!("Failed to emit reset state: {e}"))
 }
 
 #[tauri::command]
-pub fn clear_history(app: AppHandle, state: State<'_, Shared>) {
+pub fn clear_history(app: AppHandle, state: State<'_, Shared>) -> Result<(), String> {
     state.clear_history();
-    let _ = app.emit("state", &state.snapshot());
+    app.emit("state", &state.snapshot())
+        .map_err(|e| format!("Failed to emit cleared history: {e}"))
 }
 
 #[tauri::command]
@@ -92,7 +94,7 @@ fn install_kind() -> InstallKind {
 }
 
 #[tauri::command]
-pub fn get_store_path(filename: Option<String>) -> String {
+pub fn get_store_path(filename: Option<String>) -> Result<String, String> {
     let name = filename.unwrap_or_else(|| "settings.json".to_string());
     if crate::util::is_portable() {
         if let Ok(exe_path) = std::env::current_exe() {
@@ -100,26 +102,25 @@ pub fn get_store_path(filename: Option<String>) -> String {
                 // Ensure data directory exists
                 let data_dir = exe_dir.join("data");
                 if !data_dir.exists() {
-                    let _ = std::fs::create_dir_all(&data_dir);
+                    std::fs::create_dir_all(&data_dir)
+                        .map_err(|e| format!("Failed to create portable data directory: {e}"))?;
                 }
-                return data_dir.join(&name).to_string_lossy().to_string();
+                return Ok(data_dir.join(&name).to_string_lossy().to_string());
             }
         }
     }
-    name
+    Ok(name)
 }
 
 #[tauri::command]
-pub fn handle_corrupted_store(app: AppHandle, path: String) {
+pub fn handle_corrupted_store(app: AppHandle, path: String) -> Result<(), String> {
     use tauri::Manager;
     let target_path = if std::path::Path::new(&path).is_absolute() {
         std::path::PathBuf::from(&path)
     } else {
-        if let Ok(config_dir) = app.path().app_config_dir() {
-            config_dir.join(&path)
-        } else {
-            return;
-        }
+        app.path().app_config_dir()
+            .map(|dir| dir.join(&path))
+            .map_err(|e| format!("Failed to resolve config dir: {e}"))?
     };
 
     if target_path.exists() {
@@ -130,6 +131,8 @@ pub fn handle_corrupted_store(app: AppHandle, path: String) {
                 .map(|d| d.as_secs())
                 .unwrap_or(0)
         ));
-        let _ = std::fs::rename(&target_path, &corrupted_path);
+        std::fs::rename(&target_path, &corrupted_path)
+            .map_err(|e| format!("Failed to rename corrupted store: {e}"))?;
     }
+    Ok(())
 }

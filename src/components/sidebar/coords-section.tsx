@@ -1,3 +1,4 @@
+import { m, AnimatePresence } from "framer-motion";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -21,10 +22,6 @@ export function CoordsSection() {
   const [copied, setCopied] = useState(false);
 
   const coords = current ?? (editing ? MOCK_COORDS : null);
-  if (!coords) return null;
-
-  const lat = formatCoord(coords.lat);
-  const lng = formatCoord(coords.lng);
 
   async function copy() {
     const text = formatCoords(coords!, copyFormat);
@@ -43,8 +40,22 @@ export function CoordsSection() {
     void openUrl(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`);
   }
 
+  if (!coords) return null;
+
+  const lat = formatCoord(coords.lat);
+  const lng = formatCoord(coords.lng);
+
   return (
-    <Card className="mx-4 my-2 p-3">
+    <AnimatePresence mode="wait">
+      {coords && (
+        <m.div
+          key="coords-card"
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+        >
+          <Card className="mx-4 my-2 p-3">
       <div className="grid grid-cols-2 gap-2">
         <Value id="coordinates.lat" label={t("coordinates.lat")} value={lat} />
         <Value id="coordinates.lng" label={t("coordinates.lng")} value={lng} />
@@ -74,6 +85,9 @@ export function CoordsSection() {
         </SelectableText>
       </div>
     </Card>
+        </m.div>
+      )}
+    </AnimatePresence>
   );
 }
 

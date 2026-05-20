@@ -10,7 +10,7 @@ export async function validateGoogleApiKey(
   signal?: AbortSignal,
 ): Promise<GoogleApiKeyValidation> {
   const key = apiKey.trim();
-  if (!key) return { ok: false, message: t("validation.required") };
+  if (!key) return { ok: false, message: "" };
 
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=0,0&key=${encodeURIComponent(key)}&language=en`;
   const res = await fetch(url, { signal: timeoutSignal(undefined, signal) });

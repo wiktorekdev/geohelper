@@ -23,7 +23,7 @@
   "map.loading": "Loading map...",
   "map.loadFailed": "Failed to load Google Maps",
   "geocode.error": "Reverse geocoding failed",
-  "validation.required": "Google Maps API key is required.",
+  "geocode.lookupFailed": "Location lookup failed: {error}",
   "validation.checking": "Checking Google API key...",
   "validation.error": "Could not validate Google API key.",
   "validation.waiting": "Waiting to validate...",
@@ -74,6 +74,8 @@
   "settings.title": "Settings",
   "settings.sources.title": "Sources",
   "settings.sources.mapProvider": "Map provider",
+  "settings.sources.leafletGroup": "Standard (Free)",
+  "settings.sources.googleGroup": "Google Maps (Requires Key)",
   "settings.sources.locationProvider": "Location provider",
   "settings.sources.googleApiKey": "Google Maps API key",
   "settings.sources.getKey": "Get a key on Google Cloud",
@@ -125,5 +127,12 @@
   "settings.appearance.language": "Language",
   "settings.appearance.languagePlaceholder": "Select language",
   "settings.appearance.languageSearch": "Search language...",
-  "settings.appearance.languageEmpty": "No language found."
+  "settings.appearance.languageEmpty": "No language found.",
+  "marker.customizeTitle": "Marker Customization",
+  "marker.color": "Marker Color",
+  "marker.borderColor": "Border Color",
+  "marker.size": "Marker Size",
+  "marker.presetCurated": "Preset Colors",
+  "marker.customHex": "Custom HEX",
+  "marker.close": "Close"
 }

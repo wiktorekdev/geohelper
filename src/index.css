@@ -94,7 +94,7 @@
 }
 
 /* Leaflet */
-.leaflet-container { background: var(--background); font: inherit; }
+.leaflet-container { background: var(--background) !important; font: inherit; }
 .leaflet-control-attribution {
   background: color-mix(in oklab, var(--sidebar) 85%, transparent) !important;
   color: var(--muted-foreground) !important;

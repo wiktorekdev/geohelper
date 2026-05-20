@@ -95,30 +95,59 @@ async fn attempt(app: &AppHandle, state: &Shared, reconnect_epoch: u64) -> Resul
 
     let (evt_tx, evt_rx) = mpsc::channel::<NetworkEvent>(1024);
     let (close_tx, mut close_rx) = mpsc::channel::<()>(1);
+    let (pong_tx, mut pong_rx) = mpsc::channel::<()>(10);
 
     let conn_clone = conn.clone();
     let reader = tokio::spawn(async move {
         while let Some(msg) = read.next().await {
             let Ok(msg) = msg else { break };
-            let Message::Text(text) = msg else { continue };
-            let v: Value = match serde_json::from_str(&text) {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
+            match msg {
+                Message::Text(text) => {
+                    let v: Value = match serde_json::from_str(&text) {
+                        Ok(v) => v,
+                        Err(_) => continue,
+                    };
 
-            if let Some(id) = v.get("id").and_then(|i| i.as_u64()) {
-                conn_clone.resolve(id, v);
-            } else if let Some(method) = v.get("method").and_then(|m| m.as_str()) {
-                if let Some(evt) = parse_event(method, &v) {
-                    match evt_tx.try_send(evt) {
-                        Ok(()) => {}
-                        Err(mpsc::error::TrySendError::Full(_)) => {}
-                        Err(mpsc::error::TrySendError::Closed(_)) => break,
+                    if let Some(id) = v.get("id").and_then(|i| i.as_u64()) {
+                        conn_clone.resolve(id, v);
+                    } else if let Some(method) = v.get("method").and_then(|m| m.as_str()) {
+                        if let Some(evt) = parse_event(method, &v) {
+                            match evt_tx.try_send(evt) {
+                                Ok(()) => {}
+                                Err(mpsc::error::TrySendError::Full(_)) => {}
+                                Err(mpsc::error::TrySendError::Closed(_)) => break,
+                            }
+                        }
                     }
                 }
+                Message::Pong(_) => {
+                    let _ = pong_tx.try_send(());
+                }
+                _ => {}
             }
         }
         let _ = close_tx.send(()).await;
+    });
+
+    let (heartbeat_failed_tx, mut heartbeat_failed_rx) = mpsc::channel::<()>(1);
+    let conn_ping = conn.clone();
+    let heartbeater = tokio::spawn(async move {
+        tokio::time::sleep(Duration::from_secs(10)).await;
+        let mut interval = tokio::time::interval(Duration::from_secs(15));
+        loop {
+            interval.tick().await;
+            if conn_ping.ping().await.is_err() {
+                let _ = heartbeat_failed_tx.try_send(());
+                break;
+            }
+            match tokio::time::timeout(Duration::from_secs(5), pong_rx.recv()).await {
+                Ok(Some(())) => {}
+                _ => {
+                    let _ = heartbeat_failed_tx.try_send(());
+                    break;
+                }
+            }
+        }
     });
 
     state.set_conn(ConnState::Connected);
@@ -136,9 +165,11 @@ async fn attempt(app: &AppHandle, state: &Shared, reconnect_epoch: u64) -> Resul
             })
         },
         _ = close_rx.recv() => Err(anyhow::anyhow!("WebSocket closed")),
+        _ = heartbeat_failed_rx.recv() => Err(anyhow::anyhow!("CDP Heartbeat timeout")),
     };
 
     reader.abort();
+    heartbeater.abort();
     result
 }
 

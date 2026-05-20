@@ -1,3 +1,4 @@
+import { m, AnimatePresence } from "framer-motion";
 import ReactCountryFlag from "react-country-flag";
 
 import { Card } from "@/components/ui/card";
@@ -15,35 +16,51 @@ export function LocationSection() {
   const locationLoading = useStore((s) => s.locationLoading);
   const display = deriveLocationDisplay(place, details, current, geocodeError, locationLoading);
 
-  switch (display.kind) {
-    case "error":
-      return (
-        <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">
-          {t("location.couldNotShow")}
-        </Card>
-      );
-    case "sparse":
-      return (
-        <Card className="mx-4 my-2 p-4 space-y-2">
-          <div className="text-sm font-medium leading-snug">{display.primary}</div>
-          {display.continent && (
-            <div className="text-[11px] text-muted-foreground">{display.continent}</div>
-          )}
-          <div className="text-[11px] text-muted-foreground">{t("location.settlementNotInData")}</div>
-        </Card>
-      );
-    case "loading":
-      return (
-        <Card className="mx-4 my-2 p-4 space-y-1 text-sm text-muted-foreground">
-          {display.rough ? <div className="text-[13px] text-foreground/90">{display.rough}</div> : null}
-          <div className="text-[11px]">{t("location.fetchingAddress")}</div>
-        </Card>
-      );
-    case "empty":
-      return <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>;
-    case "settlement":
-      return <SettlementView display={display} />;
+  function renderContent() {
+    switch (display.kind) {
+      case "error":
+        return (
+          <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">
+            {t("location.couldNotShow")}
+          </Card>
+        );
+      case "sparse":
+        return (
+          <Card className="mx-4 my-2 p-4 space-y-2">
+            <div className="text-sm font-medium leading-snug">{display.primary}</div>
+            {display.continent && (
+              <div className="text-[11px] text-muted-foreground">{display.continent}</div>
+            )}
+            <div className="text-[11px] text-muted-foreground">{t("location.settlementNotInData")}</div>
+          </Card>
+        );
+      case "loading":
+        return (
+          <Card className="mx-4 my-2 p-4 space-y-1 text-sm text-muted-foreground">
+            {display.rough ? <div className="text-[13px] text-foreground/90">{display.rough}</div> : null}
+            <div className="text-[11px]">{t("location.fetchingAddress")}</div>
+          </Card>
+        );
+      case "empty":
+        return <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>;
+      case "settlement":
+        return <SettlementView display={display} />;
+    }
   }
+
+  return (
+    <AnimatePresence mode="wait">
+      <m.div
+        key={display.kind}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+      >
+        {renderContent()}
+      </m.div>
+    </AnimatePresence>
+  );
 }
 
 function SettlementView({

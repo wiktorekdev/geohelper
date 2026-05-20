@@ -64,4 +64,9 @@ impl Conn {
             let _ = tx.send(value);
         }
     }
+
+    pub async fn ping(&self) -> Result<()> {
+        let mut w = self.writer.lock().await;
+        w.send(Message::Ping(vec![])).await.map_err(Into::into)
+    }
 }

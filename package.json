@@ -1,7 +1,7 @@
 {
   "name": "geohelper",
   "private": true,
-  "version": "0.17.0",
+  "version": "0.17.1",
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
@@ -27,6 +27,7 @@
     "@tauri-apps/plugin-process": "^2.2.0",
     "@tauri-apps/plugin-store": "^2.4.3",
     "@tauri-apps/plugin-updater": "^2.7.0",
+    "@tauri-apps/plugin-window-state": "~2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

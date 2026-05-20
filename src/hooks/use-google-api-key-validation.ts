@@ -11,18 +11,14 @@ export type KeyValidation =
   | { state: "invalid"; message: string };
 
 export function useGoogleApiKeyValidation(draft: string) {
-  const [validation, setValidation] = useState<KeyValidation>(() =>
-    draft.trim()
-      ? { state: "idle", message: null }
-      : { state: "invalid", message: t("validation.required") },
-  );
+  const [validation, setValidation] = useState<KeyValidation>({ state: "idle", message: null });
   const abortRef = useRef<AbortController | null>(null);
   const seqRef = useRef(0);
 
   const validate = useCallback(async (key = draft.trim()) => {
     abortRef.current?.abort();
     if (!key) {
-      setValidation({ state: "invalid", message: t("validation.required") });
+      setValidation({ state: "idle", message: null });
       return;
     }
 
@@ -52,7 +48,7 @@ export function useGoogleApiKeyValidation(draft: string) {
     abortRef.current?.abort();
 
     if (!key) {
-      setValidation({ state: "invalid", message: t("validation.required") });
+      setValidation({ state: "idle", message: null });
       return;
     }
 

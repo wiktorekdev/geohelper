@@ -2,6 +2,19 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.17.1] - 2026-05-20
+
+### Added
+- **Interactive Marker Customization** — Click on the map pin in layout customization mode to open a premium floating marker customization overlay.
+- **Dynamic Marker Aesthetics** — Live custom marker styles supporting custom colors, custom borders, and dynamic sizing (16px to 48px), including a static blue edit pencil badge and a smooth hover scale transition to indicate clickability.
+- **Embedded Popover Color Picker** — Replaced plain custom HEX inputs in the marker panel with an advanced popover-triggerable color picker (selection panel + hue slider) for precise color picking.
+- **WebSocket Keepalives (Heartbeats)** — Added continuous Ping/Pong heartbeat frames with a 10-second idle detection loop in the Rust backend to prevent connections to GeoGuessr from dying silently.
+- **Dynamic Debug Port Detection** — Added automatic fallback and retry scanning to dynamically locate active remote debugging ports when starting connection sequences.
+- **Typed Command Error Propagation** — Rust backend Tauri commands now propagate structured, typed error diagnostics directly to the UI rather than failing silently or returning plain generic errors.
+
+### Changed
+- **Cached Store Persistence** — Globally caches JSON settings and theme store load tasks to completely eliminate redundant file reads and improve startup performance.
+
 ## [0.17.0] - 2026-05-19
 
 ### Added

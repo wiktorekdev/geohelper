@@ -22,11 +22,14 @@ export const createConnectionSlice: StateCreator<Store, [], [], ConnectionSlice>
   conn: { kind: "idle" },
   lastDisconnectReason: null,
   setSnapshot: (snapshot) =>
-    set((s) => ({
-      conn: snapshot.conn,
-      current: snapshot.current,
-      lastDisconnectReason: stickyReason(s.lastDisconnectReason, snapshot.conn),
-    })),
+    set((s) => {
+      const keepCurrentMock = s.current?.source === "mock" && !snapshot.current;
+      return {
+        conn: snapshot.conn,
+        current: keepCurrentMock ? s.current : snapshot.current,
+        lastDisconnectReason: stickyReason(s.lastDisconnectReason, snapshot.conn),
+      };
+    }),
   setConn: (conn) =>
     set((s) => ({
       conn,

@@ -1,3 +1,4 @@
+import { m, AnimatePresence } from "framer-motion";
 import { Bold, Eye, EyeOff, RotateCcw, Type, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -34,7 +35,7 @@ export function SelectionToolbar() {
   const clearSelection = useDisplayStore((s) => s.clearSelection);
   const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
 
-  if (!editing || selection.length === 0) return null;
+  const visible = editing && selection.length > 0;
 
   const summary = summarize(
     selection.map((id) => textStyles[id] ?? DEFAULT_TEXT_STYLE),
@@ -50,12 +51,18 @@ export function SelectionToolbar() {
   const showColor = !onlyFlag;
 
   return (
-    <div
-      data-no-marquee
-      className="pointer-events-none fixed inset-x-0 z-[2100] flex justify-center px-2 transition-[bottom,left] duration-500"
-      style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 64 : 116 }}
-    >
-      <div className="pointer-events-auto flex items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+    <AnimatePresence>
+      {visible && (
+        <m.div
+          data-no-marquee
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+          className="pointer-events-none fixed inset-x-0 z-[2100] flex justify-center px-2 transition-[bottom,left] duration-500"
+          style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 64 : 116 }}
+        >
+          <div className="pointer-events-auto flex items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
         <div className="inline-flex items-center gap-1.5 px-1.5 text-[12px] font-medium">
           <Type className="size-3.5 text-brand" />
           <span className="tabular-nums">
@@ -156,8 +163,10 @@ export function SelectionToolbar() {
           </TooltipTrigger>
           <TooltipContent side="top">{t("selection.deselect")}</TooltipContent>
         </Tooltip>
-      </div>
-    </div>
+          </div>
+        </m.div>
+      )}
+    </AnimatePresence>
   );
 }
 

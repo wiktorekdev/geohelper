@@ -67,7 +67,7 @@ export function useMapWindowLayout() {
 
         const inner = await win.innerSize();
         const scale = await win.scaleFactor();
-        if (cancelled) return;
+        if (cancelled || isStale()) return;
 
         const hLog = inner.height / scale;
         const wLog = inner.width / scale;

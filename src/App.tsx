@@ -17,6 +17,7 @@ import { useThemeStore } from "@/lib/themes/store";
 import { migrateLegacyStorage } from "@/lib/settings-persistence";
 import { ipc } from "@/lib/ipc";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 export default function App() {
   useBridge();
@@ -30,6 +31,7 @@ export default function App() {
   const hydrateUpdate = useUpdateStore((s) => s.hydrate);
 
   const mapVisible = useDisplayStore((s) => s.mapVisible);
+  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
   const hydrateDisplay = useDisplayStore((s) => s.hydrate);
 
   useMapWindowLayout();
@@ -84,7 +86,33 @@ export default function App() {
   return (
     <LazyMotion features={domAnimation}>
       <div className="flex h-screen w-screen overflow-hidden bg-background">
-        {settingsOpen ? <SettingsSidebar /> : <Sidebar />}
+        <AnimatePresence mode="wait" initial={false}>
+          {settingsOpen ? (
+            <m.div
+              key="settings"
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -15 }}
+              transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+              className="h-full shrink-0"
+              style={{ width: sidebarWidth }}
+            >
+              <SettingsSidebar />
+            </m.div>
+          ) : (
+            <m.div
+              key="sidebar"
+              initial={{ opacity: 0, x: 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 15 }}
+              transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+              className={cn("h-full", mapVisible ? "shrink-0" : "flex-1")}
+              style={{ width: mapVisible ? sidebarWidth : undefined }}
+            >
+              <Sidebar />
+            </m.div>
+          )}
+        </AnimatePresence>
         
         <AnimatePresence mode="popLayout" initial={false}>
           {mapVisible && (

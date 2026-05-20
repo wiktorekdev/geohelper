@@ -1,5 +1,6 @@
 import { GripVertical, Map, MapPinOff, Pencil, Settings as SettingsIcon } from "lucide-react";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
+import { m, AnimatePresence } from "framer-motion";
 import {
   closestCenter,
   DndContext,
@@ -52,28 +53,28 @@ export function Sidebar() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const dragStartX = useRef(0);
   const dragStartWidth = useRef(0);
-  const isDragging = useRef(false);
+  const [resizing, setResizing] = useState(false);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!editing) return;
-    isDragging.current = true;
+    setResizing(true);
     dragStartX.current = e.clientX;
     dragStartWidth.current = sidebarWidth;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, [editing, sidebarWidth]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging.current) return;
+    if (!resizing) return;
     const delta = e.clientX - dragStartX.current;
     const next = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, dragStartWidth.current + delta));
     setSidebarWidth(next);
-  }, [setSidebarWidth]);
+  }, [resizing, setSidebarWidth]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
+    if (!resizing) return;
+    setResizing(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-  }, []);
+  }, [resizing]);
 
   function handleToggleEditing() {
     if (editing) clearMockIfPresent();
@@ -91,7 +92,9 @@ export function Sidebar() {
   }
 
   return (
-    <aside
+    <m.aside
+      layout="size"
+      transition={resizing ? { duration: 0 } : { duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
       className={cn(
         "relative flex h-full flex-col bg-sidebar border-r border-sidebar-border",
         editing && "ring-1 ring-inset ring-brand/20",
@@ -165,31 +168,41 @@ export function Sidebar() {
       </header>
 
       <ScrollArea className="flex-1">
-        {current || editing ? (
-          <MarqueeSelect>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
+        <AnimatePresence mode="wait">
+          {current || editing ? (
+            <m.div
+              key="widgets-container"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
             >
-              <SortableContext items={order} strategy={verticalListSortingStrategy}>
-                <GeocodeNotice />
-                {order.map((id) => (
-                  <SortableSection key={id} id={id}>
-                    <WidgetContent id={id} />
-                  </SortableSection>
-                ))}
-              </SortableContext>
-            </DndContext>
-          </MarqueeSelect>
-        ) : (
-          <EmptyState conn={conn} />
-        )}
+              <MarqueeSelect>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext items={order} strategy={verticalListSortingStrategy}>
+                    <GeocodeNotice />
+                    {order.map((id) => (
+                      <SortableSection key={id} id={id}>
+                        <WidgetContent id={id} />
+                      </SortableSection>
+                    ))}
+                  </SortableContext>
+                </DndContext>
+              </MarqueeSelect>
+            </m.div>
+          ) : (
+            <EmptyState key="empty-state" conn={conn} />
+          )}
+        </AnimatePresence>
       </ScrollArea>
 
       <UpdateBanner />
       <SocialFooter />
-    </aside>
+    </m.aside>
   );
 }
 

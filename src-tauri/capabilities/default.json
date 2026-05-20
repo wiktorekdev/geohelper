@@ -15,6 +15,7 @@
     },
     "updater:default",
     "process:allow-restart",
-    "store:default"
+    "store:default",
+    "window-state:default"
   ]
 }

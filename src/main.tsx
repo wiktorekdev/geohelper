@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { useStore } from "@/lib/store";
 import { useDisplayStore } from "@/lib/display-store";
 import { useI18n } from "@/lib/i18n";
-import "./index.css";
 import "leaflet/dist/leaflet.css";
+import "./index.css";
 
 // Dev-only: expose stores on window for screenshot automation and debugging.
 if (import.meta.env.DEV) {

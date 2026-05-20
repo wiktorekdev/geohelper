@@ -5,7 +5,6 @@ use once_cell::sync::Lazy;
 use serde::Deserialize;
 use thiserror::Error;
 
-const CDP_URL: &str = "http://localhost:9222/json";
 const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222";
 const LAUNCH_PROBE_TTL: Duration = Duration::from_secs(10);
 
@@ -38,12 +37,21 @@ pub struct Target {
 }
 
 pub async fn find() -> Result<Target, TargetError> {
+    // Detect dynamic remote debugging port from running process
+    let launch_opts = cached_launch_options().await;
+    let port = match &launch_opts {
+        LaunchOptions::DetectedOtherPort(p) => p.as_str(),
+        _ => "9222",
+    };
+
+    let cdp_url = format!("http://localhost:{}/json", port);
+
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(4))
         .build()
         .map_err(TargetError::InvalidTargetList)?;
 
-    let res = match client.get(CDP_URL).send().await {
+    let res = match client.get(&cdp_url).send().await {
         Ok(res) => res,
         Err(source) => {
             return Err(TargetError::PortUnavailable {
