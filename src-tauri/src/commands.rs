@@ -118,7 +118,8 @@ pub fn handle_corrupted_store(app: AppHandle, path: String) -> Result<(), String
     let target_path = if std::path::Path::new(&path).is_absolute() {
         std::path::PathBuf::from(&path)
     } else {
-        app.path().app_config_dir()
+        app.path()
+            .app_config_dir()
             .map(|dir| dir.join(&path))
             .map_err(|e| format!("Failed to resolve config dir: {e}"))?
     };

@@ -26,7 +26,7 @@ Because it just reads network requests the game already makes, you don't need an
 
 ## How it works
 
-The app connects to the Chrome DevTools Protocol (CDP) endpoint exposed by Steam on `localhost:9222`. When a round starts, it grabs the panorama IDs from the game's incoming RPC network traffic and resolves them to coordinates. Everything is processed locally on your machine—there are no third-party servers, and no external API requests are made.
+The app connects to the Chrome DevTools Protocol (CDP) endpoint exposed by Steam on `localhost:9222`. When a round starts, it grabs the panorama IDs from the game's incoming RPC network traffic and resolves them to coordinates. Everything is processed locally on your machine—there are no third-party servers, and no external API requests are made (except directly to map and geocoding providers).
 
 ## Getting started
 
@@ -52,17 +52,16 @@ Click the pencil icon in the sidebar to toggle edit mode:
   <img src="docs/screenshots/edit-mode.png" alt="GeoHelper layout editor" />
 </p>
 
-## Dual Map Support
+## Map & Geocoding Providers
 
-You can switch between two map engines instantly in the settings panel:
+Switch between map and reverse-geocoding sources in the settings panel:
 
-| Feature | OpenStreetMap | Google Maps SDK |
+| Feature | OpenStreetMap & CartoDB | Google Maps SDK |
 | :--- | :--- | :--- |
-| **Availability** | Out of the box (Default) | Requires your own API key |
-| **Pricing** | Free | Uses Google's free tier |
-| **Views** | Vector Tiles | Roadmap, Satellite, and Hybrid |
-| **Geocoding** | Nominatim (OSM) | Google Geocoding |
-| **Integration** | Toggle instantly | Toggle instantly |
+| **Availability** | Out of the box (Default) | Requires personal API key |
+| **Pricing** | Free | Uses Google Cloud free tier |
+| **Styles / Views** | OSM standard, CartoDB Voyager, CartoDB Dark Matter | Roadmap, Dark Mode, Hybrid |
+| **Geocoding** | Nominatim | Google Geocoding API |
 
 ## Build from source
 
