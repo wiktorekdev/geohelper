@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import { X } from "lucide-react";
@@ -102,55 +102,32 @@ export function MapPanel() {
     }
   }, [editing]);
 
-  const pinIcon = L.divIcon({
-    className: "",
-    iconSize: [markerSize, markerSize],
-    iconAnchor: [markerSize / 2, markerSize / 2],
-    html: `
-    <style>
-      .marker-container-${markerSize} {
-        transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      ${editing ? `
-      .marker-container-${markerSize}:hover {
-        transform: scale(1.15);
-      }
-      ` : ""}
-    </style>
-    <div class="marker-container-${markerSize}" style="
-      width:${markerSize}px; height:${markerSize}px; position:relative;
-      filter: drop-shadow(0 2.5px 4.5px rgba(0,0,0,0.35));
-      cursor: ${editing ? "pointer" : "default"};
-    ">
-      <div style="
-        position:absolute; inset:0;
-        background:${markerColor};
-        border-radius:9999px;
-        border:${Math.max(2, Math.round(markerSize / 8))}px solid ${markerBorderColor};
-      "></div>
-      ${editing ? `
-      <div style="
-        position:absolute;
-        top:-3px; right:-3px;
-        width:14px; height:14px;
-        background:#3b82f6;
-        color:#ffffff;
-        border-radius:9999px;
-        border:1px solid #ffffff;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        box-shadow:0 1px 2px rgba(0,0,0,0.3);
-      ">
-        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9"/>
-          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-        </svg>
-      </div>
-      ` : ""}
-    </div>
-  `,
-  });
+  // Build the icon HTML once per relevant inputs. CSS for hover/transition
+  // lives in index.css under .geohelper-marker so we don't inject a fresh
+  // <style> tag with every render.
+  const pinIcon = useMemo(() => {
+    const borderWidth = Math.max(2, Math.round(markerSize / 8));
+    const editPill = editing
+      ? `<div class="geohelper-marker__pill">
+          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+        </div>`
+      : "";
+    return L.divIcon({
+      className: "",
+      iconSize: [markerSize, markerSize],
+      iconAnchor: [markerSize / 2, markerSize / 2],
+      html:
+        `<div class="geohelper-marker${editing ? " geohelper-marker--editing" : ""}" ` +
+        `style="width:${markerSize}px;height:${markerSize}px;">` +
+          `<div class="geohelper-marker__dot" ` +
+          `style="background:${markerColor};border:${borderWidth}px solid ${markerBorderColor};"></div>` +
+          editPill +
+        `</div>`,
+    });
+  }, [markerSize, markerColor, markerBorderColor, editing]);
 
   return (
     <div className="relative flex-1 min-h-0">
@@ -278,7 +255,7 @@ function PanTo({ lat, lng }: { lat: number; lng: number }) {
     // Unproject back to lat/lng coordinates
     const clampedCenter = map.unproject([targetPoint.x, clampedY], map.getZoom());
 
-    map.panTo(clampedCenter, { animate: true, duration: 0.6 });
+    map.flyTo(clampedCenter, map.getZoom(), { animate: true, duration: 0.6 });
   }, [lat, lng, map]);
 
   return null;
@@ -290,7 +267,7 @@ function ResetMapWhenNoCoords({ active }: { active: boolean }) {
 
   useEffect(() => {
     if (!active) return;
-    map.setView([20, 0], 2, { animate: true, duration: 0.45 });
+    map.flyTo([20, 0], 2, { animate: true, duration: 0.45 });
   }, [active, map]);
 
   return null;
