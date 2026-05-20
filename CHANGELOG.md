@@ -2,6 +2,11 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.17.3] - 2026-05-20
+
+### Fixed
+- **CartoDB CSP Blocking** — Added CartoDB domain to Tauri's Content Security Policy to fix the black screen issue when using CartoDB Voyager or Dark Matter layers.
+
 ## [0.17.2] - 2026-05-20
 
 ### Fixed
