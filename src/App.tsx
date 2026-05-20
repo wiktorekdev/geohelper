@@ -31,7 +31,6 @@ export default function App() {
   const hydrateUpdate = useUpdateStore((s) => s.hydrate);
 
   const mapVisible = useDisplayStore((s) => s.mapVisible);
-  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
   const hydrateDisplay = useDisplayStore((s) => s.hydrate);
 
   useMapWindowLayout();
@@ -67,6 +66,9 @@ export default function App() {
     })();
   }, [hydrateSettings, hydrateDisplay, hydrateUpdate, runUpdateCheck, detectInstallKind]);
 
+  // Debounce so a rapid toggle (or alwaysOnTop hydrating right after layout)
+  // doesn't fire two consecutive set_always_on_top calls; on Windows that
+  // produced a visible flicker during the first paint.
   useEffect(() => {
     const t = setTimeout(() => {
       ipc.setAlwaysOnTop(alwaysOnTop).catch((e) => {
@@ -102,7 +104,6 @@ export default function App() {
               exit={{ opacity: 0, x: -15 }}
               transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
               className="h-full shrink-0"
-              style={{ width: sidebarWidth }}
             >
               <SettingsSidebar />
             </m.div>
@@ -114,13 +115,12 @@ export default function App() {
               exit={{ opacity: 0, x: 15 }}
               transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
               className={cn("h-full", mapVisible ? "shrink-0" : "flex-1")}
-              style={{ width: mapVisible ? sidebarWidth : undefined }}
             >
               <Sidebar />
             </m.div>
           )}
         </AnimatePresence>
-        
+
         <AnimatePresence mode="popLayout" initial={false}>
           {mapVisible && (
             <m.main
@@ -131,12 +131,11 @@ export default function App() {
               className="relative flex flex-1 min-w-0 flex-col overflow-hidden"
             >
               <MapView />
-              <EditToolbar />
             </m.main>
           )}
         </AnimatePresence>
-        
-        {!mapVisible && <EditToolbar />}
+
+        <EditToolbar />
         <SelectionToolbar />
       </div>
     </LazyMotion>
