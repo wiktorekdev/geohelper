@@ -1,47 +1,47 @@
-import { m, AnimatePresence } from "framer-motion";
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { toast } from "sonner";
+import { m, AnimatePresence } from "motion/react"
+import { Check, Copy } from "lucide-react"
+import { useState } from "react"
+import { openUrl } from "@tauri-apps/plugin-opener"
+import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { GoogleMaps } from "@/components/ui/svgs/googleMaps";
-import { useStore } from "@/lib/store";
-import { useDisplayStore } from "@/lib/display-store";
-import { formatCoords } from "@/lib/coords";
-import { MOCK_COORDS } from "@/lib/mock-data";
-import { SelectableText } from "@/components/display/selectable-text";
-import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { GoogleMaps } from "@/components/ui/svgs/googleMaps"
+import { useStore } from "@/lib/store"
+import { useDisplayStore } from "@/lib/display-store"
+import { formatCoords } from "@/lib/coords"
+import { MOCK_COORDS } from "@/lib/mock-data"
+import { SelectableText } from "@/components/display/selectable-text"
+import { useT } from "@/lib/i18n"
 
 export function CoordsSection() {
-  const t = useT();
-  const current = useStore((s) => s.current);
-  const editing = useDisplayStore((s) => s.editing);
-  const copyFormat = useStore((s) => s.copyFormat);
-  const [copied, setCopied] = useState(false);
+  const t = useT()
+  const current = useStore((s) => s.current)
+  const editing = useDisplayStore((s) => s.editing)
+  const copyFormat = useStore((s) => s.copyFormat)
+  const [copied, setCopied] = useState(false)
 
-  const coords = current ?? (editing ? MOCK_COORDS : null);
+  const coords = current ?? (editing ? MOCK_COORDS : null)
 
   async function copy() {
-    const text = formatCoords(coords!, copyFormat);
+    const text = formatCoords(coords!, copyFormat)
     try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-      toast.success(t("coordinates.copySuccess"), { description: text });
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+      toast.success(t("coordinates.copySuccess"), { description: text })
     } catch {
-      toast.error(t("coordinates.clipboardError"));
+      toast.error(t("coordinates.clipboardError"))
     }
   }
 
   function openInGoogleMaps() {
-    const q = `${coords!.lat},${coords!.lng}`;
-    void openUrl(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`);
+    const q = `${coords!.lat},${coords!.lng}`
+    void openUrl(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`)
   }
 
-  if (!coords) return null;
+  if (!coords) return null
 
   return (
     <AnimatePresence mode="wait">
@@ -86,18 +86,10 @@ export function CoordsSection() {
         </m.div>
       )}
     </AnimatePresence>
-  );
+  )
 }
 
-function Value({
-  id,
-  label,
-  value,
-}: {
-  id: string;
-  label: string;
-  value: number;
-}) {
+function Value({ id, label, value }: { id: string; label: string; value: number }) {
   return (
     <div className="rounded border border-sidebar-border bg-background/50 px-2.5 py-2">
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -109,7 +101,7 @@ function Value({
         </SelectableText>
       </div>
     </div>
-  );
+  )
 }
 
 function Action({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
@@ -122,5 +114,5 @@ function Action({ onClick, children }: { onClick: () => void; children: React.Re
     >
       {children}
     </Button>
-  );
+  )
 }

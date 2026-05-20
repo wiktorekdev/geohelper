@@ -1,13 +1,21 @@
-import { cn } from "@/lib/utils";
-import type { ButtonHTMLAttributes, Ref } from "react";
+import { cn } from "@/lib/utils"
+import type { ButtonHTMLAttributes, Ref } from "react"
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> & {
-  checked: boolean;
-  onCheckedChange: (v: boolean) => void;
-  ref?: Ref<HTMLButtonElement>;
-};
+  checked: boolean
+  onCheckedChange: (v: boolean) => void
+  ref?: Ref<HTMLButtonElement>
+}
 
-export function Switch({ checked, onCheckedChange, disabled, id, className, ref, ...props }: Props) {
+export function Switch({
+  checked,
+  onCheckedChange,
+  disabled,
+  id,
+  className,
+  ref,
+  ...props
+}: Props) {
   return (
     <button
       ref={ref}
@@ -21,15 +29,15 @@ export function Switch({ checked, onCheckedChange, disabled, id, className, ref,
       className={cn(
         "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         checked ? "bg-brand border-brand" : "bg-muted border-border",
-        className,
+        className
       )}
     >
       <span
         className={cn(
           "pointer-events-none inline-block size-3.5 rounded-full bg-white shadow transition-transform",
-          checked ? "translate-x-[18px]" : "translate-x-0.5",
+          checked ? "translate-x-[18px]" : "translate-x-0.5"
         )}
       />
     </button>
-  );
+  )
 }

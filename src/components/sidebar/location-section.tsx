@@ -1,21 +1,21 @@
-import { m, AnimatePresence } from "framer-motion";
-import ReactCountryFlag from "react-country-flag";
+import { m, AnimatePresence } from "motion/react"
+import ReactCountryFlag from "react-country-flag"
 
-import { Card } from "@/components/ui/card";
-import { deriveLocationDisplay } from "@/lib/location-display";
-import { useStore } from "@/lib/store";
-import { SelectableText } from "@/components/display/selectable-text";
-import { FLAG_SIZE, useDisplayStore } from "@/lib/display-store";
-import { useT } from "@/lib/i18n";
+import { Card } from "@/components/ui/card"
+import { deriveLocationDisplay } from "@/lib/location-display"
+import { useStore } from "@/lib/store"
+import { SelectableText } from "@/components/display/selectable-text"
+import { FLAG_SIZE, useDisplayStore } from "@/lib/display-store"
+import { useT } from "@/lib/i18n"
 
 export function LocationSection() {
-  const t = useT();
-  const place = useStore((s) => s.place);
-  const details = useStore((s) => s.countryDetails);
-  const geocodeError = useStore((s) => s.geocodeError);
-  const current = useStore((s) => s.current);
-  const locationLoading = useStore((s) => s.locationLoading);
-  const display = deriveLocationDisplay(place, details, current, geocodeError, locationLoading);
+  const t = useT()
+  const place = useStore((s) => s.place)
+  const details = useStore((s) => s.countryDetails)
+  const geocodeError = useStore((s) => s.geocodeError)
+  const current = useStore((s) => s.current)
+  const locationLoading = useStore((s) => s.locationLoading)
+  const display = deriveLocationDisplay(place, details, current, geocodeError, locationLoading)
 
   function renderContent() {
     switch (display.kind) {
@@ -24,7 +24,7 @@ export function LocationSection() {
           <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">
             {t("location.couldNotShow")}
           </Card>
-        );
+        )
       case "sparse":
         return (
           <Card className="mx-4 my-2 p-4 space-y-2">
@@ -32,20 +32,26 @@ export function LocationSection() {
             {display.continent && (
               <div className="text-[11px] text-muted-foreground">{display.continent}</div>
             )}
-            <div className="text-[11px] text-muted-foreground">{t("location.settlementNotInData")}</div>
+            <div className="text-[11px] text-muted-foreground">
+              {t("location.settlementNotInData")}
+            </div>
           </Card>
-        );
+        )
       case "loading":
         return (
           <Card className="mx-4 my-2 p-4 space-y-1 text-sm text-muted-foreground">
-            {display.rough ? <div className="text-[13px] text-foreground/90">{display.rough}</div> : null}
+            {display.rough ? (
+              <div className="text-[13px] text-foreground/90">{display.rough}</div>
+            ) : null}
             <div className="text-[11px]">{t("location.fetchingAddress")}</div>
           </Card>
-        );
+        )
       case "empty":
-        return <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>;
+        return (
+          <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>
+        )
       case "settlement":
-        return <SettlementView display={display} />;
+        return <SettlementView display={display} />
     }
   }
 
@@ -61,20 +67,20 @@ export function LocationSection() {
         {renderContent()}
       </m.div>
     </AnimatePresence>
-  );
+  )
 }
 
 function SettlementView({
   display,
 }: {
-  display: Extract<ReturnType<typeof deriveLocationDisplay>, { kind: "settlement" }>;
+  display: Extract<ReturnType<typeof deriveLocationDisplay>, { kind: "settlement" }>
 }) {
-  const flagStyle = useDisplayStore((s) => s.textStyles["country.flag"]);
-  const flagSize = FLAG_SIZE[flagStyle?.fontSize ?? "md"];
-  const fontSizePx = flagStyle?.fontSize ? { sm: 11, md: 13, lg: 15 }[flagStyle.fontSize] : 13;
+  const flagStyle = useDisplayStore((s) => s.textStyles["country.flag"])
+  const flagSize = FLAG_SIZE[flagStyle?.fontSize ?? "md"]
+  const fontSizePx = flagStyle?.fontSize ? { sm: 11, md: 13, lg: 15 }[flagStyle.fontSize] : 13
   // Slightly non-linear so the rounding stays visually obvious at the large size
   // where a strict proportional radius would feel harsh.
-  const flagRadius = Math.round(fontSizePx * 0.28);
+  const flagRadius = Math.round(fontSizePx * 0.28)
 
   return (
     <Card className="mx-4 my-2 p-4 space-y-3">
@@ -126,5 +132,5 @@ function SettlementView({
         )}
       </div>
     </Card>
-  );
+  )
 }

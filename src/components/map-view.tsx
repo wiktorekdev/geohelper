@@ -1,13 +1,11 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react"
 
-import { useT } from "@/lib/i18n";
+import { useT } from "@/lib/i18n"
 
-const MapPanel = lazy(() =>
-  import("./map-panel").then((module) => ({ default: module.MapPanel })),
-);
+const MapPanel = lazy(() => import("./map-panel").then((module) => ({ default: module.MapPanel })))
 
 export function MapView() {
-  const t = useT();
+  const t = useT()
   return (
     <Suspense
       fallback={
@@ -18,5 +16,5 @@ export function MapView() {
     >
       <MapPanel />
     </Suspense>
-  );
+  )
 }

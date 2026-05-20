@@ -1,21 +1,21 @@
-import type { StateCreator } from "zustand";
+import type { StateCreator } from "zustand"
 
-import type { ConnState, Snapshot } from "@/types";
-import type { Store } from "@/lib/store";
+import type { ConnState, Snapshot } from "@/types"
+import type { Store } from "@/lib/store"
 
 export type ConnectionSlice = {
-  conn: ConnState;
+  conn: ConnState
   /** Last disconnect reason. Stays sticky across `searching` retries so the UI
    * doesn't flicker between "Connecting..." and the actual error every loop. */
-  lastDisconnectReason: string | null;
-  setSnapshot: (snapshot: Snapshot) => void;
-  setConn: (conn: ConnState) => void;
-};
+  lastDisconnectReason: string | null
+  setSnapshot: (snapshot: Snapshot) => void
+  setConn: (conn: ConnState) => void
+}
 
 function stickyReason(prev: string | null, next: ConnState): string | null {
-  if (next.kind === "disconnected") return next.reason;
-  if (next.kind === "connected") return null;
-  return prev;
+  if (next.kind === "disconnected") return next.reason
+  if (next.kind === "connected") return null
+  return prev
 }
 
 export const createConnectionSlice: StateCreator<Store, [], [], ConnectionSlice> = (set) => ({
@@ -23,16 +23,16 @@ export const createConnectionSlice: StateCreator<Store, [], [], ConnectionSlice>
   lastDisconnectReason: null,
   setSnapshot: (snapshot) =>
     set((s) => {
-      const keepCurrentMock = s.current?.source === "mock" && !snapshot.current;
+      const keepCurrentMock = s.current?.source === "mock" && !snapshot.current
       return {
         conn: snapshot.conn,
         current: keepCurrentMock ? s.current : snapshot.current,
         lastDisconnectReason: stickyReason(s.lastDisconnectReason, snapshot.conn),
-      };
+      }
     }),
   setConn: (conn) =>
     set((s) => ({
       conn,
       lastDisconnectReason: stickyReason(s.lastDisconnectReason, conn),
     })),
-});
+})

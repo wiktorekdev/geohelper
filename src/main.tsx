@@ -1,20 +1,20 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/sonner";
-import { useStore } from "@/lib/store";
-import { useDisplayStore } from "@/lib/display-store";
-import "leaflet/dist/leaflet.css";
-import "./index.css";
+import React from "react"
+import ReactDOM from "react-dom/client"
+import App from "./App"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/sonner"
+import { useStore } from "@/lib/store"
+import { useDisplayStore } from "@/lib/display-store"
+import "leaflet/dist/leaflet.css"
+import "./index.css"
 
 // Dev-only: expose stores on window for screenshot automation and debugging.
 if (import.meta.env.DEV) {
-  (window as unknown as { __geohelper__?: unknown }).__geohelper__ = {
+  ;(window as unknown as { __geohelper__?: unknown }).__geohelper__ = {
     store: useStore,
     displayStore: useDisplayStore,
-  };
+  }
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -25,5 +25,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Toaster />
       </TooltipProvider>
     </ErrorBoundary>
-  </React.StrictMode>,
-);
+  </React.StrictMode>
+)

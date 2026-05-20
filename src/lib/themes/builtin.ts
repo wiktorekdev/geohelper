@@ -1,4 +1,4 @@
-import type { Theme } from "./types";
+import type { Theme } from "./types"
 
 /**
  * Built-in themes shipped with the app. Adding a new entry here makes it
@@ -20,4 +20,4 @@ export const BUILTIN_THEMES: Theme[] = [
     icon: "Sun",
     builtin: true,
   },
-];
+]

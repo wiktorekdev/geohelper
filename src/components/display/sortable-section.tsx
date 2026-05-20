@@ -1,45 +1,44 @@
-import { GripVertical } from "lucide-react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
-import { cn } from "@/lib/utils";
-import { useDisplayStore, widgetLabel, type WidgetId } from "@/lib/display-store";
-import { useT } from "@/lib/i18n";
+import { cn } from "@/lib/utils"
+import { useDisplayStore, widgetLabel, type WidgetId } from "@/lib/display-store"
+import { useT } from "@/lib/i18n"
 
 type Props = {
-  id: WidgetId;
-  children: React.ReactNode;
-};
+  id: WidgetId
+  children: React.ReactNode
+}
 
 export function SortableSection({ id, children }: Props) {
-  const t = useT();
-  const editing = useDisplayStore((s) => s.editing);
-  const selection = useDisplayStore((s) => s.selection);
-  const selectWidget = useDisplayStore((s) => s.selectWidget);
-  const registeredIds = useDisplayStore((s) => s.registeredIds);
-  const hiddenTexts = useDisplayStore((s) => s.hiddenTexts);
+  const t = useT()
+  const editing = useDisplayStore((s) => s.editing)
+  const selection = useDisplayStore((s) => s.selection)
+  const selectWidget = useDisplayStore((s) => s.selectWidget)
+  const registeredIds = useDisplayStore((s) => s.registeredIds)
+  const hiddenTexts = useDisplayStore((s) => s.hiddenTexts)
 
-  const sectionSelected =
-    selection.length > 0 && selection.every((sid) => sid.startsWith(`${id}.`));
+  const sectionSelected = selection.length > 0 && selection.every((sid) => sid.startsWith(`${id}.`))
 
   // The section is "effectively hidden" when at least one text is registered
   // for it AND every registered text is in hiddenTexts.
-  const sectionIds = Object.keys(registeredIds).filter((rid) => rid.startsWith(`${id}.`));
-  const allHidden = sectionIds.length > 0 && sectionIds.every((rid) => hiddenTexts[rid]);
+  const sectionIds = Object.keys(registeredIds).filter((rid) => rid.startsWith(`${id}.`))
+  const allHidden = sectionIds.length > 0 && sectionIds.every((rid) => hiddenTexts[rid])
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: !editing,
-  });
+  })
 
   const dragStyle: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-  };
+  }
 
   if (!editing) {
-    if (allHidden) return null;
-    return <>{children}</>;
+    if (allHidden) return null
+    return <>{children}</>
   }
 
   return (
@@ -53,7 +52,7 @@ export function SortableSection({ id, children }: Props) {
           : sectionSelected
             ? "border-brand/50 bg-brand/[0.04]"
             : "border-sidebar-border/70 bg-background/30",
-        allHidden && "opacity-50",
+        allHidden && "opacity-50"
       )}
     >
       <div
@@ -75,7 +74,7 @@ export function SortableSection({ id, children }: Props) {
             "flex-1 truncate rounded px-1 py-0.5 text-left text-[10px] font-medium uppercase tracking-wide transition-colors",
             sectionSelected
               ? "text-brand"
-              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
           )}
           aria-label={t("section.selectAllIn", { widget: widgetLabel(id) })}
         >
@@ -85,5 +84,5 @@ export function SortableSection({ id, children }: Props) {
 
       <div>{children}</div>
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import type { SVGProps } from "react"
 
 const GoogleMaps = (props: SVGProps<SVGSVGElement>) => (
   <svg {...props} viewBox="0 0 92.3 132.3">
@@ -23,6 +23,6 @@ const GoogleMaps = (props: SVGProps<SVGSVGElement>) => (
       d="M59.1 109.2c15.4-24.1 33.3-35 33.3-63 0-7.7-1.9-14.9-5.2-21.3L25.6 98c2.6 3.4 5.3 7.3 7.9 11.3 9.4 14.5 6.8 23.1 12.8 23.1s3.4-8.7 12.8-23.2"
     />
   </svg>
-);
+)
 
-export { GoogleMaps };
+export { GoogleMaps }

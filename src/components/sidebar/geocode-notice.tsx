@@ -1,11 +1,11 @@
-import { m, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "motion/react"
 
-import { useStore } from "@/lib/store";
-import { useT } from "@/lib/i18n";
+import { useStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 
 export function GeocodeNotice() {
-  const t = useT();
-  const error = useStore((s) => s.geocodeError);
+  const t = useT()
+  const error = useStore((s) => s.geocodeError)
 
   return (
     <AnimatePresence>
@@ -21,5 +21,5 @@ export function GeocodeNotice() {
         </m.div>
       )}
     </AnimatePresence>
-  );
+  )
 }

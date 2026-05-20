@@ -3,48 +3,48 @@
  * supply a font family and a decorative background. Built-in themes ship with
  * the app and are merged with any user-defined themes from disk.
  */
-export type ThemeMode = "dark" | "light";
+export type ThemeMode = "dark" | "light"
 
 export type ThemeBackground = {
   /** Any valid CSS image value: url(...), linear-gradient(...), etc. */
-  image?: string;
+  image?: string
   /** Multiplied with the base background, 0..1. Higher = more visible. */
-  opacity?: number;
+  opacity?: number
   /** CSS blend-mode for compositing the image over the base. */
-  blend?: string;
+  blend?: string
   /** Optional blur in pixels applied to the layer. */
-  blur?: number;
-};
+  blur?: number
+}
 
 /** CSS variable overrides. Keys map to `--<key>` on the root element. */
-export type ThemeVars = Partial<Record<string, string>>;
+export type ThemeVars = Partial<Record<string, string>>
 
 export type Theme = {
-  id: string;
-  name: string;
+  id: string
+  name: string
   /** Determines the base palette and dark-mode class. User overrides on top. */
-  mode: ThemeMode;
+  mode: ThemeMode
   /** Optional emoji or short label used as the swatch icon. */
-  emoji?: string;
+  emoji?: string
   /**
    * Optional lucide icon name (e.g. "Moon", "Sun", "Sunset", "Trees").
    * Renders inside the swatch when provided. Takes precedence over `emoji`.
    */
-  icon?: string;
+  icon?: string
   /**
    * Optional custom icon: a URL to an image (png/svg) or an inline `data:` URI.
    * Takes precedence over both `icon` and `emoji`.
    */
-  iconUrl?: string;
+  iconUrl?: string
   /** CSS variable overrides applied after the base palette. */
-  vars?: ThemeVars;
+  vars?: ThemeVars
   /** Optional font family. Applied to `body { font-family }`. */
-  font?: string;
+  font?: string
   /** Optional background layer rendered above the base background. */
-  background?: ThemeBackground;
+  background?: ThemeBackground
   /** Built-in themes ship with the app and cannot be deleted, only hidden. */
-  builtin?: boolean;
-};
+  builtin?: boolean
+}
 
 /** Variables a theme is allowed to tweak. Other CSS vars stay at their defaults. */
 export const EDITABLE_VARS = [
@@ -69,6 +69,6 @@ export const EDITABLE_VARS = [
   "input",
   "ring",
   "brand",
-] as const;
+] as const
 
-export type EditableVar = (typeof EDITABLE_VARS)[number];
+export type EditableVar = (typeof EDITABLE_VARS)[number]

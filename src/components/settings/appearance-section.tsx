@@ -1,18 +1,18 @@
-import { Palette } from "lucide-react";
+import { Palette } from "lucide-react"
 
-import { Switch } from "@/components/ui/switch";
-import { Field, Group } from "./settings-primitives";
-import { LanguageSelector } from "./language-selector";
-import { ThemeSelector } from "./theme-selector";
-import { useT } from "@/lib/i18n";
+import { Switch } from "@/components/ui/switch"
+import { Field, Group } from "./settings-primitives"
+import { LanguageSelector } from "./language-selector"
+import { ThemeSelector } from "./theme-selector"
+import { useT } from "@/lib/i18n"
 
 type Props = {
-  alwaysOnTop: boolean;
-  setAlwaysOnTop: (value: boolean) => void;
-};
+  alwaysOnTop: boolean
+  setAlwaysOnTop: (value: boolean) => void
+}
 
 export function AppearanceSection({ alwaysOnTop, setAlwaysOnTop }: Props) {
-  const t = useT();
+  const t = useT()
   return (
     <Group icon={<Palette className="size-3.5" />} title={t("settings.appearance.title")}>
       <Field label={t("settings.appearance.theme")}>
@@ -32,5 +32,5 @@ export function AppearanceSection({ alwaysOnTop, setAlwaysOnTop }: Props) {
         />
       </div>
     </Group>
-  );
+  )
 }

@@ -1,29 +1,29 @@
-import type { PlaceInfo } from "@/types";
-import { continentFrom } from "./continents";
-import { errorMessage } from "./errors";
-import { timeoutSignal } from "./fetch-timeout";
-import { t } from "@/lib/i18n";
-import { VERSION } from "./links";
+import type { PlaceInfo } from "@/types"
+import { continentFrom } from "./continents"
+import { errorMessage } from "./errors"
+import { timeoutSignal } from "./fetch-timeout"
+import { t } from "@/lib/i18n"
+import { VERSION } from "./links"
 
-export type GeocodeProviderId = "nominatim" | "google";
+export type GeocodeProviderId = "nominatim" | "google"
 
 export type GeocodeProvider = {
-  id: GeocodeProviderId;
-  name: string;
-  needsKey: boolean;
+  id: GeocodeProviderId
+  name: string
+  needsKey: boolean
   reverse: (
     lat: number,
     lng: number,
     apiKey: string,
     fallbackContinent?: string,
-    signal?: AbortSignal,
-  ) => Promise<PlaceInfo>;
-};
+    signal?: AbortSignal
+  ) => Promise<PlaceInfo>
+}
 
 export type GeocodeResult = {
-  place: PlaceInfo;
-  error: string | null;
-};
+  place: PlaceInfo
+  error: string | null
+}
 
 export const GEOCODE_PROVIDERS: Record<GeocodeProviderId, GeocodeProvider> = {
   nominatim: {
@@ -39,29 +39,29 @@ export const GEOCODE_PROVIDERS: Record<GeocodeProviderId, GeocodeProvider> = {
     needsKey: true,
     reverse: google,
   },
-};
+}
 
 export async function runGeocode(
   provider: GeocodeProviderId,
   lat: number,
   lng: number,
   apiKey: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<GeocodeResult> {
-  const fallbackContinent = continentFrom(undefined, lat, lng);
+  const fallbackContinent = continentFrom(undefined, lat, lng)
   try {
-    const config = GEOCODE_PROVIDERS[provider];
+    const config = GEOCODE_PROVIDERS[provider]
     if (config.needsKey && !apiKey.trim()) {
-      return { place: { continent: fallbackContinent }, error: null };
+      return { place: { continent: fallbackContinent }, error: null }
     }
-    const place = await config.reverse(lat, lng, apiKey, fallbackContinent, signal);
-    return { place, error: null };
+    const place = await config.reverse(lat, lng, apiKey, fallbackContinent, signal)
+    return { place, error: null }
   } catch (e) {
-    if (signal?.aborted) return { place: { continent: fallbackContinent }, error: null };
+    if (signal?.aborted) return { place: { continent: fallbackContinent }, error: null }
     return {
       place: { continent: fallbackContinent },
       error: errorMessage(e, t("geocode.error")),
-    };
+    }
   }
 }
 
@@ -69,23 +69,23 @@ async function nominatim(
   lat: number,
   lng: number,
   fallbackContinent?: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<PlaceInfo> {
-  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&accept-language=en&addressdetails=1`;
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&accept-language=en&addressdetails=1`
   const res = await fetch(url, {
     headers: {
       Accept: "application/json",
       "User-Agent": `GeoHelper/${VERSION} (github.com/wiktorekdev/geohelper)`,
     },
     signal: timeoutSignal(undefined, signal),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = (await res.json()) as {
-    error?: string;
-    address?: Record<string, string | undefined>;
-  };
-  if (data.error) throw new Error(data.error);
-  const addr = data.address ?? {};
+    error?: string
+    address?: Record<string, string | undefined>
+  }
+  if (data.error) throw new Error(data.error)
+  const addr = data.address ?? {}
   return {
     country: addr.country,
     countryCode: addr.country_code,
@@ -96,7 +96,7 @@ async function nominatim(
     road: addr.road,
     postcode: addr.postcode,
     continent: continentFrom(addr.country_code, lat, lng) ?? fallbackContinent,
-  };
+  }
 }
 
 async function google(
@@ -104,30 +104,29 @@ async function google(
   lng: number,
   apiKey: string,
   fallbackContinent?: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<PlaceInfo> {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${encodeURIComponent(apiKey)}&language=en`;
-  const res = await fetch(url, { signal: timeoutSignal(undefined, signal) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  if (data.status !== "OK" || !data.results?.[0]) throw new Error(data.status || "empty");
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${encodeURIComponent(apiKey)}&language=en`
+  const res = await fetch(url, { signal: timeoutSignal(undefined, signal) })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = await res.json()
+  if (data.status !== "OK" || !data.results?.[0]) throw new Error(data.status || "empty")
 
   const comps = data.results[0].address_components as Array<{
-    long_name: string;
-    short_name: string;
-    types: string[];
-  }>;
-  const findBy = (...types: string[]) =>
-    comps.find((c) => types.some((t) => c.types.includes(t)));
+    long_name: string
+    short_name: string
+    types: string[]
+  }>
+  const findBy = (...types: string[]) => comps.find((c) => types.some((t) => c.types.includes(t)))
 
-  const country = findBy("country");
-  const region = findBy("administrative_area_level_1");
-  const county = findBy("administrative_area_level_2");
-  const city = findBy("locality", "postal_town", "administrative_area_level_3");
-  const neighbourhood = findBy("neighborhood", "sublocality", "sublocality_level_1");
-  const road = findBy("route");
-  const postcode = findBy("postal_code");
-  const cc = country?.short_name?.toLowerCase();
+  const country = findBy("country")
+  const region = findBy("administrative_area_level_1")
+  const county = findBy("administrative_area_level_2")
+  const city = findBy("locality", "postal_town", "administrative_area_level_3")
+  const neighbourhood = findBy("neighborhood", "sublocality", "sublocality_level_1")
+  const road = findBy("route")
+  const postcode = findBy("postal_code")
+  const cc = country?.short_name?.toLowerCase()
 
   return {
     country: country?.long_name,
@@ -139,5 +138,5 @@ async function google(
     road: road?.long_name,
     postcode: postcode?.long_name,
     continent: continentFrom(cc, lat, lng) ?? fallbackContinent,
-  };
+  }
 }

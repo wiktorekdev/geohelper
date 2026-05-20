@@ -1,5 +1,5 @@
-import { SelectableText } from "@/components/display/selectable-text";
-import { cn } from "@/lib/utils";
+import { SelectableText } from "@/components/display/selectable-text"
+import { cn } from "@/lib/utils"
 
 export function InfoRow({
   id,
@@ -7,10 +7,10 @@ export function InfoRow({
   value,
   mono,
 }: {
-  id: string;
-  label: string;
-  value: string;
-  mono?: boolean;
+  id: string
+  label: string
+  value: string
+  mono?: boolean
 }) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs">
@@ -25,5 +25,5 @@ export function InfoRow({
         {value}
       </SelectableText>
     </div>
-  );
+  )
 }

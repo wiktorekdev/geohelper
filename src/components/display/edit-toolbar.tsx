@@ -1,25 +1,26 @@
-import { m, AnimatePresence } from "framer-motion";
-import { Check, Map, MapPinOff, Pencil, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
+import { m, AnimatePresence } from "motion/react"
+import { Check, Map, MapPinOff, Pencil, RotateCcw } from "lucide-react"
+import { toast } from "sonner"
+import * as Toolbar from "@radix-ui/react-toolbar"
 
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useDisplayStore } from "@/lib/display-store";
-import { clearMockIfPresent } from "@/lib/mock-data";
-import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useDisplayStore } from "@/lib/display-store"
+import { clearMockIfPresent } from "@/lib/mock-data"
+import { useT } from "@/lib/i18n"
 
 export function EditToolbar() {
-  const t = useT();
-  const editing = useDisplayStore((s) => s.editing);
-  const stopEditing = useDisplayStore((s) => s.stopEditing);
-  const resetAll = useDisplayStore((s) => s.resetAll);
-  const mapVisible = useDisplayStore((s) => s.mapVisible);
-  const setMapVisible = useDisplayStore((s) => s.setMapVisible);
-  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
+  const t = useT()
+  const editing = useDisplayStore((s) => s.editing)
+  const stopEditing = useDisplayStore((s) => s.stopEditing)
+  const resetAll = useDisplayStore((s) => s.resetAll)
+  const mapVisible = useDisplayStore((s) => s.mapVisible)
+  const setMapVisible = useDisplayStore((s) => s.setMapVisible)
+  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth)
 
   function finishEditing() {
-    clearMockIfPresent();
-    stopEditing();
+    clearMockIfPresent()
+    stopEditing()
   }
 
   return (
@@ -33,7 +34,7 @@ export function EditToolbar() {
           className="pointer-events-none fixed inset-x-0 bottom-3 z-[2000] flex justify-center px-2 transition-[left] duration-500"
           style={{ left: mapVisible ? sidebarWidth : 0 }}
         >
-          <div className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
+          <Toolbar.Root className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
             <div className="inline-flex min-w-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
               <Pencil className="size-3.5 text-brand" />
               <span className="leading-tight">{t("toolbar.editing")}</span>
@@ -41,15 +42,17 @@ export function EditToolbar() {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1.5 rounded-full px-2 text-xs"
-                  onClick={() => setMapVisible(!mapVisible)}
-                >
-                  {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
-                  {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
-                </Button>
+                <Toolbar.Button asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1.5 rounded-full px-2 text-xs"
+                    onClick={() => setMapVisible(!mapVisible)}
+                  >
+                    {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
+                    {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
+                  </Button>
+                </Toolbar.Button>
               </TooltipTrigger>
               <TooltipContent side="top">
                 {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
@@ -58,33 +61,37 @@ export function EditToolbar() {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1.5 rounded-full px-2 text-xs"
-                  onClick={() => {
-                    resetAll();
-                    toast.success(t("toolbar.resetSuccess"));
-                  }}
-                >
-                  <RotateCcw className="size-3.5" />
-                  {t("toolbar.reset")}
-                </Button>
+                <Toolbar.Button asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1.5 rounded-full px-2 text-xs"
+                    onClick={() => {
+                      resetAll()
+                      toast.success(t("toolbar.resetSuccess"))
+                    }}
+                  >
+                    <RotateCcw className="size-3.5" />
+                    {t("toolbar.reset")}
+                  </Button>
+                </Toolbar.Button>
               </TooltipTrigger>
               <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
             </Tooltip>
 
-            <Button
-              size="sm"
-              className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
-              onClick={finishEditing}
-            >
-              <Check className="size-3.5" />
-              {t("toolbar.done")}
-            </Button>
-          </div>
+            <Toolbar.Button asChild>
+              <Button
+                size="sm"
+                className="h-7 gap-1.5 rounded-full px-2.5 text-xs"
+                onClick={finishEditing}
+              >
+                <Check className="size-3.5" />
+                {t("toolbar.done")}
+              </Button>
+            </Toolbar.Button>
+          </Toolbar.Root>
         </m.div>
       )}
     </AnimatePresence>
-  );
+  )
 }

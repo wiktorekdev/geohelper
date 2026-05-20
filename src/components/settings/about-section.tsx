@@ -1,38 +1,32 @@
-import { Check, Download, ExternalLink, Info, Loader2, RotateCw } from "lucide-react";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { Check, Download, ExternalLink, Info, Loader2, RotateCw } from "lucide-react"
+import { openUrl } from "@tauri-apps/plugin-opener"
 
-import { Button } from "@/components/ui/button";
-import { Group, InfoRow } from "./settings-primitives";
-import { VERSION } from "@/lib/links";
-import type { UpdateInfo } from "@/lib/update-check";
-import { useUpdateStore } from "@/lib/update-store";
-import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button"
+import { Group, InfoRow } from "./settings-primitives"
+import { VERSION } from "@/lib/links"
+import type { UpdateInfo } from "@/lib/update-check"
+import { useUpdateStore } from "@/lib/update-store"
+import { useT } from "@/lib/i18n"
 
 type Props = {
-  updateInfo: UpdateInfo | null;
-  updateChecking: boolean;
-  updateError: string | null;
-  runUpdateCheck: () => Promise<void>;
-};
+  updateInfo: UpdateInfo | null
+  updateChecking: boolean
+  updateError: string | null
+  runUpdateCheck: () => Promise<void>
+}
 
-export function AboutSection({
-  updateInfo,
-  updateChecking,
-  updateError,
-  runUpdateCheck,
-}: Props) {
-  const t = useT();
-  const installUpdate = useUpdateStore((s) => s.installUpdate);
-  const installState = useUpdateStore((s) => s.installState);
-  const installError = useUpdateStore((s) => s.installError);
-  const downloaded = useUpdateStore((s) => s.downloadedBytes);
-  const total = useUpdateStore((s) => s.totalBytes);
-  const isInstalled = useUpdateStore((s) => s.isInstalled);
+export function AboutSection({ updateInfo, updateChecking, updateError, runUpdateCheck }: Props) {
+  const t = useT()
+  const installUpdate = useUpdateStore((s) => s.installUpdate)
+  const installState = useUpdateStore((s) => s.installState)
+  const installError = useUpdateStore((s) => s.installError)
+  const downloaded = useUpdateStore((s) => s.downloadedBytes)
+  const total = useUpdateStore((s) => s.totalBytes)
+  const isInstalled = useUpdateStore((s) => s.isInstalled)
 
-  const canAutoInstall = isInstalled === true;
-  const pct =
-    total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null;
-  const showInstallFlow = Boolean(updateInfo?.hasUpdate);
+  const canAutoInstall = isInstalled === true
+  const pct = total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null
+  const showInstallFlow = Boolean(updateInfo?.hasUpdate)
 
   return (
     <Group icon={<Info className="size-3.5" />} title={t("settings.about.title")}>
@@ -112,7 +106,9 @@ export function AboutSection({
             variant="outline"
             className="h-7 flex-1"
             onClick={runUpdateCheck}
-            disabled={updateChecking || installState === "downloading" || installState === "installing"}
+            disabled={
+              updateChecking || installState === "downloading" || installState === "installing"
+            }
           >
             {updateChecking ? (
               <Loader2 className="size-3 animate-spin" />
@@ -136,11 +132,11 @@ export function AboutSection({
         </div>
       </div>
     </Group>
-  );
+  )
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }

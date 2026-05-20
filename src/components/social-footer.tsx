@@ -1,7 +1,7 @@
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openUrl } from "@tauri-apps/plugin-opener"
 
-import { GithubIcon, KofiIcon } from "@/components/brand-icons";
-import { GITHUB_URL, KOFI_URL } from "@/lib/links";
+import { GithubIcon, KofiIcon } from "@/components/brand-icons"
+import { GITHUB_URL, KOFI_URL } from "@/lib/links"
 
 export function SocialFooter() {
   return (
@@ -13,7 +13,7 @@ export function SocialFooter() {
         <KofiIcon className="size-4" />
       </IconLink>
     </div>
-  );
+  )
 }
 
 function IconLink({
@@ -21,9 +21,9 @@ function IconLink({
   title,
   children,
 }: {
-  href: string;
-  title: string;
-  children: React.ReactNode;
+  href: string
+  title: string
+  children: React.ReactNode
 }) {
   return (
     <button
@@ -33,5 +33,5 @@ function IconLink({
     >
       {children}
     </button>
-  );
+  )
 }

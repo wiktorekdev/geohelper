@@ -1,14 +1,14 @@
-import { m } from "framer-motion";
+import { m } from "motion/react"
 
-import type { ConnState } from "@/types";
-import { connectionDetails } from "@/lib/connection-status";
-import { useStore } from "@/lib/store";
-import { useT } from "@/lib/i18n";
+import type { ConnState } from "@/types"
+import { connectionDetails } from "@/lib/connection-status"
+import { useStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 
 export function EmptyState({ conn }: { conn: ConnState }) {
-  const t = useT();
-  const sticky = useStore((s) => s.lastDisconnectReason);
-  const details = connectionDetails(conn, sticky);
+  const t = useT()
+  const sticky = useStore((s) => s.lastDisconnectReason)
+  const details = connectionDetails(conn, sticky)
 
   if (conn.kind === "connected") {
     return (
@@ -21,7 +21,7 @@ export function EmptyState({ conn }: { conn: ConnState }) {
       >
         {t("sidebar.waitingForRound")}
       </m.div>
-    );
+    )
   }
 
   return (
@@ -33,9 +33,7 @@ export function EmptyState({ conn }: { conn: ConnState }) {
       className="space-y-3 px-5 py-10 text-center"
     >
       <div className="text-sm font-medium">{details.title}</div>
-      {details.body && (
-        <div className="text-xs text-muted-foreground">{details.body}</div>
-      )}
+      {details.body && <div className="text-xs text-muted-foreground">{details.body}</div>}
       {details.showFlags && (
         <m.div
           initial={{ opacity: 0, scale: 0.95, y: 5 }}
@@ -50,5 +48,5 @@ export function EmptyState({ conn }: { conn: ConnState }) {
         </m.div>
       )}
     </m.div>
-  );
+  )
 }

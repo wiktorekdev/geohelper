@@ -2,12 +2,17 @@
 
 All notable changes to GeoHelper are kept here.
 
-## [0.17.4] - 2026-05-20
+## [0.18.0] - 2026-05-20
 
 ### Added
+- **React Error Boundary Integration** — Upgraded custom error boundary to use `react-error-boundary` library for more robust error handling and recovery options.
+- **Radix UI Toolbar Components** — Implemented `@radix-ui/react-toolbar` in edit and selection toolbars for improved keyboard navigation and accessibility.
+- **Prettier Code Formatting** — Added Prettier with format script for consistent code style across the project.
 - **Dynamic Geocoding User-Agent Compliance** — Implemented policy-compliant HTTP `User-Agent` headers (`GeoHelper/${VERSION}`) for the OSM Nominatim provider. This automatically references a dynamic compile-time version constant, eliminating the need to manually update geocoder strings on release.
+- **Automatic Version Syncing** — Added build-time version synchronization script that automatically updates Tauri config and Cargo.toml from package.json during build.
 
 ### Changed
+- **Bundle Size** — Minimal impact from library additions (react-error-boundary, @radix-ui/react-toolbar) and removal (react-resizable-panels). Main bundle remains approximately 1.5MB gzipped.
 - **Robust Writability Checks for Portable Mode** — Enhanced Tauri backend `is_portable` check to verify folder write access before storing data in the application directory. If executed from a write-restricted directory (such as `C:\Program Files`), it safely falls back to standard local AppData storage instead of causing WebView2 startup crashes.
 - **Resilient App Hydration Bootstrapping** — Converted settings and localization store initialization from `Promise.all` to `Promise.allSettled`. This guarantees that a single corrupted theme or preferences file will not halt the application startup or leave a black screen.
 

@@ -1,18 +1,18 @@
 export type MapProvider =
   | {
-      kind: "leaflet";
-      name: string;
-      url: string;
-      attribution: string;
-      maxZoom: number;
-      subdomains?: string;
+      kind: "leaflet"
+      name: string
+      url: string
+      attribution: string
+      maxZoom: number
+      subdomains?: string
     }
   | {
-      kind: "google";
-      name: string;
-      mapTypeId: "roadmap" | "satellite" | "hybrid" | "terrain";
-      styles?: google.maps.MapTypeStyle[];
-    };
+      kind: "google"
+      name: string
+      mapTypeId: "roadmap" | "satellite" | "hybrid" | "terrain"
+      styles?: google.maps.MapTypeStyle[]
+    }
 
 export type MapProviderId =
   | "osm"
@@ -20,7 +20,7 @@ export type MapProviderId =
   | "carto-dark"
   | "google-roadmap"
   | "google-dark"
-  | "google-hybrid";
+  | "google-hybrid"
 
 export const MAP_PROVIDERS: Record<MapProviderId, MapProvider> = {
   osm: {
@@ -141,4 +141,4 @@ export const MAP_PROVIDERS: Record<MapProviderId, MapProvider> = {
     name: "Google Hybrid",
     mapTypeId: "hybrid",
   },
-};
+}

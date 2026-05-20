@@ -1,19 +1,19 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react"
 
-import type { KeyValidation } from "@/hooks/use-google-api-key-validation";
+import type { KeyValidation } from "@/hooks/use-google-api-key-validation"
 
 export function KeyValidationMessage({ validation }: { validation: KeyValidation }) {
   // Only surface error states. Valid keys stay quiet so the field doesn't flash
   // green every keystroke.
-  if (validation.state !== "invalid") return null;
-  if (!validation.message) return null;
+  if (validation.state !== "invalid") return null
+  if (!validation.message) return null
 
   return (
     <div className="mt-1.5 inline-flex items-start gap-1.5 text-[11px] text-amber-300">
       <AlertTriangle className="mt-0.5 size-3" />
       <span>{validation.message}</span>
     </div>
-  );
+  )
 }
 
 export function Group({
@@ -21,9 +21,9 @@ export function Group({
   title,
   children,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
+  icon: React.ReactNode
+  title: string
+  children: React.ReactNode
 }) {
   return (
     <section className="space-y-3 px-5 py-4">
@@ -33,7 +33,7 @@ export function Group({
       </div>
       {children}
     </section>
-  );
+  )
 }
 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -42,11 +42,11 @@ export function Field({ label, children }: { label: string; children: React.Reac
       <div className="text-[11px] font-medium text-muted-foreground">{label}</div>
       {children}
     </div>
-  );
+  )
 }
 
 export function Divider() {
-  return <div className="mx-4 h-px bg-sidebar-border" />;
+  return <div className="mx-4 h-px bg-sidebar-border" />
 }
 
 export function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -55,7 +55,7 @@ export function InfoRow({ label, value }: { label: string; value: React.ReactNod
       <span className="text-muted-foreground">{label}</span>
       <span className="truncate font-mono">{value}</span>
     </div>
-  );
+  )
 }
 
 export function SocialIcon({
@@ -63,9 +63,9 @@ export function SocialIcon({
   onClick,
   children,
 }: {
-  title: string;
-  onClick: () => void;
-  children: React.ReactNode;
+  title: string
+  onClick: () => void
+  children: React.ReactNode
 }) {
   return (
     <button
@@ -75,5 +75,5 @@ export function SocialIcon({
     >
       {children}
     </button>
-  );
+  )
 }

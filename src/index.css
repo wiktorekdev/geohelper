@@ -82,31 +82,51 @@
 }
 
 @layer base {
-  * { border-color: var(--border); }
-  html, body, #root { height: 100%; margin: 0; }
+  * {
+    border-color: var(--border);
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+  }
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }
 }
 
 /* Leaflet */
-.leaflet-container { background: var(--background) !important; font: inherit; }
+.leaflet-container {
+  background: var(--background) !important;
+  font: inherit;
+}
 .leaflet-control-attribution {
   background: color-mix(in oklab, var(--sidebar) 85%, transparent) !important;
   color: var(--muted-foreground) !important;
   font-size: 10px !important;
 }
-.leaflet-control-attribution a { color: var(--foreground) !important; }
+.leaflet-control-attribution a {
+  color: var(--foreground) !important;
+}
 .leaflet-bar a {
   background: var(--sidebar) !important;
   color: var(--foreground) !important;
   border-color: var(--border) !important;
 }
-.leaflet-bar a:hover { background: var(--accent) !important; }
+.leaflet-bar a:hover {
+  background: var(--accent) !important;
+}
 
 /* Custom Leaflet divIcon for the panorama marker. Kept here so the icon
    HTML returned from React doesn't carry an inline <style> tag. */
@@ -115,8 +135,12 @@
   filter: drop-shadow(0 2.5px 4.5px rgba(0, 0, 0, 0.35));
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.geohelper-marker--editing { cursor: pointer; }
-.geohelper-marker--editing:hover { transform: scale(1.15); }
+.geohelper-marker--editing {
+  cursor: pointer;
+}
+.geohelper-marker--editing:hover {
+  transform: scale(1.15);
+}
 .geohelper-marker__dot {
   position: absolute;
   inset: 0;
@@ -139,13 +163,23 @@
 }
 
 @keyframes flash-brand {
-  0% { color: var(--brand); }
-  100% { color: var(--foreground); }
+  0% {
+    color: var(--brand);
+  }
+  100% {
+    color: var(--foreground);
+  }
 }
 
-.flash-brand { animation: flash-brand 0.6s ease; }
+.flash-brand {
+  animation: flash-brand 0.6s ease;
+}
 
 @keyframes shimmer {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(400%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(400%);
+  }
 }

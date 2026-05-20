@@ -1,14 +1,14 @@
-import { m, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "motion/react"
 
-import { useStore } from "@/lib/store";
-import { InfoRow } from "./info-row";
-import { Card } from "@/components/ui/card";
-import { useT } from "@/lib/i18n";
+import { useStore } from "@/lib/store"
+import { InfoRow } from "./info-row"
+import { Card } from "@/components/ui/card"
+import { useT } from "@/lib/i18n"
 
 export function RoadSection() {
-  const t = useT();
-  const place = useStore((s) => s.place);
-  const show = !!(place.road || place.postcode);
+  const t = useT()
+  const place = useStore((s) => s.place)
+  const show = !!(place.road || place.postcode)
 
   return (
     <AnimatePresence mode="wait">
@@ -23,11 +23,16 @@ export function RoadSection() {
           <Card className="mx-4 my-2 p-3.5 space-y-1.5">
             {place.road && <InfoRow id="road.road" label={t("location.road")} value={place.road} />}
             {place.postcode && (
-              <InfoRow id="road.postcode" label={t("location.postcode")} value={place.postcode} mono />
+              <InfoRow
+                id="road.postcode"
+                label={t("location.postcode")}
+                value={place.postcode}
+                mono
+              />
             )}
           </Card>
         </m.div>
       )}
     </AnimatePresence>
-  );
+  )
 }

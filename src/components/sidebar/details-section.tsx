@@ -1,14 +1,14 @@
-import { m, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "motion/react"
 
-import { useStore } from "@/lib/store";
-import { localTimeFromOffset } from "@/lib/country-info";
-import { InfoRow } from "./info-row";
-import { Card } from "@/components/ui/card";
-import { useT } from "@/lib/i18n";
+import { useStore } from "@/lib/store"
+import { localTimeFromOffset } from "@/lib/country-info"
+import { InfoRow } from "./info-row"
+import { Card } from "@/components/ui/card"
+import { useT } from "@/lib/i18n"
 
 export function DetailsSection() {
-  const t = useT();
-  const details = useStore((s) => s.countryDetails);
+  const t = useT()
+  const details = useStore((s) => s.countryDetails)
 
   const hasAny = !!(
     details &&
@@ -17,11 +17,9 @@ export function DetailsSection() {
       details.callingCode ||
       details.timezones?.length ||
       details.capital)
-  );
+  )
 
-  const localTime = details?.timezones?.[0]
-    ? localTimeFromOffset(details.timezones[0])
-    : undefined;
+  const localTime = details?.timezones?.[0] ? localTimeFromOffset(details.timezones[0]) : undefined
 
   return (
     <AnimatePresence mode="wait">
@@ -42,16 +40,24 @@ export function DetailsSection() {
               />
             )}
             {details.currency && (
-              <InfoRow id="details.currency" label={t("location.currency")} value={details.currency} />
+              <InfoRow
+                id="details.currency"
+                label={t("location.currency")}
+                value={details.currency}
+              />
             )}
             {details.callingCode && (
               <InfoRow id="details.phone" label={t("location.phone")} value={details.callingCode} />
             )}
-            {localTime && <InfoRow id="details.localTime" label={t("location.localTime")} value={localTime} />}
-            {details.capital && <InfoRow id="details.capital" label={t("location.capital")} value={details.capital} />}
+            {localTime && (
+              <InfoRow id="details.localTime" label={t("location.localTime")} value={localTime} />
+            )}
+            {details.capital && (
+              <InfoRow id="details.capital" label={t("location.capital")} value={details.capital} />
+            )}
           </Card>
         </m.div>
       )}
     </AnimatePresence>
-  );
+  )
 }

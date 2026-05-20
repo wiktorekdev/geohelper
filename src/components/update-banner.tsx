@@ -1,32 +1,29 @@
-import { m, AnimatePresence } from "framer-motion";
-import { Download, ExternalLink, Loader2, RotateCw, Sparkles, X } from "lucide-react";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { m, AnimatePresence } from "motion/react"
+import { Download, ExternalLink, Loader2, RotateCw, Sparkles, X } from "lucide-react"
+import { openUrl } from "@tauri-apps/plugin-opener"
 
-import { useUpdateStore } from "@/lib/update-store";
-import { Button } from "@/components/ui/button";
-import { useT } from "@/lib/i18n";
+import { useUpdateStore } from "@/lib/update-store"
+import { Button } from "@/components/ui/button"
+import { useT } from "@/lib/i18n"
 
 export function UpdateBanner() {
-  const t = useT();
-  const info = useUpdateStore((s) => s.updateInfo);
-  const dismissed = useUpdateStore((s) => s.updateDismissed);
-  const dismiss = useUpdateStore((s) => s.dismissUpdate);
-  const install = useUpdateStore((s) => s.installUpdate);
-  const installState = useUpdateStore((s) => s.installState);
-  const installError = useUpdateStore((s) => s.installError);
-  const downloaded = useUpdateStore((s) => s.downloadedBytes);
-  const total = useUpdateStore((s) => s.totalBytes);
-  const isInstalled = useUpdateStore((s) => s.isInstalled);
+  const t = useT()
+  const info = useUpdateStore((s) => s.updateInfo)
+  const dismissed = useUpdateStore((s) => s.updateDismissed)
+  const dismiss = useUpdateStore((s) => s.dismissUpdate)
+  const install = useUpdateStore((s) => s.installUpdate)
+  const installState = useUpdateStore((s) => s.installState)
+  const installError = useUpdateStore((s) => s.installError)
+  const downloaded = useUpdateStore((s) => s.downloadedBytes)
+  const total = useUpdateStore((s) => s.totalBytes)
+  const isInstalled = useUpdateStore((s) => s.isInstalled)
 
-  const visible = !!(
-    info?.hasUpdate &&
-    (info.latest !== dismissed || installState !== "idle")
-  );
+  const visible = !!(info?.hasUpdate && (info.latest !== dismissed || installState !== "idle"))
 
-  const pct = total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null;
+  const pct = total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null
   // Treat null (unknown) as portable, so users who ship without the command
   // available still get the safe manual-download path.
-  const canAutoInstall = isInstalled === true;
+  const canAutoInstall = isInstalled === true
 
   return (
     <AnimatePresence>
@@ -50,9 +47,7 @@ export function UpdateBanner() {
                   <Sparkles className="size-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-semibold leading-tight">
-                    {t("update.available")}
-                  </div>
+                  <div className="text-xs font-semibold leading-tight">{t("update.available")}</div>
                   <div className="truncate text-[11px] text-muted-foreground">
                     {t("update.versionOut", { version: info.latest })}
                   </div>
@@ -155,11 +150,11 @@ export function UpdateBanner() {
         </m.div>
       )}
     </AnimatePresence>
-  );
+  )
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
