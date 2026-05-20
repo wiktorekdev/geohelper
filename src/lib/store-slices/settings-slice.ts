@@ -3,15 +3,17 @@ import type { StateCreator } from "zustand";
 import type { GeocodeProviderId } from "@/lib/geocode-providers";
 import { MAP_PROVIDERS, type MapProviderId } from "@/lib/map-providers";
 import type { Store } from "@/lib/store";
-import {
-  getSettingsStore,
-  saveSetting,
-  loadProviderFallback,
-  loadGeocodeProviderFallback,
-  loadCopyFormatFallback,
-} from "@/lib/settings-persistence";
+import { getSettingsStore, saveSetting } from "@/lib/settings-persistence";
+import { logger } from "@/lib/logger";
 
 export type CopyFormat = "lat,lng" | "lat, lng" | "lng,lat";
+
+const DEFAULT_MAP_PROVIDER: MapProviderId = "osm";
+const DEFAULT_GEOCODE_PROVIDER: GeocodeProviderId = "nominatim";
+const DEFAULT_COPY_FORMAT: CopyFormat = "lat, lng";
+const DEFAULT_MARKER_COLOR = "#dc2626";
+const DEFAULT_MARKER_BORDER = "#ffffff";
+const DEFAULT_MARKER_SIZE = 24;
 
 export type SettingsSlice = {
   mapProvider: MapProviderId;
@@ -38,15 +40,15 @@ export type SettingsSlice = {
 };
 
 export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (set) => ({
-  mapProvider: loadProviderFallback(),
-  geocodeProvider: loadGeocodeProviderFallback(),
+  mapProvider: DEFAULT_MAP_PROVIDER,
+  geocodeProvider: DEFAULT_GEOCODE_PROVIDER,
   googleApiKey: "",
-  copyFormat: loadCopyFormatFallback(),
+  copyFormat: DEFAULT_COPY_FORMAT,
   alwaysOnTop: false,
   settingsOpen: false,
-  markerColor: "#dc2626",
-  markerBorderColor: "#ffffff",
-  markerSize: 24,
+  markerColor: DEFAULT_MARKER_COLOR,
+  markerBorderColor: DEFAULT_MARKER_BORDER,
+  markerSize: DEFAULT_MARKER_SIZE,
 
   setMapProvider: (mapProvider) => {
     void saveSetting("mapProvider", mapProvider);
@@ -84,17 +86,17 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
   hydrateSettings: async () => {
     try {
       const store = await getSettingsStore();
-      let mapProvider = (await store.get<MapProviderId>("mapProvider")) ?? loadProviderFallback();
+      let mapProvider = (await store.get<MapProviderId>("mapProvider")) ?? DEFAULT_MAP_PROVIDER;
       if (!MAP_PROVIDERS[mapProvider]) {
-        mapProvider = "osm";
+        mapProvider = DEFAULT_MAP_PROVIDER;
       }
-      const geocodeProvider = (await store.get<GeocodeProviderId>("geocodeProvider")) ?? loadGeocodeProviderFallback();
-      const copyFormat = (await store.get<CopyFormat>("copyFormat")) ?? loadCopyFormatFallback();
+      const geocodeProvider = (await store.get<GeocodeProviderId>("geocodeProvider")) ?? DEFAULT_GEOCODE_PROVIDER;
+      const copyFormat = (await store.get<CopyFormat>("copyFormat")) ?? DEFAULT_COPY_FORMAT;
       const alwaysOnTop = (await store.get<boolean>("alwaysOnTop")) ?? false;
       const googleApiKey = (await store.get<string>("googleApiKey")) ?? "";
-      const markerColor = (await store.get<string>("markerColor")) ?? "#dc2626";
-      const markerBorderColor = (await store.get<string>("markerBorderColor")) ?? "#ffffff";
-      const markerSize = (await store.get<number>("markerSize")) ?? 24;
+      const markerColor = (await store.get<string>("markerColor")) ?? DEFAULT_MARKER_COLOR;
+      const markerBorderColor = (await store.get<string>("markerBorderColor")) ?? DEFAULT_MARKER_BORDER;
+      const markerSize = (await store.get<number>("markerSize")) ?? DEFAULT_MARKER_SIZE;
 
       set({
         mapProvider,
@@ -107,7 +109,7 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
         markerSize,
       });
     } catch (e) {
-      console.error("Failed to hydrate settings slice:", e);
+      logger.error("Failed to hydrate settings slice:", e);
     }
   },
   openSettings: () => set({ settingsOpen: true }),
