@@ -1,9 +1,10 @@
 import { m, AnimatePresence } from "framer-motion";
 
 import { useStore } from "@/lib/store";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function GeocodeNotice() {
+  const t = useT();
   const error = useStore((s) => s.geocodeError);
 
   return (

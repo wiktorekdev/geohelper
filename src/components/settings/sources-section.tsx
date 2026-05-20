@@ -14,7 +14,7 @@ import { MAP_PROVIDERS, type MapProviderId } from "@/lib/map-providers";
 import { GEOCODE_PROVIDERS, type GeocodeProviderId } from "@/lib/geocode-providers";
 import type { KeyValidation } from "@/hooks/use-google-api-key-validation";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   mapProvider: MapProviderId;
@@ -43,6 +43,7 @@ export function SourcesSection({
   updateKey,
   runKeyValidation,
 }: Props) {
+  const t = useT();
   return (
     <Group icon={<Layers className="size-3.5" />} title={t("settings.sources.title")}>
       <Field label={t("settings.sources.mapProvider")}>

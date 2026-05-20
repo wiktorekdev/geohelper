@@ -13,9 +13,10 @@ import { useDisplayStore } from "@/lib/display-store";
 import { formatCoords } from "@/lib/coords";
 import { MOCK_COORDS } from "@/lib/mock-data";
 import { SelectableText } from "@/components/display/selectable-text";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function CoordsSection() {
+  const t = useT();
   const current = useStore((s) => s.current);
   const editing = useDisplayStore((s) => s.editing);
   const copyFormat = useStore((s) => s.copyFormat);

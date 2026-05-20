@@ -16,9 +16,10 @@ import { useThemeStore } from "@/lib/themes/store";
 import { BUILTIN_THEMES } from "@/lib/themes/builtin";
 import type { Theme } from "@/lib/themes/types";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function ThemeSelector() {
+  const t = useT();
   const activeId = useThemeStore((s) => s.activeId);
   const setActive = useThemeStore((s) => s.setActive);
   const userThemes = useThemeStore((s) => s.userThemes);

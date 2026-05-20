@@ -7,7 +7,7 @@ import { MAP_PROVIDERS } from "@/lib/map-providers";
 import { useStore } from "@/lib/store";
 import { useDisplayStore } from "@/lib/display-store";
 import { GoogleMapView } from "./google-map-view";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ColorPicker, ColorPickerSelection, ColorPickerHue } from "@/components/ui/color-picker";
@@ -81,6 +81,7 @@ function MarkerColorSection({
 }
 
 export function MapPanel() {
+  const t = useT();
   const current = useStore((s) => s.current);
   const providerId = useStore((s) => s.mapProvider);
   const apiKey = useStore((s) => s.googleApiKey);

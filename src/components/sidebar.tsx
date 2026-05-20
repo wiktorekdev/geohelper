@@ -33,10 +33,11 @@ import { useDisplayStore, type WidgetId, SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } 
 import { clearMockIfPresent, injectMockIfEmpty } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 import logoUrl from "@/assets/logo.png";
 
 export function Sidebar() {
+  const t = useT();
   const openSettings = useStore((s) => s.openSettings);
   const conn = useStore((s) => s.conn);
   const current = useStore((s) => s.current);

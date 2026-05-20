@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Field, Group } from "./settings-primitives";
 import { LanguageSelector } from "./language-selector";
 import { ThemeSelector } from "./theme-selector";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   alwaysOnTop: boolean;
@@ -12,6 +12,7 @@ type Props = {
 };
 
 export function AppearanceSection({ alwaysOnTop, setAlwaysOnTop }: Props) {
+  const t = useT();
   return (
     <Group icon={<Palette className="size-3.5" />} title={t("settings.appearance.title")}>
       <Field label={t("settings.appearance.theme")}>

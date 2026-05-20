@@ -14,9 +14,10 @@ import { GITHUB_URL, KOFI_URL } from "@/lib/links";
 import { useDisplayStore } from "@/lib/display-store";
 import { useStore } from "@/lib/store";
 import { useUpdateStore } from "@/lib/update-store";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function SettingsSidebar() {
+  const t = useT();
   const close = useStore((s) => s.closeSettings);
   const sidebarWidth = useDisplayStore((s) => s.sidebarWidth);
 

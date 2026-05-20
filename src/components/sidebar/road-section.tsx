@@ -3,9 +3,10 @@ import { m, AnimatePresence } from "framer-motion";
 import { useStore } from "@/lib/store";
 import { InfoRow } from "./info-row";
 import { Card } from "@/components/ui/card";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function RoadSection() {
+  const t = useT();
   const place = useStore((s) => s.place);
   const show = !!(place.road || place.postcode);
 

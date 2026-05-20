@@ -3,9 +3,10 @@ import { m } from "framer-motion";
 import type { ConnState } from "@/types";
 import { connectionDetails } from "@/lib/connection-status";
 import { useStore } from "@/lib/store";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function EmptyState({ conn }: { conn: ConnState }) {
+  const t = useT();
   const sticky = useStore((s) => s.lastDisconnectReason);
   const details = connectionDetails(conn, sticky);
 

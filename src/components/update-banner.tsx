@@ -4,9 +4,10 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { useUpdateStore } from "@/lib/update-store";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function UpdateBanner() {
+  const t = useT();
   const info = useUpdateStore((s) => s.updateInfo);
   const dismissed = useUpdateStore((s) => s.updateDismissed);
   const dismiss = useUpdateStore((s) => s.dismissUpdate);

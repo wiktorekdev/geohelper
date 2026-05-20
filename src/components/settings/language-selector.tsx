@@ -11,11 +11,11 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { SUPPORTED_LOCALES, useI18n, type Locale } from "@/lib/i18n";
+import { SUPPORTED_LOCALES, useI18n, useT, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n";
 
 export function LanguageSelector() {
+  const t = useT();
   const locale = useI18n((s) => s.locale);
   const setLocale = useI18n((s) => s.setLocale);
   const [open, setOpen] = useState(false);

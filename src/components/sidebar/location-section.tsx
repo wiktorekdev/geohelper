@@ -6,9 +6,10 @@ import { deriveLocationDisplay } from "@/lib/location-display";
 import { useStore } from "@/lib/store";
 import { SelectableText } from "@/components/display/selectable-text";
 import { FLAG_SIZE, useDisplayStore } from "@/lib/display-store";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function LocationSection() {
+  const t = useT();
   const place = useStore((s) => s.place);
   const details = useStore((s) => s.countryDetails);
   const geocodeError = useStore((s) => s.geocodeError);

@@ -6,7 +6,7 @@ import { Group, InfoRow } from "./settings-primitives";
 import { VERSION } from "@/lib/links";
 import type { UpdateInfo } from "@/lib/update-check";
 import { useUpdateStore } from "@/lib/update-store";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   updateInfo: UpdateInfo | null;
@@ -21,6 +21,7 @@ export function AboutSection({
   updateError,
   runUpdateCheck,
 }: Props) {
+  const t = useT();
   const installUpdate = useUpdateStore((s) => s.installUpdate);
   const installState = useUpdateStore((s) => s.installState);
   const installError = useUpdateStore((s) => s.installError);

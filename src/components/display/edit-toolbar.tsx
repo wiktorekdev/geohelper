@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDisplayStore } from "@/lib/display-store";
 import { clearMockIfPresent } from "@/lib/mock-data";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 export function EditToolbar() {
+  const t = useT();
   const editing = useDisplayStore((s) => s.editing);
   const stopEditing = useDisplayStore((s) => s.stopEditing);
   const resetAll = useDisplayStore((s) => s.resetAll);

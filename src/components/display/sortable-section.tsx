@@ -4,7 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { cn } from "@/lib/utils";
 import { useDisplayStore, widgetLabel, type WidgetId } from "@/lib/display-store";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   id: WidgetId;
@@ -12,6 +12,7 @@ type Props = {
 };
 
 export function SortableSection({ id, children }: Props) {
+  const t = useT();
   const editing = useDisplayStore((s) => s.editing);
   const selection = useDisplayStore((s) => s.selection);
   const selectWidget = useDisplayStore((s) => s.selectWidget);

@@ -15,7 +15,7 @@ import {
   type FontSize,
 } from "@/lib/display-store";
 import { cn } from "@/lib/utils";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n";
 
 const FONT_SIZES: { id: FontSize; label: string }[] = [
   { id: "sm", label: "S" },
@@ -24,6 +24,7 @@ const FONT_SIZES: { id: FontSize; label: string }[] = [
 ];
 
 export function SelectionToolbar() {
+  const t = useT();
   const editing = useDisplayStore((s) => s.editing);
   const selection = useDisplayStore((s) => s.selection);
   const textStyles = useDisplayStore((s) => s.textStyles);
