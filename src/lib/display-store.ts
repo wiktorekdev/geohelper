@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { t } from "@/lib/i18n";
 import { getSettingsStore } from "./settings-persistence";
+import { logger } from "./logger";
 
 export const SIDEBAR_MIN_WIDTH = 320;
 export const SIDEBAR_MAX_WIDTH = 700;
@@ -127,7 +128,7 @@ async function persistDisplayConfig(state: DisplayConfig) {
     });
     await store.save();
   } catch (e) {
-    console.error("Failed to save display config:", e);
+    logger.error("Failed to save display config:", e);
   }
 }
 
@@ -172,7 +173,7 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
         set(normalizeDisplayConfig(stored));
       }
     } catch (e) {
-      console.error("Failed to hydrate display store:", e);
+      logger.error("Failed to hydrate display store:", e);
     }
   },
 
@@ -218,11 +219,7 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   clearSelection: () => set({ selection: [] }),
   selectWidget: (widget, additive = false) => {
     const prefix = `${widget}.`;
-    const ids: string[] = [];
-    document.querySelectorAll<HTMLElement>("[data-text-id]").forEach((node) => {
-      const id = node.dataset.textId;
-      if (id && id.startsWith(prefix)) ids.push(id);
-    });
+    const ids = Object.keys(get().registeredIds).filter((id) => id.startsWith(prefix));
     if (additive) set({ selection: dedupe([...get().selection, ...ids]) });
     else set({ selection: dedupe(ids) });
   },
@@ -259,18 +256,19 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   },
   resetWidget: (id) => {
     const prefix = `${id}.`;
+    const { textStyles, hiddenTexts, selection } = get();
     const nextStyles: Record<string, TextStyle> = {};
-    for (const [key, style] of Object.entries(get().textStyles)) {
+    for (const [key, style] of Object.entries(textStyles)) {
       if (!key.startsWith(prefix)) nextStyles[key] = style;
     }
     const nextHidden: Record<string, true> = {};
-    for (const key of Object.keys(get().hiddenTexts)) {
-      if (!key.startsWith(prefix)) nextHidden[key] = true;
+    for (const [key, value] of Object.entries(hiddenTexts)) {
+      if (!key.startsWith(prefix)) nextHidden[key] = value;
     }
     set({
       textStyles: nextStyles,
       hiddenTexts: nextHidden,
-      selection: get().selection.filter((s) => !s.startsWith(prefix)),
+      selection: selection.filter((s) => !s.startsWith(prefix)),
     });
     void persistDisplayConfig(get());
   },
