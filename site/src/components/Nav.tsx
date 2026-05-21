@@ -1,9 +1,10 @@
 import { GITHUB_URL, RELEASES_LATEST_URL } from "../links";
 import NavMobileMenu from "./NavMobileMenu";
+import StickyHeader from "./StickyHeader";
 
 export default function Nav() {
   return (
-    <div className="sticky top-0 z-40 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md">
+    <StickyHeader>
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <a href="#top" className="flex items-center gap-2.5">
           <img src="/logo.png" alt="" className="size-8" />
@@ -47,6 +48,6 @@ export default function Nav() {
         {/* Mobile Navigation - Client Component for interaction */}
         <NavMobileMenu />
       </header>
-    </div>
+    </StickyHeader>
   );
 }

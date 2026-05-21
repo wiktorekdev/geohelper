@@ -22,7 +22,7 @@ export default function NavMobileMenu() {
       </button>
 
       {open && (
-        <nav className="absolute left-0 right-0 top-full border-t border-white/10 bg-neutral-950/95 px-6 py-4 md:hidden">
+        <nav className="mobile-menu-drawer absolute left-0 right-0 top-full border-t border-white/10 bg-neutral-950/95 px-6 py-4 md:hidden">
           <div className="flex flex-col gap-1 text-sm">
             <a
               href="#features"

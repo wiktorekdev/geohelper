@@ -9,6 +9,12 @@ html {
   scroll-padding-top: 80px;
 }
 
+.sticky-header-container:has(.mobile-menu-drawer) {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(9, 9, 11, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
