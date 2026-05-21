@@ -5,6 +5,8 @@ node_modules
 dist
 dist-ssr
 dist-tsc
+.next
+out
 *.local
 *.tsbuildinfo
 

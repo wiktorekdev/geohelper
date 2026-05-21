@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import {
   Apple,
@@ -21,10 +23,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import logoUrl from "./assets/logo.png";
-import parisShot from "./assets/paris.png";
-import editShot from "./assets/edit-mode.png";
-import { GITHUB_URL, KOFI_URL, RELEASES_LATEST_URL } from "./links";
+import { GITHUB_URL, KOFI_URL, RELEASES_LATEST_URL } from "../links";
 
 type OsId = "windows" | "macos" | "linux";
 
@@ -42,7 +41,9 @@ function detectOs(): OsId {
   return "windows";
 }
 
-export default function App() {
+const GEOHELPER_VERSION = process.env.GEOHELPER_VERSION ?? "0.0.0";
+
+export default function Page() {
   return (
     <div className="relative overflow-x-hidden">
       <Backdrop />
@@ -91,7 +92,7 @@ function Nav() {
     >
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <a href="#top" className="flex items-center gap-2.5" onClick={close}>
-          <img src={logoUrl} alt="" className="size-8" />
+          <img src="/logo.png" alt="" className="size-8" />
           <span className="font-semibold tracking-tight text-white">GeoHelper</span>
         </a>
 
@@ -185,7 +186,7 @@ function Hero() {
         >
           <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-red-300">
             <Download className="size-3" />
-            v{__GEOHELPER_VERSION__}
+            v{GEOHELPER_VERSION}
           </span>
           <span>Latest GeoHelper release</span>
           <ArrowRight className="size-3 text-neutral-500 transition group-hover:translate-x-0.5 group-hover:text-white" />
@@ -200,7 +201,7 @@ function Hero() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-neutral-400">
-          A tiny desktop helper that reads GeoGuessr's own traffic and tells you where the current
+          A tiny desktop helper that reads GeoGuessr&apos;s own traffic and tells you where the current
           Street View actually is. No browser extension, no scripts inside the game.
         </p>
 
@@ -294,8 +295,8 @@ function DownloadButton() {
 
 function HeroScreenshot() {
   const shots = [
-    { src: parisShot, label: "Normal Mode" },
-    { src: editShot, label: "Edit Mode" },
+    { src: "/paris.png", label: "Normal Mode" },
+    { src: "/edit-mode.png", label: "Edit Mode" },
   ];
   const [idx, setIdx] = useState(0);
   const paused = useRef(false);
@@ -406,7 +407,7 @@ function Customizer() {
           <h2 className="text-2xl font-semibold text-white sm:text-3xl">Make it yours.</h2>
           <p className="mt-4 leading-relaxed text-neutral-400">
             Hit the pencil icon and the sidebar becomes a canvas. Drag sections around,
-            change colors and sizes per widget, hide what you don't need. Want to practice
+            change colors and sizes per widget, hide what you don&apos;t need. Want to practice
             by seeing only the currency and language? Toggle the rest off.
           </p>
           <ul className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
@@ -419,7 +420,7 @@ function Customizer() {
           </ul>
         </div>
         <div className="relative mt-10 overflow-hidden rounded-xl border border-white/10 bg-neutral-950">
-          <img src={editShot} alt="GeoHelper layout editor" className="block w-full" />
+          <img src="/edit-mode.png" alt="GeoHelper layout editor" className="block w-full" />
         </div>
       </section>
     </Reveal>
@@ -435,7 +436,8 @@ function GetStarted() {
       await navigator.clipboard.writeText(flags);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {
+    } catch (e) {
+      console.warn("Failed to copy text: ", e);
     }
   }
 
@@ -553,7 +555,7 @@ function Footer() {
     <footer className="border-t border-white/5">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-neutral-500">
         <div className="flex items-center gap-2">
-          <img src={logoUrl} alt="" className="size-5" />
+          <img src="/logo.png" alt="" className="size-5" />
           <span>GeoHelper</span>
         </div>
         <div className="flex items-center gap-5">
