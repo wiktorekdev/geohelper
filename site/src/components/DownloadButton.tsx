@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Apple, ChevronDown, Check, Download, Monitor, Terminal } from "lucide-react";
-import { DOWNLOAD_URLS, EXTERNAL_LINK_PROPS } from "../links";
+import { EXTERNAL_LINK_PROPS, GITHUB_API_URL, RELEASES_LATEST_URL } from "../links";
 
 type OsId = "windows" | "macos" | "linux" | "desktop";
 
@@ -22,14 +22,30 @@ function detectOs(): OsId {
   return "windows";
 }
 
+type ReleaseAsset = {
+  name: string;
+  browser_download_url: string;
+};
+
 export default function DownloadButton() {
   const [os, setOs] = useState<OsId>("desktop");
   const [open, setOpen] = useState(false);
+  const [assets, setAssets] = useState<ReleaseAsset[]>([]);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  // Avoid hydration mismatch by detecting OS after mounting
   useEffect(() => {
     setOs(detectOs());
+  }, []);
+
+  useEffect(() => {
+    fetch(GITHUB_API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        setAssets(data.assets || []);
+      })
+      .catch(() => {
+        setAssets([]);
+      });
   }, []);
 
   useEffect(() => {
@@ -42,7 +58,22 @@ export default function DownloadButton() {
   }, [open]);
 
   const Icon = os === "macos" ? Apple : os === "linux" ? Terminal : Monitor;
-  const href = os === "desktop" ? DOWNLOAD_URLS.all : DOWNLOAD_URLS[os];
+
+  const getDownloadUrl = (targetOs: OsId): string => {
+    if (targetOs === "desktop") return RELEASES_LATEST_URL;
+
+    const patterns = {
+      windows: "windows-setup.exe",
+      macos: "macos.dmg",
+      linux: "linux.AppImage",
+    };
+
+    const pattern = patterns[targetOs];
+    const asset = assets.find((a) => a.name.includes(pattern));
+    return asset?.browser_download_url || RELEASES_LATEST_URL;
+  };
+
+  const href = getDownloadUrl(os);
 
   return (
     <div ref={ref} className="relative inline-flex overflow-visible rounded-lg">
@@ -88,7 +119,7 @@ export default function DownloadButton() {
           })}
           <div className="mt-1 border-t border-white/10 pt-1">
             <a
-              href={DOWNLOAD_URLS.all}
+              href={RELEASES_LATEST_URL}
               {...EXTERNAL_LINK_PROPS}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-neutral-400 hover:bg-white/5 hover:text-white"
             >
