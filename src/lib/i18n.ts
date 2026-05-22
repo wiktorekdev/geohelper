@@ -2,13 +2,17 @@ import { create } from "zustand"
 
 import en from "@/locales/en.json"
 import pl from "@/locales/pl.json"
+import ru from "@/locales/ru.json"
+import es from "@/locales/es.json"
 import { getSettingsStore, saveSetting } from "./settings-persistence"
 
-export type Locale = "en" | "pl"
+export type Locale = "en" | "pl" | "ru" | "es"
 
 const BUNDLES: Partial<Record<Locale, Record<string, string>>> = {
   en: en as Record<string, string>,
   pl: pl as Record<string, string>,
+  ru: ru as Record<string, string>,
+  es: es as Record<string, string>,
 }
 
 export type LocaleMeta = { id: Locale; label: string; nativeLabel: string; countryCode: string }
@@ -16,6 +20,8 @@ export type LocaleMeta = { id: Locale; label: string; nativeLabel: string; count
 export const SUPPORTED_LOCALES: LocaleMeta[] = [
   { id: "en", label: "English", nativeLabel: "English", countryCode: "GB" },
   { id: "pl", label: "Polish", nativeLabel: "Polski", countryCode: "PL" },
+  { id: "ru", label: "Russian", nativeLabel: "Русский", countryCode: "RU" },
+  { id: "es", label: "Spanish", nativeLabel: "Español", countryCode: "ES" },
 ]
 
 const SUPPORTED_IDS = new Set<Locale>(SUPPORTED_LOCALES.map((l) => l.id))

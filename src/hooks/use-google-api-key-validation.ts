@@ -51,11 +51,11 @@ export function useGoogleApiKeyValidation(draft: string) {
     abortRef.current?.abort()
 
     if (!key) {
-      setTimeout(() => setValidation({ state: "idle", message: null }), 0)
+      queueMicrotask(() => setValidation({ state: "idle", message: null }))
       return
     }
 
-    setTimeout(() => setValidation({ state: "idle", message: t("validation.waiting") }), 0)
+    queueMicrotask(() => setValidation({ state: "idle", message: t("validation.waiting") }))
     const timeout = window.setTimeout(() => {
       void validate(key)
     }, 700)

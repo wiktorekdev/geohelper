@@ -1,7 +1,6 @@
 "use client"
 
 import { colord } from "colord"
-import { PipetteIcon } from "lucide-react"
 import { Slider as SliderPrimitive } from "radix-ui"
 import {
   type ComponentProps,
@@ -14,29 +13,15 @@ import {
   useRef,
   useState,
 } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { logger } from "@/lib/logger"
 
 interface ColorPickerContextValue {
   hue: number
   saturation: number
   lightness: number
-  alpha: number
-  mode: string
   setHue: (hue: number) => void
   setSaturation: (saturation: number) => void
   setLightness: (lightness: number) => void
-  setAlpha: (alpha: number) => void
-  setMode: (mode: string) => void
 }
 
 const ColorPickerContext = createContext<ColorPickerContextValue | undefined>(undefined)
@@ -61,9 +46,9 @@ function parseToHsl(v: string) {
   try {
     const c = colord(v)
     const hsl = c.toHsl()
-    return { hue: hsl.h, saturation: hsl.s, lightness: hsl.l, alpha: hsl.a * 100 }
+    return { hue: hsl.h, saturation: hsl.s, lightness: hsl.l }
   } catch {
-    return { hue: 0, saturation: 100, lightness: 50, alpha: 100 }
+    return { hue: 0, saturation: 100, lightness: 50 }
   }
 }
 
@@ -79,8 +64,6 @@ export const ColorPicker = ({
   const [hue, setHue] = useState(initial.hue)
   const [saturation, setSaturation] = useState(initial.saturation)
   const [lightness, setLightness] = useState(initial.lightness)
-  const [alpha, setAlpha] = useState(initial.alpha)
-  const [mode, setMode] = useState("hex")
 
   const mounted = useRef(false)
   const isInternalChange = useRef(false)
@@ -97,13 +80,12 @@ export const ColorPicker = ({
       return
     }
     if (value) {
-      const { hue: h, saturation: s, lightness: l, alpha: a } = parseToHsl(value)
-      setTimeout(() => {
+      const { hue: h, saturation: s, lightness: l } = parseToHsl(value)
+      queueMicrotask(() => {
         setHue(h)
         setSaturation(s)
         setLightness(l)
-        setAlpha(a)
-      }, 0)
+      })
     }
   }, [value])
 
@@ -117,10 +99,10 @@ export const ColorPicker = ({
     if (!mounted.current) return
     isInternalChange.current = true
     if (onChangeRef.current) {
-      const color = colord({ h: hue, s: saturation, l: lightness, a: alpha / 100 })
+      const color = colord({ h: hue, s: saturation, l: lightness })
       onChangeRef.current(color.toHex())
     }
-  }, [hue, saturation, lightness, alpha])
+  }, [hue, saturation, lightness])
 
   return (
     <ColorPickerContext.Provider
@@ -128,13 +110,9 @@ export const ColorPicker = ({
         hue,
         saturation,
         lightness,
-        alpha,
-        mode,
         setHue,
         setSaturation,
         setLightness,
-        setAlpha,
-        setMode,
       }}
     >
       <div className={cn("flex size-full flex-col gap-4", className)} {...props} />
@@ -245,209 +223,4 @@ export const ColorPickerHue = ({ className, ...props }: ColorPickerHueProps) => 
       <SliderPrimitive.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
     </SliderPrimitive.Root>
   )
-}
-
-export type ColorPickerAlphaProps = ComponentProps<typeof SliderPrimitive.Root>
-
-export const ColorPickerAlpha = ({ className, ...props }: ColorPickerAlphaProps) => {
-  const { alpha, setAlpha } = useColorPicker()
-
-  return (
-    <SliderPrimitive.Root
-      className={cn("relative flex h-4 w-full touch-none", className)}
-      max={100}
-      onValueChange={([alpha]) => setAlpha(alpha)}
-      step={1}
-      value={[alpha]}
-      {...props}
-    >
-      <SliderPrimitive.Track
-        className="relative my-0.5 h-3 w-full grow rounded-full"
-        style={{
-          background:
-            'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==") left center',
-        }}
-      >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-black/50" />
-        <SliderPrimitive.Range className="absolute h-full rounded-full bg-transparent" />
-      </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
-    </SliderPrimitive.Root>
-  )
-}
-
-export type ColorPickerEyeDropperProps = ComponentProps<typeof Button>
-
-export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDropperProps) => {
-  const { setHue, setSaturation, setLightness, setAlpha } = useColorPicker()
-
-  const handleEyeDropper = async () => {
-    try {
-      // @ts-expect-error - EyeDropper API is experimental
-      const eyeDropper = new EyeDropper()
-      const result = await eyeDropper.open()
-      const color = colord(result.sRGBHex)
-      const hsl = color.toHsl()
-
-      setHue(hsl.h)
-      setSaturation(hsl.s)
-      setLightness(hsl.l)
-      setAlpha(100)
-    } catch (error) {
-      logger.error("EyeDropper failed:", error)
-    }
-  }
-
-  return (
-    <Button
-      className={cn("shrink-0 text-muted-foreground", className)}
-      onClick={handleEyeDropper}
-      size="icon"
-      type="button"
-      variant="outline"
-      {...props}
-    >
-      <PipetteIcon size={16} />
-    </Button>
-  )
-}
-
-export type ColorPickerOutputProps = ComponentProps<typeof SelectTrigger>
-
-const formats = ["hex", "rgb", "css", "hsl"]
-
-export const ColorPickerOutput = ({ className, ...props }: ColorPickerOutputProps) => {
-  const { mode, setMode } = useColorPicker()
-
-  return (
-    <Select onValueChange={setMode} value={mode}>
-      <SelectTrigger className={cn("h-8 w-20 shrink-0 text-xs", className)} {...props}>
-        <SelectValue placeholder="Mode" />
-      </SelectTrigger>
-      <SelectContent>
-        {formats.map((format) => (
-          <SelectItem className="text-xs" key={format} value={format}>
-            {format.toUpperCase()}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
-
-type PercentageInputProps = ComponentProps<typeof Input>
-
-const PercentageInput = ({ className, ...props }: PercentageInputProps) => {
-  return (
-    <div className="relative">
-      <Input
-        readOnly
-        type="text"
-        {...props}
-        className={cn(
-          "h-8 w-[3.25rem] rounded-l-none bg-secondary px-2 text-xs shadow-none",
-          className
-        )}
-      />
-      <span className="-translate-y-1/2 absolute top-1/2 right-2 text-muted-foreground text-xs">
-        %
-      </span>
-    </div>
-  )
-}
-
-export type ColorPickerFormatProps = HTMLAttributes<HTMLDivElement>
-
-export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProps) => {
-  const { hue, saturation, lightness, alpha, mode } = useColorPicker()
-  const color = colord({ h: hue, s: saturation, l: lightness, a: alpha / 100 })
-
-  if (mode === "hex") {
-    const hex = color.toHex()
-
-    return (
-      <div
-        className={cn(
-          "-space-x-px relative flex w-full items-center rounded-md shadow-sm",
-          className
-        )}
-        {...props}
-      >
-        <Input
-          className="h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none"
-          readOnly
-          type="text"
-          value={hex}
-        />
-        <PercentageInput value={alpha} />
-      </div>
-    )
-  }
-
-  if (mode === "rgb") {
-    const rgb = Object.values(color.toRgb()).map((value) => Math.round(value))
-
-    return (
-      <div
-        className={cn("-space-x-px flex items-center rounded-md shadow-sm", className)}
-        {...props}
-      >
-        {rgb.map((value, index) => (
-          <Input
-            className={cn(
-              "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none",
-              index && "rounded-l-none",
-              className
-            )}
-            key={["r", "g", "b"][index]}
-            readOnly
-            type="text"
-            value={value}
-          />
-        ))}
-        <PercentageInput value={alpha} />
-      </div>
-    )
-  }
-
-  if (mode === "css") {
-    const rgb = Object.values(color.toRgb()).map((value) => Math.round(value))
-
-    return (
-      <div className={cn("w-full rounded-md shadow-sm", className)} {...props}>
-        <Input
-          className="h-8 w-full bg-secondary px-2 text-xs shadow-none"
-          readOnly
-          type="text"
-          value={`rgba(${rgb.join(", ")}, ${alpha}%)`}
-        />
-      </div>
-    )
-  }
-
-  if (mode === "hsl") {
-    const hsl = Object.values(color.toHsl()).map((value) => Math.round(value))
-
-    return (
-      <div
-        className={cn("-space-x-px flex items-center rounded-md shadow-sm", className)}
-        {...props}
-      >
-        {hsl.map((value, index) => (
-          <Input
-            className={cn(
-              "h-8 rounded-r-none bg-secondary px-2 text-xs shadow-none",
-              index && "rounded-l-none",
-              className
-            )}
-            key={["h", "s", "l"][index]}
-            readOnly
-            type="text"
-            value={value}
-          />
-        ))}
-        <PercentageInput value={alpha} />
-      </div>
-    )
-  }
 }

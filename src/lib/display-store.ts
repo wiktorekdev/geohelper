@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { t } from "@/lib/i18n"
 import { getSettingsStore } from "./settings-persistence"
 import { logger } from "./logger"
+import { normalizeHexColor } from "./utils"
 
 export const SIDEBAR_MIN_WIDTH = 320
 export const SIDEBAR_MAX_WIDTH = 700
@@ -48,6 +49,8 @@ const DEFAULT_CONFIG: DisplayConfig = {
 
 const KNOWN_WIDGETS = new Set<WidgetId>(ALL_WIDGETS)
 const FONT_SIZES = new Set<FontSize>(["sm", "md", "lg"])
+const DISPLAY_SAVE_DELAY_MS = 250
+let displaySaveTimer: ReturnType<typeof setTimeout> | null = null
 
 function cloneDefault(): DisplayConfig {
   return {
@@ -63,7 +66,7 @@ function normalizeTextStyle(raw: unknown): TextStyle | null {
   if (!raw || typeof raw !== "object") return null
   const s = raw as Partial<TextStyle>
   return {
-    color: typeof s.color === "string" ? s.color : null,
+    color: typeof s.color === "string" ? normalizeHexColor(s.color, "") || null : null,
     bold: s.bold === true,
     fontSize: FONT_SIZES.has(s.fontSize as FontSize) ? (s.fontSize as FontSize) : "md",
   }
@@ -132,14 +135,31 @@ async function persistDisplayConfig(state: DisplayConfig) {
   }
 }
 
+function schedulePersistDisplayConfig(state: DisplayConfig) {
+  if (displaySaveTimer) clearTimeout(displaySaveTimer)
+  const snapshot: DisplayConfig = {
+    order: [...state.order],
+    textStyles: { ...state.textStyles },
+    hiddenTexts: { ...state.hiddenTexts },
+    mapVisible: state.mapVisible,
+    sidebarWidth: state.sidebarWidth,
+  }
+  displaySaveTimer = setTimeout(() => {
+    displaySaveTimer = null
+    void persistDisplayConfig(snapshot)
+  }, DISPLAY_SAVE_DELAY_MS)
+}
+
 type DisplayStore = DisplayConfig & {
   editing: boolean
+  markerToolbarOpen: boolean
   selection: string[]
   registeredIds: Record<string, true>
 
   hydrate: () => Promise<void>
   toggleEditing: () => void
   stopEditing: () => void
+  setMarkerToolbarOpen: (open: boolean) => void
   setOrder: (order: WidgetId[]) => void
   setMapVisible: (visible: boolean) => void
   setSidebarWidth: (width: number) => void
@@ -162,6 +182,7 @@ type DisplayStore = DisplayConfig & {
 export const useDisplayStore = create<DisplayStore>((set, get) => ({
   ...cloneDefault(),
   editing: false,
+  markerToolbarOpen: false,
   selection: [],
   registeredIds: {},
 
@@ -190,9 +211,10 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
 
   toggleEditing: () => {
     const editing = !get().editing
-    set({ editing, selection: [] })
+    set({ editing, markerToolbarOpen: false, selection: [] })
   },
-  stopEditing: () => set({ editing: false, selection: [] }),
+  stopEditing: () => set({ editing: false, markerToolbarOpen: false, selection: [] }),
+  setMarkerToolbarOpen: (markerToolbarOpen) => set({ markerToolbarOpen }),
 
   setOrder: (order) => {
     set({ order })
@@ -206,15 +228,16 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     const sidebarWidth = clampSidebar(width)
     if (sidebarWidth === get().sidebarWidth) return
     set({ sidebarWidth })
-    void persistDisplayConfig(get())
+    schedulePersistDisplayConfig(get())
   },
 
-  setSelection: (ids) => set({ selection: dedupe(ids) }),
-  addToSelection: (ids) => set({ selection: dedupe([...get().selection, ...ids]) }),
+  setSelection: (ids) => set({ selection: dedupe(ids), markerToolbarOpen: false }),
+  addToSelection: (ids) =>
+    set({ selection: dedupe([...get().selection, ...ids]), markerToolbarOpen: false }),
   toggleSelection: (id) => {
     const current = get().selection
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
-    set({ selection: next })
+    set({ selection: next, markerToolbarOpen: false })
   },
   clearSelection: () => set({ selection: [] }),
   selectWidget: (widget, additive = false) => {
@@ -227,13 +250,17 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   setSelectionStyle: (patch) => {
     const { selection, textStyles } = get()
     if (selection.length === 0) return
+    const normalizedPatch =
+      typeof patch.color === "string"
+        ? { ...patch, color: normalizeHexColor(patch.color, "") || null }
+        : patch
     const nextStyles = { ...textStyles }
     for (const id of selection) {
       const current = nextStyles[id] ?? { ...DEFAULT_TEXT_STYLE }
-      nextStyles[id] = { ...current, ...patch }
+      nextStyles[id] = { ...current, ...normalizedPatch }
     }
     set({ textStyles: nextStyles })
-    void persistDisplayConfig(get())
+    schedulePersistDisplayConfig(get())
   },
   setSelectionHidden: (hidden) => {
     const { selection, hiddenTexts } = get()

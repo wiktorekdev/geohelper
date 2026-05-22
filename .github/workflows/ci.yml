@@ -37,9 +37,6 @@ jobs:
       - name: install bun deps
         run: bun install --frozen-lockfile
 
-      - name: sync version
-        run: bun run sync-version
-
       - name: frontend build
         run: bun run vite:build
 

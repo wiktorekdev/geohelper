@@ -30,7 +30,13 @@ export function SelectableText({ id, children, className, mono }: Props) {
   if (!editing) {
     if (hidden) return null
     return (
-      <span className={className} style={css}>
+      <span
+        className={cn(
+          "transition-[color,font-size,font-weight,opacity] duration-200 ease-out",
+          className
+        )}
+        style={css}
+      >
         {children}
       </span>
     )
@@ -53,7 +59,7 @@ export function SelectableText({ id, children, className, mono }: Props) {
         }
       }}
       className={cn(
-        "cursor-pointer inline-block rounded-sm outline-none transition-colors",
+        "inline-block cursor-pointer rounded-sm outline-none transition-[background-color,color,font-size,font-weight,opacity,outline-color] duration-200 ease-out",
         // `outline` instead of `ring` so the selection halo sits OUTSIDE the
         // element and never combines with surrounding card borders into the
         // double-stroke effect.

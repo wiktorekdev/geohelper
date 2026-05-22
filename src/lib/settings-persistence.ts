@@ -6,7 +6,7 @@ import type { MapProviderId } from "./map-providers"
 import type { CopyFormat } from "./store"
 import { logger } from "./logger"
 
-// Internal: legacy localStorage keys to migrate from. Do not export — call sites
+// Internal: legacy localStorage keys to migrate from. Do not export - call sites
 // should read from the Tauri store via getSettingsStore / saveSetting.
 const LEGACY_LOCAL_STORAGE_KEYS: Record<string, keyof SettingsSchema> = {
   "geohelper.provider": "mapProvider",
@@ -43,7 +43,7 @@ let resolvedStorePath: string | null = null
 /**
  * Resolve the absolute settings.json path once via Tauri, then keep using it.
  * Falling back to a relative path used to create a *second* store file across
- * runs (one per cwd), which silently lost user data — never do that again.
+ * runs (one per cwd), which silently lost user data.
  */
 async function resolveStorePath(): Promise<string> {
   if (resolvedStorePath) return resolvedStorePath
@@ -96,7 +96,7 @@ export async function migrateLegacyStorage() {
       logger.warn("Themes migration failed:", e)
     }
 
-    // 2. Migrate Google API key from a legacy *relative* settings.json — only if
+    // 2. Migrate Google API key from a legacy *relative* settings.json - only if
     //    that path resolves to a different file than the active store. We never
     //    call .clear() on it: a relative-vs-absolute path race once wiped data.
     try {

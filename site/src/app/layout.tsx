@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { DOWNLOAD_URLS, GITHUB_URL } from "../links";
 import "./globals.css";
 
 const title = "GeoHelper - GeoGuessr Steam Coordinates Helper";
@@ -9,6 +10,7 @@ const description =
 const siteUrl = "https://geohelperapp.vercel.app";
 
 export const metadata: Metadata = {
+  applicationName: "GeoHelper",
   title,
   description,
   keywords:
@@ -24,7 +26,14 @@ export const metadata: Metadata = {
     title,
     description:
       "View live coordinates and location data while practicing GeoGuessr on Steam. Free, open source, no API keys needed.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "GeoHelper desktop app showing live GeoGuessr coordinates",
+      },
+    ],
     siteName: "GeoHelper",
   },
   twitter: {
@@ -34,11 +43,22 @@ export const metadata: Metadata = {
       "Free desktop GeoGuessr helper for Steam coordinates, country, road and postcode data. Open source, no API keys.",
     images: ["/og-image.png"],
   },
-  other: {
-    "theme-color": "#0a0a0a",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  manifest: "/site.webmanifest",
   robots: "index, follow",
   authors: [{ name: "wiktorekdev" }],
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -57,11 +77,19 @@ export default function RootLayout({
     description:
       "GeoHelper is a GeoGuessr Steam helper for live coordinates, country, road and postcode data during solo practice and location analysis.",
     url: siteUrl,
-    downloadUrl:
-      "https://github.com/wiktorekdev/geohelper/releases/latest",
+    downloadUrl: [
+      DOWNLOAD_URLS.windows,
+      DOWNLOAD_URLS.macos,
+      DOWNLOAD_URLS.linux,
+    ],
+    installUrl: DOWNLOAD_URLS.all,
     softwareVersion: version,
     fileSize: "6MB",
+    image: `${siteUrl}/og-image.png`,
+    screenshot: `${siteUrl}/paris.png`,
     license: "https://opensource.org/licenses/MIT",
+    sameAs: [GITHUB_URL],
+    softwareRequirements: "GeoGuessr for Steam with localhost CDP enabled",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     author: {
       "@type": "Person",

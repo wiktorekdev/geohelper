@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Menu, X, Download } from "lucide-react";
-import { GITHUB_URL, RELEASES_LATEST_URL } from "../links";
+import { EXTERNAL_LINK_PROPS, GITHUB_URL, RELEASES_LATEST_URL } from "../links";
 
 export default function NavMobileMenu() {
   const [open, setOpen] = useState(false);
@@ -47,6 +47,7 @@ export default function NavMobileMenu() {
             </a>
             <a
               href={GITHUB_URL}
+              {...EXTERNAL_LINK_PROPS}
               onClick={close}
               className="rounded-md px-3 py-2.5 text-neutral-300 transition hover:bg-white/5 hover:text-white"
             >
@@ -54,6 +55,7 @@ export default function NavMobileMenu() {
             </a>
             <a
               href={RELEASES_LATEST_URL}
+              {...EXTERNAL_LINK_PROPS}
               onClick={close}
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 font-medium text-black transition hover:bg-neutral-200"
             >

@@ -13,3 +13,5 @@
 *.ttf      binary
 
 src-tauri/icons/* binary
+
+bun.lock        linguist-generated

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ArrowLeft } from "lucide-react"
 import { openUrl } from "@tauri-apps/plugin-opener"
 
@@ -37,18 +37,13 @@ export function SettingsSidebar() {
   const updateError = useUpdateStore((s) => s.updateError)
   const runUpdateCheck = useUpdateStore((s) => s.runUpdateCheck)
 
-  const [draft, setDraft] = useState(apiKey)
   const [reveal, setReveal] = useState(false)
-  const { validation: keyValidation, validate: runKeyValidation } = useGoogleApiKeyValidation(draft)
+  const { validation: keyValidation, validate: runKeyValidation } =
+    useGoogleApiKeyValidation(apiKey)
 
   const hasKey = apiKey.trim().length > 0
 
-  useEffect(() => {
-    setTimeout(() => setDraft(apiKey), 0)
-  }, [apiKey])
-
   function updateKey(value: string) {
-    setDraft(value)
     const trimmed = value.trim()
     setApiKey(trimmed)
     if (!trimmed) {
@@ -74,7 +69,7 @@ export function SettingsSidebar() {
           mapProvider={mapProvider}
           geocodeProvider={geocodeProvider}
           hasKey={hasKey}
-          draft={draft}
+          draft={apiKey}
           reveal={reveal}
           keyValidation={keyValidation}
           setMapProvider={setMapProvider}

@@ -1,0 +1,33 @@
+name: Feature Request
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea? Cool — drop it here. No need to write an essay, just explain what you'd like and why.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+      placeholder: "It'd be great if GeoHelper could show the driving side (left/right) for the current country."
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would this be useful?
+      description: How would this help your workflow or learning?
+      placeholder: "Driving side is one of the most common clues in competitive GeoGuessr."
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Any workarounds or other tools that do something similar?
+    validations:
+      required: false

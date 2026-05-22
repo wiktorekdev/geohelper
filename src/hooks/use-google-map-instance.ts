@@ -2,20 +2,35 @@ import { useEffect, useRef, useState } from "react"
 
 import { loadGoogleMaps } from "@/lib/google-maps-loader"
 import { useStore } from "@/lib/store"
-import { useDisplayStore } from "@/lib/display-store"
-import { t } from "@/lib/i18n"
 
 const DEFAULT_CENTER = { lat: 20, lng: 0 }
 const DEFAULT_ZOOM = 2
 
 type MapCenter = { lat: number; lng: number } | null
 
+function createGoogleMarkerIcon(
+  markerColor: string,
+  markerBorderColor: string,
+  markerSize: number
+): google.maps.Symbol {
+  const scale = markerSize / 2.4
+  const strokeWeight = Math.max(2, Math.round(markerSize / 8))
+
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale,
+    fillColor: markerColor,
+    fillOpacity: 1,
+    strokeColor: markerBorderColor,
+    strokeWeight,
+  }
+}
+
 export function useGoogleMapInstance(
   apiKey: string,
   mapTypeId: "roadmap" | "satellite" | "hybrid" | "terrain",
   styles: google.maps.MapTypeStyle[] | undefined,
-  center: MapCenter,
-  onMarkerClick?: () => void
+  center: MapCenter
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<google.maps.Map | null>(null)
@@ -26,25 +41,16 @@ export function useGoogleMapInstance(
   const markerColor = useStore((s) => s.markerColor)
   const markerBorderColor = useStore((s) => s.markerBorderColor)
   const markerSize = useStore((s) => s.markerSize)
-  const editing = useDisplayStore((s) => s.editing)
-
-  const clickRef = useRef(onMarkerClick)
-  const editingRef = useRef(editing)
-
-  useEffect(() => {
-    clickRef.current = onMarkerClick
-    editingRef.current = editing
-  }, [onMarkerClick, editing])
 
   useEffect(() => {
     let cancelled = false
     mapRef.current = null
     markerRef.current = null
     containerRef.current?.replaceChildren()
-    setTimeout(() => {
+    queueMicrotask(() => {
       setMapReady(false)
       setError(null)
-    }, 0)
+    })
 
     loadGoogleMaps(apiKey)
       .then(() => {
@@ -95,52 +101,26 @@ export function useGoogleMapInstance(
       return
     }
 
-    const scale = markerSize / 2.4
-    const strokeWeight = Math.max(2, Math.round(markerSize / 8))
+    const icon = createGoogleMarkerIcon(markerColor, markerBorderColor, markerSize)
 
     if (!markerRef.current) {
       const marker = new google.maps.Marker({
         map,
         position: center,
-        cursor: editing ? "pointer" : "default",
-        title: editing ? t("marker.customizeTitle") : undefined,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale,
-          fillColor: markerColor,
-          fillOpacity: 1,
-          strokeColor: markerBorderColor,
-          strokeWeight,
-        },
-      })
-
-      const clickListener = marker.addListener("click", () => {
-        if (editingRef.current && clickRef.current) {
-          clickRef.current()
-        }
+        cursor: "default",
+        icon,
       })
 
       markerRef.current = marker
-      return () => {
-        google.maps.event.removeListener(clickListener)
-      }
     } else {
       markerRef.current.setPosition(center)
-      markerRef.current.setCursor(editing ? "pointer" : "default")
-      markerRef.current.setTitle(editing ? t("marker.customizeTitle") : undefined)
-      markerRef.current.setIcon({
-        path: google.maps.SymbolPath.CIRCLE,
-        scale,
-        fillColor: markerColor,
-        fillOpacity: 1,
-        strokeColor: markerBorderColor,
-        strokeWeight,
-      })
+      markerRef.current.setCursor("default")
+      markerRef.current.setIcon(icon)
       markerRef.current.setMap(map)
     }
 
     map.panTo(center)
-  }, [center, mapReady, markerColor, markerBorderColor, markerSize, editing])
+  }, [center, mapReady, markerColor, markerBorderColor, markerSize])
 
   return { containerRef, error }
 }

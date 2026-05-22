@@ -1,0 +1,21 @@
+{
+  "name": "GeoHelper",
+  "short_name": "GeoHelper",
+  "description": "Desktop helper for live GeoGuessr Steam coordinates and location data.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -88,7 +88,7 @@ function SettlementView({
         {display.countryCode && (
           <SelectableText id="country.flag">
             <span
-              className="inline-flex align-middle"
+              className="inline-flex align-middle transition-[width,height,border-radius,font-size] duration-200 ease-out"
               style={{
                 width: flagSize.width,
                 height: flagSize.height,

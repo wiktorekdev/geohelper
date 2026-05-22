@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/sidebar"
 import { SettingsSidebar } from "@/components/settings-panel"
 import { MapView } from "@/components/map-view"
 import { EditToolbar } from "@/components/display/edit-toolbar"
+import { MarkerToolbar } from "@/components/display/marker-toolbar"
 import { SelectionToolbar } from "@/components/display/selection-toolbar"
 import { useMapWindowLayout } from "@/hooks/use-map-window-layout"
 import { useStore } from "@/lib/store"
@@ -17,6 +18,36 @@ import { useThemeStore } from "@/lib/themes/store"
 import { migrateLegacyStorage } from "@/lib/settings-persistence"
 import { ipc } from "@/lib/ipc"
 import { logger } from "@/lib/logger"
+
+function SidebarPanel({ settingsOpen }: { settingsOpen: boolean }) {
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {settingsOpen ? (
+        <m.div
+          key="settings"
+          initial={{ opacity: 0, x: -15 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -15 }}
+          transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+          className="h-full w-full"
+        >
+          <SettingsSidebar />
+        </m.div>
+      ) : (
+        <m.div
+          key="sidebar"
+          initial={{ opacity: 0, x: 15 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 15 }}
+          transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+          className="h-full w-full"
+        >
+          <Sidebar />
+        </m.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
 export default function App() {
   useBridge()
@@ -95,79 +126,29 @@ export default function App() {
   return (
     <LazyMotion features={domAnimation}>
       <div className="flex h-screen w-screen overflow-hidden bg-background">
-        {mapVisible ? (
-          <div className="flex h-full w-full">
-            <div className="h-full overflow-hidden" style={{ width: sidebarWidth }}>
-              <AnimatePresence mode="wait" initial={false}>
-                {settingsOpen ? (
-                  <m.div
-                    key="settings"
-                    initial={{ opacity: 0, x: -15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -15 }}
-                    transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="h-full w-full"
-                  >
-                    <SettingsSidebar />
-                  </m.div>
-                ) : (
-                  <m.div
-                    key="sidebar"
-                    initial={{ opacity: 0, x: 15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 15 }}
-                    transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                    className="h-full w-full"
-                  >
-                    <Sidebar />
-                  </m.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <AnimatePresence mode="popLayout" initial={false}>
-                <m.main
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="relative flex h-full w-full min-w-0 flex-col overflow-hidden"
-                >
-                  <MapView />
-                </m.main>
-              </AnimatePresence>
-            </div>
+        <div className="flex h-full w-full">
+          <div
+            className="h-full overflow-hidden transition-[width] duration-500"
+            style={{ width: mapVisible ? sidebarWidth : "100%" }}
+          >
+            <SidebarPanel settingsOpen={settingsOpen} />
           </div>
-        ) : (
-          <div className="h-full flex-1 overflow-hidden">
-            <AnimatePresence mode="wait" initial={false}>
-              {settingsOpen ? (
-                <m.div
-                  key="settings"
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -15 }}
-                  transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="h-full w-full"
-                >
-                  <SettingsSidebar />
-                </m.div>
-              ) : (
-                <m.div
-                  key="sidebar"
-                  initial={{ opacity: 0, x: 15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 15 }}
-                  transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                  className="h-full w-full"
-                >
-                  <Sidebar />
-                </m.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {mapVisible && (
+              <m.main
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+                className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden"
+              >
+                <MapView />
+              </m.main>
+            )}
+          </AnimatePresence>
+        </div>
 
+        <MarkerToolbar />
         <EditToolbar />
         <SelectionToolbar />
       </div>

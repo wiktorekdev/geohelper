@@ -1,147 +1,39 @@
-import { useEffect, useMemo, useState, useCallback } from "react"
+import { useEffect, useMemo } from "react"
 import L from "leaflet"
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet"
-import { X } from "lucide-react"
 
 import { MAP_PROVIDERS } from "@/lib/map-providers"
 import { useStore } from "@/lib/store"
 import { useDisplayStore } from "@/lib/display-store"
 import { GoogleMapView } from "./google-map-view"
-import { useT } from "@/lib/i18n"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { ColorPicker, ColorPickerSelection, ColorPickerHue } from "@/components/ui/color-picker"
-
-function MarkerColorSection({
-  label,
-  color,
-  onChange,
-}: {
-  label: string
-  color: string
-  onChange: (color: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [inputVal, setInputVal] = useState(color)
-
-  useEffect(() => {
-    if (!open) setTimeout(() => setInputVal(color), 0)
-  }, [color, open])
-
-  const handleChange = useCallback(
-    (val: unknown) => {
-      if (val && Array.isArray(val)) {
-        const hex =
-          "#" +
-          val
-            .slice(0, 3)
-            .map((c: number) => Math.round(c).toString(16).padStart(2, "0"))
-            .join("")
-        onChange(hex)
-        setInputVal(hex)
-      }
-    },
-    [onChange]
-  )
-
-  return (
-    <div className="flex items-center justify-between py-1">
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
-
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-sidebar-border bg-sidebar hover:bg-accent text-xs font-semibold shadow-sm transition-all active:scale-95 hover:scale-[1.02] min-w-[5.5rem] justify-between"
-          >
-            <span
-              className="w-3.5 h-3.5 rounded-full border border-border/80 shadow-sm shrink-0"
-              style={{ backgroundColor: color }}
-            ></span>
-            <span className="font-mono uppercase text-[10px] text-foreground/80 shrink-0">
-              {color}
-            </span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          side="right"
-          align="center"
-          sideOffset={12}
-          className="z-[2200] w-64 p-4 border border-sidebar-border bg-sidebar text-sidebar-foreground rounded-xl shadow-2xl backdrop-blur-md"
-        >
-          <ColorPicker value={color} onChange={handleChange} className="flex flex-col gap-3">
-            <ColorPickerSelection className="h-32 rounded-lg border border-sidebar-border" />
-            <ColorPickerHue />
-          </ColorPicker>
-          <div className="mt-3 flex items-center gap-1.5 border-t border-sidebar-border pt-3">
-            <span className="text-[10px] text-muted-foreground font-mono">HEX:</span>
-            <input
-              type="text"
-              value={inputVal}
-              onChange={(e) => {
-                setInputVal(e.target.value)
-                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
-                  onChange(e.target.value)
-                }
-              }}
-              className="h-7 flex-1 rounded border border-sidebar-border bg-background px-2 text-xs font-mono uppercase focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-        </PopoverContent>
-      </Popover>
-    </div>
-  )
-}
 
 export function MapPanel() {
-  const t = useT()
   const current = useStore((s) => s.current)
   const providerId = useStore((s) => s.mapProvider)
   const apiKey = useStore((s) => s.googleApiKey)
   const provider = MAP_PROVIDERS[providerId] || MAP_PROVIDERS["osm"]
 
   const markerColor = useStore((s) => s.markerColor)
-  const setMarkerColor = useStore((s) => s.setMarkerColor)
   const markerBorderColor = useStore((s) => s.markerBorderColor)
-  const setMarkerBorderColor = useStore((s) => s.setMarkerBorderColor)
   const markerSize = useStore((s) => s.markerSize)
-  const setMarkerSize = useStore((s) => s.setMarkerSize)
-
-  const editing = useDisplayStore((s) => s.editing)
-  const [editingMarker, setEditingMarker] = useState(false)
-
-  useEffect(() => {
-    if (!editing) {
-      setTimeout(() => setEditingMarker(false), 0)
-    }
-  }, [editing])
 
   // Build the icon HTML once per relevant inputs. CSS for hover/transition
   // lives in index.css under .geohelper-marker so we don't inject a fresh
   // <style> tag with every render.
   const pinIcon = useMemo(() => {
     const borderWidth = Math.max(2, Math.round(markerSize / 8))
-    const editPill = editing
-      ? `<div class="geohelper-marker__pill">
-          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"/>
-            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
-          </svg>
-        </div>`
-      : ""
     return L.divIcon({
       className: "",
       iconSize: [markerSize, markerSize],
       iconAnchor: [markerSize / 2, markerSize / 2],
       html:
-        `<div class="geohelper-marker${editing ? " geohelper-marker--editing" : ""}" ` +
+        `<div class="geohelper-marker" ` +
         `style="width:${markerSize}px;height:${markerSize}px;">` +
         `<div class="geohelper-marker__dot" ` +
         `style="background:${markerColor};border:${borderWidth}px solid ${markerBorderColor};"></div>` +
-        editPill +
         `</div>`,
     })
-  }, [markerSize, markerColor, markerBorderColor, editing])
+  }, [markerSize, markerColor, markerBorderColor])
 
   return (
     <div className="relative flex-1 min-h-0">
@@ -151,11 +43,6 @@ export function MapPanel() {
           mapTypeId={provider.mapTypeId}
           styles={provider.styles}
           center={current ? { lat: current.lat, lng: current.lng } : null}
-          onMarkerClick={() => {
-            if (editing) {
-              setEditingMarker(true)
-            }
-          }}
         />
       ) : (
         <MapContainer
@@ -178,80 +65,13 @@ export function MapPanel() {
           />
           {current && (
             <>
-              <Marker
-                position={[current.lat, current.lng]}
-                icon={pinIcon}
-                eventHandlers={{
-                  click: () => {
-                    if (editing) {
-                      setEditingMarker(true)
-                    }
-                  },
-                }}
-              />
+              <Marker position={[current.lat, current.lng]} icon={pinIcon} />
               <PanTo lat={current.lat} lng={current.lng} />
             </>
           )}
           <ResetMapWhenNoCoords active={!current} />
           <InvalidateMapSize />
         </MapContainer>
-      )}
-
-      {/* FLOATING MARKER CUSTOMIZATION PANEL */}
-      {editing && editingMarker && (
-        <div className="absolute bottom-4 left-4 z-[1000] w-72 rounded-xl border border-sidebar-border bg-sidebar/95 p-4 shadow-2xl backdrop-blur-md transition-all duration-200 text-sidebar-foreground animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center justify-between border-b border-sidebar-border pb-2.5 mb-3.5">
-            <h4 className="text-xs font-semibold tracking-wide text-foreground flex items-center gap-2">
-              <span
-                className="w-2.5 h-2.5 rounded-full inline-block animate-pulse shrink-0"
-                style={{ backgroundColor: markerColor, border: `1.5px solid ${markerBorderColor}` }}
-              ></span>
-              {t("marker.customizeTitle")}
-            </h4>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-6 text-muted-foreground hover:text-foreground"
-              onClick={() => setEditingMarker(false)}
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            <MarkerColorSection
-              label={t("marker.color")}
-              color={markerColor}
-              onChange={setMarkerColor}
-            />
-
-            <MarkerColorSection
-              label={t("marker.borderColor")}
-              color={markerBorderColor}
-              onChange={setMarkerBorderColor}
-            />
-
-            {/* Size section */}
-            <div className="space-y-2 border-t border-sidebar-border pt-3.5">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  {t("marker.size")}
-                </label>
-                <span className="text-xs font-mono font-medium text-foreground bg-accent px-1.5 py-0.5 rounded">
-                  {markerSize}px
-                </span>
-              </div>
-              <input
-                type="range"
-                min="16"
-                max="48"
-                value={markerSize}
-                onChange={(e) => setMarkerSize(Number(e.target.value))}
-                className="w-full h-1 bg-accent rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
       )}
     </div>
   )

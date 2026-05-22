@@ -135,31 +135,10 @@
   filter: drop-shadow(0 2.5px 4.5px rgba(0, 0, 0, 0.35));
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.geohelper-marker--editing {
-  cursor: pointer;
-}
-.geohelper-marker--editing:hover {
-  transform: scale(1.15);
-}
 .geohelper-marker__dot {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-}
-.geohelper-marker__pill {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 14px;
-  height: 14px;
-  background: #3b82f6;
-  color: #ffffff;
-  border-radius: 9999px;
-  border: 1px solid #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes flash-brand {

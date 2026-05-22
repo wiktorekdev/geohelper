@@ -2,26 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Apple, ChevronDown, Check, Download, Monitor, Terminal } from "lucide-react";
-import { RELEASES_LATEST_URL } from "../links";
+import { DOWNLOAD_URLS, EXTERNAL_LINK_PROPS } from "../links";
 
-type OsId = "windows" | "macos" | "linux";
+type OsId = "windows" | "macos" | "linux" | "desktop";
 
 const OS_LABEL: Record<OsId, string> = {
   windows: "Windows",
   macos: "macOS",
   linux: "Linux",
+  desktop: "Desktop app",
 };
 
 function detectOs(): OsId {
-  if (typeof navigator === "undefined") return "windows";
+  if (typeof navigator === "undefined") return "desktop";
   const ua = navigator.userAgent.toLowerCase();
+  if (/android|iphone|ipad|ipod|mobile|tablet/.test(ua)) return "desktop";
   if (ua.includes("mac")) return "macos";
   if (ua.includes("linux") || ua.includes("x11")) return "linux";
   return "windows";
 }
 
 export default function DownloadButton() {
-  const [os, setOs] = useState<OsId>("windows");
+  const [os, setOs] = useState<OsId>("desktop");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -40,15 +42,19 @@ export default function DownloadButton() {
   }, [open]);
 
   const Icon = os === "macos" ? Apple : os === "linux" ? Terminal : Monitor;
+  const href = os === "desktop" ? DOWNLOAD_URLS.all : DOWNLOAD_URLS[os];
 
   return (
     <div ref={ref} className="relative inline-flex overflow-visible rounded-lg">
       <a
-        href={RELEASES_LATEST_URL}
+        href={href}
+        {...EXTERNAL_LINK_PROPS}
         className="inline-flex items-center gap-2 rounded-l-lg bg-white px-5 py-3 font-semibold text-black transition hover:bg-neutral-200"
       >
         <Download className="size-[18px]" />
-        <span className="hidden sm:inline">Download for</span>
+        <span className="hidden sm:inline">
+          {os === "desktop" ? "Download" : "Download for"}
+        </span>
         <Icon className="size-[18px] sm:hidden" />
         <span>{OS_LABEL[os]}</span>
       </a>
@@ -82,7 +88,8 @@ export default function DownloadButton() {
           })}
           <div className="mt-1 border-t border-white/10 pt-1">
             <a
-              href={RELEASES_LATEST_URL}
+              href={DOWNLOAD_URLS.all}
+              {...EXTERNAL_LINK_PROPS}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-neutral-400 hover:bg-white/5 hover:text-white"
             >
               All downloads

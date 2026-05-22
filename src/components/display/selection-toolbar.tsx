@@ -23,6 +23,7 @@ export function SelectionToolbar() {
   const textStyles = useDisplayStore((s) => s.textStyles)
   const hiddenTexts = useDisplayStore((s) => s.hiddenTexts)
   const mapVisible = useDisplayStore((s) => s.mapVisible)
+  const markerToolbarOpen = useDisplayStore((s) => s.markerToolbarOpen)
   const setSelectionStyle = useDisplayStore((s) => s.setSelectionStyle)
   const setSelectionHidden = useDisplayStore((s) => s.setSelectionHidden)
   const resetSelection = useDisplayStore((s) => s.resetSelection)
@@ -52,7 +53,10 @@ export function SelectionToolbar() {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
           className="pointer-events-none fixed inset-x-0 z-[2100] flex justify-center px-2 transition-[bottom,left] duration-500"
-          style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 64 : 116 }}
+          style={{
+            left: mapVisible ? sidebarWidth : 0,
+            bottom: mapVisible ? (markerToolbarOpen ? 116 : 64) : markerToolbarOpen ? 158 : 106,
+          }}
         >
           <Toolbar.Root className="pointer-events-auto flex items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
             <div className="inline-flex items-center gap-1.5 px-1.5 text-[12px] font-medium">
@@ -231,7 +235,7 @@ function ColorPickerButton({
   const [invalid, setInvalid] = useState(false)
 
   useEffect(() => {
-    if (!open) setTimeout(() => setInputVal(value ?? ""), 0)
+    if (!open) queueMicrotask(() => setInputVal(value ?? ""))
   }, [value, open])
 
   const handleChange = useCallback(
@@ -313,7 +317,8 @@ function ColorPickerButton({
             }}
             onPaste={(e) => {
               const pasted = e.clipboardData.getData("text")
-              setTimeout(() => commitInput(pasted), 0)
+              e.preventDefault()
+              commitInput(pasted)
             }}
           />
           {value && (

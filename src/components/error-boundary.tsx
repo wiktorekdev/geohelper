@@ -3,6 +3,7 @@ import { RotateCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logger } from "@/lib/logger"
 import { t } from "@/lib/i18n"
+import { getSettingsStore } from "@/lib/settings-persistence"
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   const errorMessage = (error as Error).message
@@ -22,21 +23,17 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
           <Button
             size="sm"
             onClick={() => {
-              localStorage.removeItem("geohelper.display")
-              import("@/lib/settings-persistence")
-                .then(async ({ getSettingsStore }) => {
-                  try {
-                    const store = await getSettingsStore()
-                    await store.delete("displayConfig")
-                    await store.save()
-                  } catch (err) {
-                    logger.error(err)
-                  }
-                  resetErrorBoundary()
-                })
-                .catch(() => {
-                  resetErrorBoundary()
-                })
+              void (async () => {
+                localStorage.removeItem("geohelper.display")
+                try {
+                  const store = await getSettingsStore()
+                  await store.delete("displayConfig")
+                  await store.save()
+                } catch (err) {
+                  logger.error(err)
+                }
+                resetErrorBoundary()
+              })()
             }}
           >
             {t("error.resetLayout")}

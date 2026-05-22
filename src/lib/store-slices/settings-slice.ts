@@ -3,8 +3,9 @@ import type { StateCreator } from "zustand"
 import type { GeocodeProviderId } from "@/lib/geocode-providers"
 import { MAP_PROVIDERS, type MapProviderId } from "@/lib/map-providers"
 import type { Store } from "@/lib/store"
-import { getSettingsStore, saveSetting } from "@/lib/settings-persistence"
+import { getSettingsStore, saveSetting, type SettingsSchema } from "@/lib/settings-persistence"
 import { logger } from "@/lib/logger"
+import { normalizeHexColor } from "@/lib/utils"
 
 export type CopyFormat = "lat,lng" | "lat, lng" | "lng,lat"
 
@@ -14,6 +15,28 @@ const DEFAULT_COPY_FORMAT: CopyFormat = "lat, lng"
 const DEFAULT_MARKER_COLOR = "#dc2626"
 const DEFAULT_MARKER_BORDER = "#ffffff"
 const DEFAULT_MARKER_SIZE = 24
+const MARKER_MIN_SIZE = 16
+const MARKER_MAX_SIZE = 48
+const MARKER_SAVE_DELAY_MS = 250
+
+const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
+
+function scheduleSaveSetting<K extends keyof SettingsSchema>(key: K, value: SettingsSchema[K]) {
+  const previous = saveTimers.get(key)
+  if (previous) clearTimeout(previous)
+  saveTimers.set(
+    key,
+    setTimeout(() => {
+      saveTimers.delete(key)
+      void saveSetting(key, value)
+    }, MARKER_SAVE_DELAY_MS)
+  )
+}
+
+function normalizeMarkerSize(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULT_MARKER_SIZE
+  return Math.max(MARKER_MIN_SIZE, Math.min(MARKER_MAX_SIZE, Math.round(value)))
+}
 
 export type SettingsSlice = {
   mapProvider: MapProviderId
@@ -72,15 +95,18 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
     set({ alwaysOnTop })
   },
   setMarkerColor: (markerColor) => {
-    void saveSetting("markerColor", markerColor)
+    markerColor = normalizeHexColor(markerColor, DEFAULT_MARKER_COLOR)
+    scheduleSaveSetting("markerColor", markerColor)
     set({ markerColor })
   },
   setMarkerBorderColor: (markerBorderColor) => {
-    void saveSetting("markerBorderColor", markerBorderColor)
+    markerBorderColor = normalizeHexColor(markerBorderColor, DEFAULT_MARKER_BORDER)
+    scheduleSaveSetting("markerBorderColor", markerBorderColor)
     set({ markerBorderColor })
   },
   setMarkerSize: (markerSize) => {
-    void saveSetting("markerSize", markerSize)
+    markerSize = normalizeMarkerSize(markerSize)
+    scheduleSaveSetting("markerSize", markerSize)
     set({ markerSize })
   },
   hydrateSettings: async () => {
@@ -95,10 +121,15 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
       const copyFormat = (await store.get<CopyFormat>("copyFormat")) ?? DEFAULT_COPY_FORMAT
       const alwaysOnTop = (await store.get<boolean>("alwaysOnTop")) ?? false
       const googleApiKey = (await store.get<string>("googleApiKey")) ?? ""
-      const markerColor = (await store.get<string>("markerColor")) ?? DEFAULT_MARKER_COLOR
-      const markerBorderColor =
-        (await store.get<string>("markerBorderColor")) ?? DEFAULT_MARKER_BORDER
-      const markerSize = (await store.get<number>("markerSize")) ?? DEFAULT_MARKER_SIZE
+      const markerColor = normalizeHexColor(
+        await store.get<string>("markerColor"),
+        DEFAULT_MARKER_COLOR
+      )
+      const markerBorderColor = normalizeHexColor(
+        await store.get<string>("markerBorderColor"),
+        DEFAULT_MARKER_BORDER
+      )
+      const markerSize = normalizeMarkerSize(await store.get<number>("markerSize"))
 
       set({
         mapProvider,

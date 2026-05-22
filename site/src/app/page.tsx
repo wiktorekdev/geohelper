@@ -13,7 +13,12 @@ import {
   Zap,
 } from "lucide-react";
 
-import { GITHUB_URL, KOFI_URL, RELEASES_LATEST_URL } from "../links";
+import {
+  EXTERNAL_LINK_PROPS,
+  GITHUB_URL,
+  KOFI_URL,
+  RELEASES_LATEST_URL,
+} from "../links";
 import Nav from "../components/Nav";
 import DownloadButton from "../components/DownloadButton";
 import HeroScreenshot from "../components/HeroScreenshot";
@@ -56,6 +61,7 @@ function Hero() {
       >
         <a
           href={`${GITHUB_URL}/releases/latest`}
+          {...EXTERNAL_LINK_PROPS}
           className="group mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1 pr-3 text-[11px] text-neutral-300 transition hover:border-white/20 hover:bg-white/[0.05]"
         >
           <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-red-300">
@@ -70,9 +76,9 @@ function Hero() {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             className="lucide lucide-arrow-right size-3 text-neutral-500 transition group-hover:translate-x-0.5 group-hover:text-white"
           >
             <path d="M5 12h14" />
@@ -97,6 +103,7 @@ function Hero() {
           <DownloadButton />
           <a
             href={GITHUB_URL}
+            {...EXTERNAL_LINK_PROPS}
             className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-5 py-3 text-white transition hover:bg-white/5"
           >
             <Github className="size-[18px]" />
@@ -215,6 +222,7 @@ function GetStarted() {
             Grab the latest build for your OS from{" "}
             <a
               href={RELEASES_LATEST_URL}
+              {...EXTERNAL_LINK_PROPS}
               className="underline decoration-red-500/60 hover:text-white"
             >
               releases
@@ -317,14 +325,15 @@ function Footer() {
           <span>GeoHelper</span>
         </div>
         <div className="flex items-center gap-5">
-          <a href={GITHUB_URL} className="transition hover:text-white">
+          <a href={GITHUB_URL} {...EXTERNAL_LINK_PROPS} className="transition hover:text-white">
             GitHub
           </a>
-          <a href={KOFI_URL} className="transition hover:text-white">
+          <a href={KOFI_URL} {...EXTERNAL_LINK_PROPS} className="transition hover:text-white">
             Ko-fi
           </a>
           <a
             href={`${GITHUB_URL}/blob/main/LICENSE`}
+            {...EXTERNAL_LINK_PROPS}
             className="transition hover:text-white"
           >
             MIT License
