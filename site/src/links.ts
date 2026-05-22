@@ -7,15 +7,14 @@ const latestDownloadUrl = (assetName: string) =>
   `${GITHUB_URL}/releases/latest/download/${assetName}`;
 
 export const DOWNLOAD_URLS = {
-  windows: latestDownloadUrl(`GeoHelper-${GEOHELPER_VERSION}-windows-setup.exe`),
-  macos: latestDownloadUrl(`GeoHelper-${GEOHELPER_VERSION}-macos.dmg`),
-  linux: latestDownloadUrl(`GeoHelper-${GEOHELPER_VERSION}-linux.AppImage`),
-  deb: latestDownloadUrl(`GeoHelper-${GEOHELPER_VERSION}-linux.deb`),
-  rpm: latestDownloadUrl(`GeoHelper-${GEOHELPER_VERSION}-linux.rpm`),
+  windows: latestDownloadUrl("GeoHelper-windows-setup.exe"),
+  macos: latestDownloadUrl("GeoHelper-macos.dmg"),
+  linux: latestDownloadUrl("GeoHelper-linux.AppImage"),
+  deb: latestDownloadUrl("GeoHelper-linux.deb"),
+  rpm: latestDownloadUrl("GeoHelper-linux.rpm"),
   all: RELEASES_LATEST_URL,
 } as const;
 
 export const EXTERNAL_LINK_PROPS = {
-  target: "_blank",
   rel: "noreferrer",
 } as const;
