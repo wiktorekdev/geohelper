@@ -9,9 +9,10 @@ const title = "GeoHelper - GeoGuessr Steam Coordinates Helper";
 const description =
   "GeoHelper helps GeoGuessr Steam players view live coordinates, country, road and postcode data for solo practice and location analysis. Free, open source and available for Windows, macOS and Linux.";
 const siteUrl = "https://geohelperapp.vercel.app";
+const siteName = "GeoHelper";
 
 export const metadata: Metadata = {
-  applicationName: "GeoHelper",
+  applicationName: siteName,
   title,
   description,
   keywords:
@@ -35,7 +36,8 @@ export const metadata: Metadata = {
         alt: "GeoHelper desktop app showing live GeoGuessr coordinates",
       },
     ],
-    siteName: "GeoHelper",
+    siteName,
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
@@ -55,6 +57,9 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   robots: "index, follow",
   authors: [{ name: "wiktorekdev" }],
+  creator: "wiktorekdev",
+  publisher: siteName,
+  category: "software",
 };
 
 export const viewport: Viewport = {
@@ -69,10 +74,34 @@ export default function RootLayout({
 }) {
   const version = process.env.GEOHELPER_VERSION ?? "0.0.0";
 
+  const person = {
+    "@type": "Person",
+    "@id": "https://github.com/wiktorekdev#person",
+    name: "wiktorekdev",
+    url: "https://github.com/wiktorekdev",
+  };
+
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    name: siteName,
+    alternateName: "GeoHelper App",
+    url: `${siteUrl}/`,
+    inLanguage: "en",
+    publisher: person,
+  };
+
   const softwareApp = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "GeoHelper",
+    "@id": `${siteUrl}/#software`,
+    name: siteName,
+    alternateName: [
+      "GeoHelper App",
+      "GeoGuessr Steam Coordinates Helper",
+      "GeoGuessr Coordinates Helper",
+    ],
     operatingSystem: "Windows, macOS, Linux",
     applicationCategory: "GameApplication",
     description:
@@ -90,18 +119,17 @@ export default function RootLayout({
     screenshot: `${siteUrl}/paris.png`,
     license: "https://opensource.org/licenses/MIT",
     sameAs: [GITHUB_URL],
+    isAccessibleForFree: true,
     softwareRequirements: "GeoGuessr for Steam with localhost CDP enabled",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-    author: {
-      "@type": "Person",
-      name: "wiktorekdev",
-      url: "https://github.com/wiktorekdev",
-    },
+    author: person,
+    publisher: person,
   };
 
   const faqPage = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": `${siteUrl}/#faq`,
     mainEntity: FAQ_ENTRIES.map((entry) => ({
       "@type": "Question",
       name: entry.q,
@@ -127,11 +155,12 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApp) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPage) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [website, softwareApp, faqPage],
+            }),
+          }}
         />
       </head>
       <body>
