@@ -1,4 +1,5 @@
 mod conn;
+mod pipeline;
 mod resolver;
 mod rpc;
 mod target;
@@ -18,19 +19,18 @@ use tokio_tungstenite::tungstenite::Message;
 
 use crate::geo::is_valid;
 use crate::state::{ConnState, Coords, Shared};
-use crate::util::{LimitedMap, LimitedSet};
 
 use conn::Conn;
+use pipeline::{
+    PanoCandidate, PanoIngest, ResolveAction, ResolveOutcome, ResolveWork, ResolvedCandidate,
+    RoundPipeline,
+};
 
 const BURST_DEBOUNCE: Duration = Duration::from_millis(10);
-const ROUND_IDLE_GAP: Duration = Duration::from_millis(250);
 const RESOLVE_TIMEOUT: Duration = Duration::from_secs(3);
 const RETRY_MIN: Duration = Duration::from_secs(1);
 const RETRY_MAX: Duration = Duration::from_secs(30);
-const MAX_BATCH: usize = 24;
 const MAX_CONCURRENT_RESOLVES: usize = 4;
-const MAX_REMEMBERED: usize = 1000;
-const MAX_RESOLVE_ATTEMPTS: u8 = 3;
 
 pub async fn run(app: AppHandle, state: Shared) {
     let mut retry_delay = RETRY_MIN;
@@ -194,19 +194,6 @@ enum ControllerEnd {
     ReconnectRequested,
 }
 
-#[derive(Debug, Clone)]
-struct PanoCandidate {
-    request_id: String,
-    pano: String,
-    attempts: u8,
-}
-
-impl PanoCandidate {
-    fn key(&self) -> String {
-        format!("{}:{}", self.request_id, self.pano)
-    }
-}
-
 fn parse_event(method: &str, v: &Value) -> Option<NetworkEvent> {
     let p = v.get("params")?;
     let request_id = p.get("requestId")?.as_str()?.to_string();
@@ -233,43 +220,36 @@ async fn controller(
     conn: Arc<Conn>,
     mut events: mpsc::Receiver<NetworkEvent>,
 ) -> Result<ControllerEnd> {
-    let mut rpc_requests: std::collections::HashSet<String> = Default::default();
-    let mut burst: Vec<PanoCandidate> = Vec::new();
-    let mut burst_seen: std::collections::HashSet<String> = Default::default();
-    let mut batch: std::collections::VecDeque<PanoCandidate> = Default::default();
+    let mut pipeline = RoundPipeline::new();
     let mut pending_resolves = FuturesUnordered::<BoxFuture<'static, ResolvedCandidate>>::new();
-    let mut zero_results = LimitedSet::<String>::new(MAX_REMEMBERED);
-    let mut resolved_cache = LimitedMap::<String, (f64, f64)>::new(MAX_REMEMBERED);
-    let mut emitted_panos = LimitedSet::<String>::new(MAX_REMEMBERED);
-    let mut location_locked = false;
-    let mut last_pano_rpc_at: Option<Instant> = None;
 
     let far_future = Instant::now() + Duration::from_secs(60 * 60);
     let mut burst_deadline = far_future;
 
     loop {
         while pending_resolves.len() < MAX_CONCURRENT_RESOLVES {
-            let Some(candidate) = batch.pop_front() else {
+            let Some(work) = pipeline.next_work() else {
                 break;
             };
 
-            let pano = candidate.pano.clone();
-            if zero_results.contains(&pano) || emitted_panos.contains(&pano) {
-                continue;
-            }
-
-            if let Some((lat, lng)) = resolved_cache.get(&pano) {
-                if try_update(&state, &app, &mut emitted_panos, &candidate, lat, lng) {
-                    batch.clear();
-                    pending_resolves.clear();
+            match work {
+                ResolveWork::Cached {
+                    candidate,
+                    lat,
+                    lng,
+                } => {
+                    if try_update(&state, &app, &candidate, lat, lng) {
+                        pipeline.record_accepted(&candidate.pano);
+                        pending_resolves.clear();
+                    }
                 }
-                continue;
+                ResolveWork::Resolve(candidate) => {
+                    pending_resolves.push(resolve_candidate(conn.clone(), candidate).boxed());
+                }
             }
-
-            pending_resolves.push(resolve_candidate(conn.clone(), candidate).boxed());
         }
 
-        let burst_active = !burst.is_empty();
+        let burst_active = pipeline.has_burst();
         let resolving = !pending_resolves.is_empty();
 
         tokio::select! {
@@ -278,51 +258,29 @@ async fn controller(
                 match evt {
                     NetworkEvent::Response { request_id, url } => {
                         if is_maps_rpc_url(&url) {
-                            rpc_requests.insert(request_id);
+                            pipeline.remember_rpc_response(request_id);
                         }
                     }
                     NetworkEvent::LoadingFailed { request_id } => {
-                        rpc_requests.remove(&request_id);
+                        pipeline.forget_rpc_request(&request_id);
                     }
                     NetworkEvent::LoadingFinished { request_id } => {
-                        if !rpc_requests.remove(&request_id) { continue; }
+                        if !pipeline.take_rpc_request(&request_id) { continue; }
                         if let Ok(text) = fetch_body(&conn, &request_id).await {
-                            let panos = rpc::extract_panos(&text);
-                            let now = Instant::now();
-                            if !panos.is_empty() {
-                                let round_gap = last_pano_rpc_at
-                                    .map(|last| now.duration_since(last) >= ROUND_IDLE_GAP)
-                                    .unwrap_or(true);
-                                last_pano_rpc_at = Some(now);
-                                if location_locked && round_gap {
-                                    location_locked = false;
-                                    burst.clear();
-                                    burst_seen.clear();
-                                    batch.clear();
+                            match pipeline.ingest_panos(
+                                request_id,
+                                rpc::extract_panos(&text),
+                                Instant::now(),
+                            ) {
+                                PanoIngest::Ignored => {}
+                                PanoIngest::Queued => {
+                                    burst_deadline = Instant::now() + BURST_DEBOUNCE;
+                                }
+                                PanoIngest::UnlockedAndQueued => {
                                     pending_resolves.clear();
-                                    emitted_panos.clear();
                                     log_line(&app, "info", "new pano burst after idle; resolver unlocked");
+                                    burst_deadline = Instant::now() + BURST_DEBOUNCE;
                                 }
-                            }
-                            if location_locked {
-                                continue;
-                            }
-                            for pano in panos {
-                                if burst.len() >= MAX_BATCH { break; }
-                                let candidate = PanoCandidate {
-                                    request_id: request_id.clone(),
-                                    pano,
-                                    attempts: 0,
-                                };
-                                if emitted_panos.contains(&candidate.pano) {
-                                    continue;
-                                }
-                                if burst_seen.insert(candidate.key()) {
-                                    burst.push(candidate);
-                                }
-                            }
-                            if !burst.is_empty() {
-                                burst_deadline = Instant::now() + BURST_DEBOUNCE;
                             }
                         }
                     }
@@ -330,115 +288,37 @@ async fn controller(
             }
 
             _ = tokio::time::sleep_until(burst_deadline.into()), if burst_active => {
-                let drained = std::mem::take(&mut burst);
-                burst_seen.clear();
+                pipeline.drain_burst_to_batch();
                 burst_deadline = far_future;
-                batch.clear();
-                batch.extend(drained);
             }
 
             resolved = pending_resolves.next(), if resolving => {
                 let Some(resolved) = resolved else { continue; };
-                match handle_resolved(
-                    &state,
-                    &app,
-                    &mut emitted_panos,
-                    &mut zero_results,
-                    &mut resolved_cache,
-                    resolved,
-                ) {
-                    ResolveAction::Accepted => {
-                        location_locked = true;
-                        batch.clear();
-                        pending_resolves.clear();
+                let (action, log) = pipeline.record_resolution(resolved);
+                if let Some(message) = log {
+                    let level = if message.starts_with("retrying ") { "info" } else { "error" };
+                    log_line(&app, level, message);
+                }
+                match action {
+                    ResolveAction::TryAccept { candidate, lat, lng } => {
+                        if try_update(&state, &app, &candidate, lat, lng) {
+                            pipeline.record_accepted(&candidate.pano);
+                            pending_resolves.clear();
+                        }
                     }
                     ResolveAction::Retry(candidate) => {
-                        batch.push_back(candidate);
+                        pending_resolves.push(resolve_candidate(conn.clone(), candidate).boxed());
                     }
                     ResolveAction::Continue => {}
                 }
             }
 
             _ = wait_for_reconnect(state.clone(), reconnect_epoch) => {
-                rpc_requests.clear();
-                burst.clear();
-                burst_seen.clear();
-                batch.clear();
+                pipeline.clear_for_reconnect();
                 pending_resolves.clear();
                 log_line(&app, "info", "Reconnect requested; cleared pending CDP work");
                 return Ok(ControllerEnd::ReconnectRequested);
             }
-        }
-    }
-}
-
-struct ResolvedCandidate {
-    candidate: PanoCandidate,
-    outcome: ResolveOutcome,
-}
-
-enum ResolveAction {
-    Accepted,
-    Retry(PanoCandidate),
-    Continue,
-}
-
-fn handle_resolved(
-    state: &Shared,
-    app: &AppHandle,
-    emitted_panos: &mut LimitedSet<String>,
-    zero_results: &mut LimitedSet<String>,
-    resolved_cache: &mut LimitedMap<String, (f64, f64)>,
-    resolved: ResolvedCandidate,
-) -> ResolveAction {
-    let mut candidate = resolved.candidate;
-    let pano = candidate.pano.clone();
-    match resolved.outcome {
-        ResolveOutcome::Resolved { lat, lng } => {
-            resolved_cache.insert(pano, (lat, lng));
-            if try_update(state, app, emitted_panos, &candidate, lat, lng) {
-                ResolveAction::Accepted
-            } else {
-                ResolveAction::Continue
-            }
-        }
-        ResolveOutcome::NotFound => {
-            zero_results.insert(pano);
-            ResolveAction::Continue
-        }
-        outcome @ (ResolveOutcome::GoogleNotReady
-        | ResolveOutcome::Timeout
-        | ResolveOutcome::Transient(_)) => {
-            candidate.attempts = candidate.attempts.saturating_add(1);
-            if candidate.attempts < MAX_RESOLVE_ATTEMPTS {
-                log_line(
-                    app,
-                    "info",
-                    format!(
-                        "retrying pano {} after {} (attempt {}/{})",
-                        candidate.pano,
-                        outcome,
-                        candidate.attempts + 1,
-                        MAX_RESOLVE_ATTEMPTS
-                    ),
-                );
-                ResolveAction::Retry(candidate)
-            } else {
-                log_line(
-                    app,
-                    "error",
-                    format!("resolve failed for {pano}: {outcome}"),
-                );
-                ResolveAction::Continue
-            }
-        }
-        outcome @ (ResolveOutcome::InvalidResponse | ResolveOutcome::CdpError(_)) => {
-            log_line(
-                app,
-                "error",
-                format!("resolve failed for {pano}: {outcome}"),
-            );
-            ResolveAction::Continue
         }
     }
 }
@@ -481,31 +361,6 @@ async fn prewarm_google_maps(conn: Arc<Conn>, app: AppHandle) {
 async fn resolve_candidate(conn: Arc<Conn>, candidate: PanoCandidate) -> ResolvedCandidate {
     let outcome = resolve_pano(&conn, &candidate.pano).await;
     ResolvedCandidate { candidate, outcome }
-}
-
-#[derive(Debug)]
-enum ResolveOutcome {
-    Resolved { lat: f64, lng: f64 },
-    NotFound,
-    GoogleNotReady,
-    Timeout,
-    InvalidResponse,
-    Transient(String),
-    CdpError(String),
-}
-
-impl std::fmt::Display for ResolveOutcome {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Resolved { .. } => f.write_str("resolved"),
-            Self::NotFound => f.write_str("not found"),
-            Self::GoogleNotReady => f.write_str("Google Maps not ready"),
-            Self::Timeout => f.write_str("timeout"),
-            Self::InvalidResponse => f.write_str("invalid response"),
-            Self::Transient(e) => write!(f, "transient error: {e}"),
-            Self::CdpError(e) => write!(f, "CDP error: {e}"),
-        }
-    }
 }
 
 fn is_maps_rpc_url(url: &str) -> bool {
@@ -577,7 +432,6 @@ async fn resolve_pano(conn: &Conn, pano: &str) -> ResolveOutcome {
 fn try_update(
     state: &Shared,
     app: &AppHandle,
-    emitted_panos: &mut LimitedSet<String>,
     candidate: &PanoCandidate,
     lat: f64,
     lng: f64,
@@ -585,9 +439,6 @@ fn try_update(
     let pano = &candidate.pano;
     let source = "rpc-xhr";
     if !is_valid(lat, lng) {
-        return false;
-    }
-    if emitted_panos.contains(pano) {
         return false;
     }
     if let Some(distance) = state.position_delta_meters(lat, lng) {
@@ -604,7 +455,6 @@ fn try_update(
         timestamp: now_ms(),
     };
     let round = state.set_current(coords.clone());
-    emitted_panos.insert(pano.to_string());
 
     let _ = app.emit("coords", &coords);
     let _ = app.emit("round", &round);

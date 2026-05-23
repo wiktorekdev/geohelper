@@ -2,21 +2,26 @@ import { create } from "zustand"
 import { t } from "@/lib/i18n"
 import { getSettingsStore } from "./settings-persistence"
 import { logger } from "./logger"
-import { normalizeHexColor } from "./utils"
+import {
+  applySelectionStyle,
+  dedupeTextIds,
+  normalizeTextStyle,
+  resetSelectedStyles,
+  resetWidgetTextState,
+  selectRegisteredWidgetTexts,
+  setSelectionHiddenState,
+  type TextStyle,
+} from "./display-selection"
+
+export { DEFAULT_TEXT_STYLE, FLAG_SIZE, FONT_SIZE_PX, textStyleToCss } from "./display-selection"
+
+export type { FontSize, TextStyle } from "./display-selection"
 
 export const SIDEBAR_MIN_WIDTH = 320
 export const SIDEBAR_MAX_WIDTH = 700
 export const SIDEBAR_DEFAULT_WIDTH = 320
 
 export type WidgetId = "country" | "road" | "details" | "coordinates"
-
-export type FontSize = "sm" | "md" | "lg"
-
-export type TextStyle = {
-  color: string | null
-  bold: boolean
-  fontSize: FontSize
-}
 
 export type DisplayConfig = {
   order: WidgetId[]
@@ -33,12 +38,6 @@ export function widgetLabel(id: WidgetId): string {
   return t(`widget.${id}`)
 }
 
-export const DEFAULT_TEXT_STYLE: TextStyle = {
-  color: null,
-  bold: false,
-  fontSize: "md",
-}
-
 const DEFAULT_CONFIG: DisplayConfig = {
   order: [...ALL_WIDGETS],
   textStyles: {},
@@ -48,7 +47,6 @@ const DEFAULT_CONFIG: DisplayConfig = {
 }
 
 const KNOWN_WIDGETS = new Set<WidgetId>(ALL_WIDGETS)
-const FONT_SIZES = new Set<FontSize>(["sm", "md", "lg"])
 const DISPLAY_SAVE_DELAY_MS = 250
 let displaySaveTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -59,16 +57,6 @@ function cloneDefault(): DisplayConfig {
     hiddenTexts: {},
     mapVisible: DEFAULT_CONFIG.mapVisible,
     sidebarWidth: DEFAULT_CONFIG.sidebarWidth,
-  }
-}
-
-function normalizeTextStyle(raw: unknown): TextStyle | null {
-  if (!raw || typeof raw !== "object") return null
-  const s = raw as Partial<TextStyle>
-  return {
-    color: typeof s.color === "string" ? normalizeHexColor(s.color, "") || null : null,
-    bold: s.bold === true,
-    fontSize: FONT_SIZES.has(s.fontSize as FontSize) ? (s.fontSize as FontSize) : "md",
   }
 }
 
@@ -231,9 +219,9 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     schedulePersistDisplayConfig(get())
   },
 
-  setSelection: (ids) => set({ selection: dedupe(ids), markerToolbarOpen: false }),
+  setSelection: (ids) => set({ selection: dedupeTextIds(ids), markerToolbarOpen: false }),
   addToSelection: (ids) =>
-    set({ selection: dedupe([...get().selection, ...ids]), markerToolbarOpen: false }),
+    set({ selection: dedupeTextIds([...get().selection, ...ids]), markerToolbarOpen: false }),
   toggleSelection: (id) => {
     const current = get().selection
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
@@ -241,62 +229,31 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   },
   clearSelection: () => set({ selection: [] }),
   selectWidget: (widget, additive = false) => {
-    const prefix = `${widget}.`
-    const ids = Object.keys(get().registeredIds).filter((id) => id.startsWith(prefix))
-    if (additive) set({ selection: dedupe([...get().selection, ...ids]) })
-    else set({ selection: dedupe(ids) })
+    const { registeredIds, selection } = get()
+    set({ selection: selectRegisteredWidgetTexts(registeredIds, widget, selection, additive) })
   },
 
   setSelectionStyle: (patch) => {
     const { selection, textStyles } = get()
     if (selection.length === 0) return
-    const normalizedPatch =
-      typeof patch.color === "string"
-        ? { ...patch, color: normalizeHexColor(patch.color, "") || null }
-        : patch
-    const nextStyles = { ...textStyles }
-    for (const id of selection) {
-      const current = nextStyles[id] ?? { ...DEFAULT_TEXT_STYLE }
-      nextStyles[id] = { ...current, ...normalizedPatch }
-    }
-    set({ textStyles: nextStyles })
+    set({ textStyles: applySelectionStyle(textStyles, selection, patch) })
     schedulePersistDisplayConfig(get())
   },
   setSelectionHidden: (hidden) => {
     const { selection, hiddenTexts } = get()
     if (selection.length === 0) return
-    const next = { ...hiddenTexts }
-    for (const id of selection) {
-      if (hidden) next[id] = true
-      else delete next[id]
-    }
-    set({ hiddenTexts: next })
+    set({ hiddenTexts: setSelectionHiddenState(hiddenTexts, selection, hidden) })
     void persistDisplayConfig(get())
   },
   resetSelection: () => {
     const { selection, textStyles } = get()
     if (selection.length === 0) return
-    const nextStyles = { ...textStyles }
-    for (const id of selection) delete nextStyles[id]
-    set({ textStyles: nextStyles })
+    set({ textStyles: resetSelectedStyles(textStyles, selection) })
     void persistDisplayConfig(get())
   },
   resetWidget: (id) => {
-    const prefix = `${id}.`
     const { textStyles, hiddenTexts, selection } = get()
-    const nextStyles: Record<string, TextStyle> = {}
-    for (const [key, style] of Object.entries(textStyles)) {
-      if (!key.startsWith(prefix)) nextStyles[key] = style
-    }
-    const nextHidden: Record<string, true> = {}
-    for (const [key, value] of Object.entries(hiddenTexts)) {
-      if (!key.startsWith(prefix)) nextHidden[key] = value
-    }
-    set({
-      textStyles: nextStyles,
-      hiddenTexts: nextHidden,
-      selection: selection.filter((s) => !s.startsWith(prefix)),
-    })
+    set(resetWidgetTextState(id, textStyles, hiddenTexts, selection))
     void persistDisplayConfig(get())
   },
   resetAll: () => {
@@ -305,37 +262,3 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     void persistDisplayConfig(fresh)
   },
 }))
-
-function dedupe(ids: string[]): string[] {
-  return Array.from(new Set(ids))
-}
-
-export const FONT_SIZE_PX: Record<FontSize, string> = {
-  sm: "11px",
-  md: "13px",
-  lg: "15px",
-}
-
-export const FLAG_SIZE: Record<FontSize, { width: string; height: string }> = {
-  sm: { width: "1.6em", height: "1.2em" },
-  md: { width: "2.2em", height: "1.6em" },
-  lg: { width: "2.8em", height: "2em" },
-}
-
-export function textStyleToCss(style: TextStyle | undefined, mono = false): React.CSSProperties {
-  if (!style) {
-    return {
-      fontFamily: mono
-        ? "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-        : undefined,
-    }
-  }
-  return {
-    color: style.color ?? undefined,
-    fontWeight: style.bold ? 600 : undefined,
-    fontSize: FONT_SIZE_PX[style.fontSize],
-    fontFamily: mono
-      ? "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-      : undefined,
-  }
-}

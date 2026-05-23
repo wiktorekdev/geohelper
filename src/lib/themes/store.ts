@@ -1,41 +1,12 @@
 import { create } from "zustand"
-import { Store as TauriStore } from "@tauri-apps/plugin-store"
-import { invoke } from "@tauri-apps/api/core"
 
-import { getSettingsStore } from "../settings-persistence"
+import { getNamedStore, getSettingsStore } from "../settings-persistence"
 import { BUILTIN_THEMES } from "./builtin"
-import { logger } from "../logger"
 import type { Theme } from "./types"
 
 const KEY_ACTIVE = "activeThemeId"
 const KEY_USER = "userThemes"
 const KEY_HIDDEN = "hiddenBuiltins"
-
-let themesStoreInstance: TauriStore | null = null
-let themesStorePromise: Promise<TauriStore> | null = null
-
-function getThemesStore(): Promise<TauriStore> {
-  if (themesStoreInstance) {
-    return Promise.resolve(themesStoreInstance)
-  }
-  if (!themesStorePromise) {
-    themesStorePromise = (async () => {
-      const storePath = await invoke<string>("get_store_path", { filename: "themes.json" })
-      try {
-        const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true })
-        themesStoreInstance = store
-        return store
-      } catch (e) {
-        logger.error(`Failed to load themes store at ${storePath}, attempting recovery:`, e)
-        await invoke("handle_corrupted_store", { path: storePath })
-        const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true })
-        themesStoreInstance = store
-        return store
-      }
-    })()
-  }
-  return themesStorePromise
-}
 
 type ThemeStoreState = {
   /** Currently active theme id. Always resolvable to a theme. */
@@ -62,7 +33,7 @@ export const useThemeStore = create<ThemeStoreState>((set, get) => ({
     if (get().hydrated) return
     try {
       const settingsStore = await getSettingsStore()
-      const themesStore = await getThemesStore()
+      const themesStore = await getNamedStore("themes.json")
 
       const active = await settingsStore.get<string>(KEY_ACTIVE)
       const user = await themesStore.get<Theme[]>(KEY_USER)
@@ -110,7 +81,7 @@ async function persistSetting(key: string, value: unknown) {
 
 async function persistThemeSetting(key: string, value: unknown) {
   try {
-    const store = await getThemesStore()
+    const store = await getNamedStore("themes.json")
     if (value === undefined || (Array.isArray(value) && value.length === 0)) {
       await store.delete(key)
     } else {

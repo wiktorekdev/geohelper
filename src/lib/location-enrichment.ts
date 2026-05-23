@@ -4,43 +4,78 @@ import { fetchCountryDetails } from "@/lib/country-info"
 import { reverseGeocode } from "@/lib/geocode"
 import { useStore } from "@/lib/store"
 
-export async function enrichLocation(
-  coords: Coords,
-  isCurrent: () => boolean,
-  signal?: AbortSignal
-): Promise<void> {
-  if (!isCurrent() || signal?.aborted) return
+type EnrichmentRun = {
+  id: number
+  coords: Coords
+  signal: AbortSignal
+}
 
-  const store = useStore.getState()
-  store.setLocationLoading(true)
+export type LocationEnrichmentSession = {
+  start: (coords: Coords) => void
+  cancel: () => void
+}
 
-  const { place, error } = await reverseGeocode(coords.lat, coords.lng, signal)
-  if (!isCurrent() || signal?.aborted) {
-    store.setLocationLoading(false)
-    return
+export function createLocationEnrichmentSession(
+  isActive: () => boolean
+): LocationEnrichmentSession {
+  let runId = 0
+  let abort: AbortController | null = null
+
+  function isFresh(run: EnrichmentRun): boolean {
+    return isActive() && run.id === runId && !run.signal.aborted
   }
 
-  const cur = useStore.getState().current
-  if (!cur || !latLngClose(cur.lat, cur.lng, coords.lat, coords.lng)) {
-    store.setLocationLoading(false)
-    return
+  function currentMatches(coords: Coords): boolean {
+    const current = useStore.getState().current
+    return !!current && latLngClose(current.lat, current.lng, coords.lat, coords.lng)
   }
 
-  const details = place.countryCode ? await fetchCountryDetails(place.countryCode, signal) : null
-  if (!isCurrent() || signal?.aborted) {
-    store.setLocationLoading(false)
-    return
+  async function enrich(run: EnrichmentRun): Promise<void> {
+    if (!isFresh(run)) return
+
+    const store = useStore.getState()
+    store.setLocationLoading(true)
+
+    const { place, error } = await reverseGeocode(run.coords.lat, run.coords.lng, run.signal)
+    if (!isFresh(run)) return
+    if (!currentMatches(run.coords)) {
+      useStore.getState().setLocationLoading(false)
+      return
+    }
+
+    const details = place.countryCode
+      ? await fetchCountryDetails(place.countryCode, run.signal)
+      : null
+    if (!isFresh(run)) return
+    if (!currentMatches(run.coords)) {
+      useStore.getState().setLocationLoading(false)
+      return
+    }
+
+    const latest = useStore.getState()
+    latest.setPlace(place)
+    latest.setGeocodeError(error)
+    latest.setCountryDetails(details)
+    latest.setLocationLoading(false)
   }
 
-  const latest = useStore.getState().current
-  if (!latest || !latLngClose(latest.lat, latest.lng, coords.lat, coords.lng)) {
-    store.setLocationLoading(false)
-    return
-  }
+  return {
+    start: (coords) => {
+      if (!isActive()) return
+      const previous = useStore.getState().current
+      if (previous && latLngClose(previous.lat, previous.lng, coords.lat, coords.lng)) return
 
-  // Batch update to prevent flickering - update all location data at once
-  store.setPlace(place)
-  store.setGeocodeError(error)
-  store.setCountryDetails(details)
-  store.setLocationLoading(false)
+      abort?.abort()
+      abort = new AbortController()
+      const run = { id: ++runId, coords, signal: abort.signal }
+      useStore.getState().pushCoords(coords)
+      void enrich(run)
+    },
+    cancel: () => {
+      runId++
+      abort?.abort()
+      abort = null
+      useStore.getState().setLocationLoading(false)
+    },
+  }
 }

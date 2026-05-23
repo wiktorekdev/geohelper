@@ -39,6 +39,9 @@ export type SettingsSchema = {
 let storeInstance: TauriStore | null = null
 let storePromise: Promise<TauriStore> | null = null
 let resolvedStorePath: string | null = null
+const namedStoreInstances = new Map<string, TauriStore>()
+const namedStorePromises = new Map<string, Promise<TauriStore>>()
+const resolvedNamedStorePaths = new Map<string, string>()
 
 /**
  * Resolve the absolute settings.json path once via Tauri, then keep using it.
@@ -46,8 +49,9 @@ let resolvedStorePath: string | null = null
  * runs (one per cwd), which silently lost user data.
  */
 async function resolveStorePath(): Promise<string> {
-  if (resolvedStorePath) return resolvedStorePath
-  resolvedStorePath = await invoke<string>("get_store_path", { filename: "settings.json" })
+  if (!resolvedStorePath) {
+    resolvedStorePath = await resolveNamedStorePath("settings.json")
+  }
   return resolvedStorePath
 }
 
@@ -57,21 +61,49 @@ export function getSettingsStore(): Promise<TauriStore> {
   }
   if (!storePromise) {
     storePromise = (async () => {
-      const storePath = await resolveStorePath()
-      try {
-        const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true })
-        storeInstance = store
-        return store
-      } catch (e) {
-        logger.error(`Failed to load store at ${storePath}, attempting recovery:`, e)
-        await invoke("handle_corrupted_store", { path: storePath })
-        const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true })
-        storeInstance = store
-        return store
-      }
+      const store = await getNamedStore("settings.json")
+      storeInstance = store
+      return store
     })()
   }
   return storePromise
+}
+
+export async function getNamedStore(filename: string): Promise<TauriStore> {
+  const cached = namedStoreInstances.get(filename)
+  if (cached) return cached
+
+  let promise = namedStorePromises.get(filename)
+  if (!promise) {
+    promise = loadNamedStore(filename)
+    namedStorePromises.set(filename, promise)
+  }
+
+  return promise
+}
+
+async function resolveNamedStorePath(filename: string): Promise<string> {
+  const cached = resolvedNamedStorePaths.get(filename)
+  if (cached) return cached
+
+  const storePath = await invoke<string>("get_store_path", { filename })
+  resolvedNamedStorePaths.set(filename, storePath)
+  return storePath
+}
+
+async function loadNamedStore(filename: string): Promise<TauriStore> {
+  const storePath = await resolveNamedStorePath(filename)
+  try {
+    const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true })
+    namedStoreInstances.set(filename, store)
+    return store
+  } catch (e) {
+    logger.error(`Failed to load store at ${storePath}, attempting recovery:`, e)
+    await invoke("handle_corrupted_store", { path: storePath })
+    const store = await TauriStore.load(storePath, { defaults: {}, autoSave: true })
+    namedStoreInstances.set(filename, store)
+    return store
+  }
 }
 
 export async function migrateLegacyStorage() {
