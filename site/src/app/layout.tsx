@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { FAQ_ENTRIES } from "../faq";
 import { DOWNLOAD_URLS, GITHUB_URL } from "../links";
 import "./globals.css";
 
@@ -101,40 +102,14 @@ export default function RootLayout({
   const faqPage = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "Will I get banned?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "If you use it in ranked or online multiplayer, eventually yes. GeoHelper is built for solo play, custom maps and training. Read GeoGuessr's ToS.",
-        },
+    mainEntity: FAQ_ENTRIES.map((entry) => ({
+      "@type": "Question",
+      name: entry.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: entry.a,
       },
-      {
-        "@type": "Question",
-        name: "Does it work on Mac and Linux?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Builds are produced for all three OSes. Your GeoGuessr Steam client still needs to expose CDP on localhost:9222 the same way it does on Windows. If that works for you, GeoHelper works.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Why macOS shows a security warning",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Because the build is not code-signed with an Apple Developer ID. Right-click the app and pick Open once, or run xattr -dr com.apple.quarantine on it. After that it launches normally.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Does it work with GeoGuessr in the browser?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "No. The browser version doesn't expose a CDP endpoint to the outside world the way the Steam client does with those launch flags. Steam only for now. A browser extension is on the roadmap.",
-        },
-      },
-    ],
+    })),
   };
 
   return (

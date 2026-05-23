@@ -26,6 +26,7 @@ It shows live round information: coordinates, country, region, road, postcode, f
 Perfect for **custom maps, singleplayer, solo practice and learning geography**.
 
 ### Key Features
+
 - Beautiful draggable & resizable widgets with full layout customization
 - Powerful custom theming system (JSON + CSS variables)
 - Live coordinates and rich location data
@@ -48,6 +49,20 @@ GeoHelper connects to the Chrome DevTools Protocol endpoint exposed by Steam (`-
 
 **Supported platforms:** Windows 10/11, Linux, macOS 11+
 
+### Linux dependencies
+
+Ubuntu/Debian builds usually install the needed WebKitGTK dependencies automatically from the `.deb` package. On Arch-based distros such as Arch Linux and CachyOS, install the runtime dependencies first:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 libsoup3 gtk3 libayatana-appindicator
+```
+
+If you are building GeoHelper from source on Arch/CachyOS, install the full Tauri development dependency set:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget file openssl appmenu-gtk-module libappindicator-gtk3 librsvg xdotool
+```
+
 ## Customization
 
 Click the pencil icon to enter **Edit Mode**:
@@ -63,11 +78,11 @@ Click the pencil icon to enter **Edit Mode**:
 
 ## Map Providers
 
-| Feature              | OpenStreetMap (Default)      | Google Maps (Optional)     |
-|----------------------|------------------------------|----------------------------|
-| Availability         | Built-in                     | Requires API key           |
-| Pricing              | Completely free              | Google Cloud free tier     |
-| Styles               | Multiple CartoDB styles      | Roadmap, Satellite, Dark   |
+| Feature      | OpenStreetMap (Default) | Google Maps (Optional)   |
+| ------------ | ----------------------- | ------------------------ |
+| Availability | Built-in                | Requires API key         |
+| Pricing      | Completely free         | Google Cloud free tier   |
+| Styles       | Multiple CartoDB styles | Roadmap, Satellite, Dark |
 
 ## Build from Source
 

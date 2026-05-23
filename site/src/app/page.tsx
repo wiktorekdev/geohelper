@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { FAQ_ENTRIES } from "../faq";
 import {
   EXTERNAL_LINK_PROPS,
   GITHUB_URL,
@@ -277,31 +278,12 @@ function Step({
 }
 
 function Faq() {
-  const items = [
-    {
-      q: "Will I get banned?",
-      a: "If you use it in ranked or online multiplayer, eventually yes. GeoHelper is built for solo play, custom maps and training. Read GeoGuessr's ToS.",
-    },
-    {
-      q: "Does it work on Mac and Linux?",
-      a: "Builds are produced for all three OSes. Your GeoGuessr Steam client still needs to expose CDP on localhost:9222 the same way it does on Windows. If that works for you, GeoHelper works.",
-    },
-    {
-      q: "Why macOS shows a security warning",
-      a: "Because the build is not code-signed with an Apple Developer ID. Right-click the app and pick Open once, or run xattr -dr com.apple.quarantine on it. After that it launches normally.",
-    },
-    {
-      q: "Does it work with GeoGuessr in the browser?",
-      a: "No. The browser version doesn't expose a CDP endpoint to the outside world the way the Steam client does with those launch flags. Steam only for now. A browser extension is on the roadmap.",
-    },
-  ];
-
   return (
     <Reveal>
       <section className="relative mx-auto max-w-4xl px-6 pb-20">
         <h2 className="mb-8 text-2xl font-semibold text-white sm:text-3xl">Questions we actually get asked.</h2>
         <div className="divide-y divide-white/5 rounded-xl border border-white/10 bg-white/[0.02]">
-          {items.map((it) => (
+          {FAQ_ENTRIES.map((it) => (
             <details key={it.q} className="group px-5 py-4">
               <summary className="flex cursor-pointer items-center justify-between gap-4 text-white">
                 <span className="font-medium">{it.q}</span>

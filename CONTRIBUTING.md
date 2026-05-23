@@ -11,6 +11,18 @@ bun run dev
 
 Need Node 20+, Rust, Bun. Linux requires GTK 3 + WebKitGTK 4.1.
 
+Arch/CachyOS runtime dependencies:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 libsoup3 gtk3 libayatana-appindicator
+```
+
+Arch/CachyOS source build dependencies:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 base-devel curl wget file openssl appmenu-gtk-module libappindicator-gtk3 librsvg xdotool
+```
+
 ## Where to start
 
 Check [Issues](https://github.com/wiktorekdev/geohelper/issues). If you have an idea, open an issue first.
@@ -27,6 +39,7 @@ No tests required.
 ## Commits
 
 Use conventional commit prefixes:
+
 ```
 feat: add feature
 fix: fix bug
