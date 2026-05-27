@@ -188,7 +188,11 @@ jobs:
 
           app_dir=$(ls -d src-tauri/target/release/bundle/macos/*.app 2>/dev/null | head -n1 || true)
           if [ -n "$app_dir" ]; then
-            file "$app_dir/Contents/MacOS/geohelper" | grep -q "$arch"
+            expected_arch="$arch"
+            if [ "$arch" = "aarch64" ]; then
+              expected_arch="arm64"
+            fi
+            file "$app_dir/Contents/MacOS/geohelper" | grep -q "$expected_arch"
             (cd "$(dirname "$app_dir")" && zip -qry "$GITHUB_WORKSPACE/$stage/GeoHelper-$version-macos-$arch.app.zip" "$(basename "$app_dir")")
           fi
 
