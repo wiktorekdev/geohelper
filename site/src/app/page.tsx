@@ -135,7 +135,7 @@ function Features() {
     {
       icon: <Box className="size-[22px]" />,
       title: "Three platforms",
-      body: "Windows installer, .deb and AppImage for Linux, .dmg for macOS.",
+      body: "Windows installer, Linux packages, and separate macOS builds for Apple Silicon and Intel.",
     },
     {
       icon: <MapPin className="size-[22px]" />,

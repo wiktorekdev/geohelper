@@ -54,6 +54,14 @@ GeoHelper connects to the Chrome DevTools Protocol endpoint exposed by Steam (`-
 Ubuntu/Debian builds usually install the needed WebKitGTK dependencies automatically from the `.deb` package. On Arch-based distros such as Arch Linux and CachyOS, install the runtime dependencies first:
 
 ```bash
+git clone https://github.com/wiktorekdev/geohelper.git
+cd geohelper/packaging/arch
+makepkg -si
+```
+
+If you prefer to run the AppImage or raw binary directly, install the runtime dependencies manually:
+
+```bash
 sudo pacman -S --needed webkit2gtk-4.1 libsoup3 gtk3 libayatana-appindicator
 ```
 

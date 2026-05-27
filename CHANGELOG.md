@@ -2,6 +2,20 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.19.1] - 2026-05-27
+
+### Added
+
+- **Separate macOS builds** - release artifacts now distinguish Apple Silicon (`macos-aarch64`) from Intel (`macos-x86_64`) so users do not download an incompatible app.
+- **Arch/CachyOS package template** - added an Arch package recipe that declares the WebKitGTK runtime dependencies needed by Tauri apps.
+- **Smarter website downloads** - the website download menu now exposes Apple Silicon, Intel, AppImage, `.deb`, `.rpm`, and Arch/CachyOS options.
+
+### Fixed
+
+- **macOS updater manifest** - `latest.json` no longer points both `darwin-x86_64` and `darwin-aarch64` to the same app archive.
+- **macOS release guard** - release CI now verifies the staged `.app` binary architecture before publishing macOS artifacts.
+- **Static download metadata** - website structured data no longer references versionless release asset URLs that are not published.
+
 ## [0.19.0] - 2026-05-22
 
 This release is mostly about making GeoHelper feel cleaner to use and easier to ship. The website got a real release-ready polish pass, app versions now come from one source, and layout editing is less jumpy.

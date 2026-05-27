@@ -109,8 +109,10 @@ export default function RootLayout({
     url: siteUrl,
     downloadUrl: [
       DOWNLOAD_URLS.windows,
-      DOWNLOAD_URLS.macos,
+      DOWNLOAD_URLS.macosAppleSilicon,
+      DOWNLOAD_URLS.macosIntel,
       DOWNLOAD_URLS.linux,
+      DOWNLOAD_URLS.arch,
     ],
     installUrl: DOWNLOAD_URLS.all,
     softwareVersion: version,

@@ -22,10 +22,18 @@ jobs:
         include:
           - name: windows
             os: windows-latest
+            platform: windows
           - name: linux
             os: ubuntu-22.04
-          - name: macos
+            platform: linux
+          - name: macos-x86_64
+            os: macos-15-intel
+            platform: macos
+            arch: x86_64
+          - name: macos-aarch64
             os: macos-latest
+            platform: macos
+            arch: aarch64
 
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +58,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: install linux build deps
-        if: matrix.name == 'linux'
+        if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -91,7 +99,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: stage artifacts (windows)
-        if: matrix.name == 'windows'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.version }}"
@@ -122,7 +130,7 @@ jobs:
           Get-ChildItem $stage
 
       - name: stage artifacts (linux)
-        if: matrix.name == 'linux'
+        if: matrix.platform == 'linux'
         shell: bash
         run: |
           version="${{ steps.version.outputs.version }}"
@@ -157,29 +165,31 @@ jobs:
           ls -la "$stage"
 
       - name: stage artifacts (macos)
-        if: matrix.name == 'macos'
+        if: matrix.platform == 'macos'
         shell: bash
         run: |
           version="${{ steps.version.outputs.version }}"
+          arch="${{ matrix.arch }}"
           stage="release-staging"
           mkdir -p "$stage"
 
           dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg 2>/dev/null | head -n1 || true)
           if [ -n "$dmg" ]; then
-            cp "$dmg" "$stage/GeoHelper-$version-macos.dmg"
+            cp "$dmg" "$stage/GeoHelper-$version-macos-$arch.dmg"
           fi
 
           app_tar=$(ls src-tauri/target/release/bundle/macos/*.app.tar.gz 2>/dev/null | head -n1 || true)
           if [ -n "$app_tar" ]; then
-            cp "$app_tar" "$stage/GeoHelper-$version-macos.app.tar.gz"
+            cp "$app_tar" "$stage/GeoHelper-$version-macos-$arch.app.tar.gz"
             if [ -f "$app_tar.sig" ]; then
-              cp "$app_tar.sig" "$stage/GeoHelper-$version-macos.app.tar.gz.sig"
+              cp "$app_tar.sig" "$stage/GeoHelper-$version-macos-$arch.app.tar.gz.sig"
             fi
           fi
 
           app_dir=$(ls -d src-tauri/target/release/bundle/macos/*.app 2>/dev/null | head -n1 || true)
           if [ -n "$app_dir" ]; then
-            (cd "$(dirname "$app_dir")" && zip -qry "$GITHUB_WORKSPACE/$stage/GeoHelper-$version-macos.app.zip" "$(basename "$app_dir")")
+            file "$app_dir/Contents/MacOS/geohelper" | grep -q "$arch"
+            (cd "$(dirname "$app_dir")" && zip -qry "$GITHUB_WORKSPACE/$stage/GeoHelper-$version-macos-$arch.app.zip" "$(basename "$app_dir")")
           fi
 
           (cd "$stage" && shasum -a 256 * > SHA256SUMS-macos.txt || true)
@@ -233,11 +243,13 @@ jobs:
 
           win_zip=$(ls GeoHelper-*-windows-setup.exe 2>/dev/null | head -n1 || true)
           lin_img=$(ls GeoHelper-*-linux.AppImage 2>/dev/null | head -n1 || true)
-          mac_tar=$(ls GeoHelper-*-macos.app.tar.gz 2>/dev/null | head -n1 || true)
+          mac_x64_tar=$(ls GeoHelper-*-macos-x86_64.app.tar.gz 2>/dev/null | head -n1 || true)
+          mac_arm_tar=$(ls GeoHelper-*-macos-aarch64.app.tar.gz 2>/dev/null | head -n1 || true)
 
           win_sig=$(read_sig "${win_zip}.sig")
           lin_sig=$(read_sig "${lin_img}.sig")
-          mac_sig=$(read_sig "${mac_tar}.sig")
+          mac_x64_sig=$(read_sig "${mac_x64_tar}.sig")
+          mac_arm_sig=$(read_sig "${mac_arm_tar}.sig")
 
           pub_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
@@ -257,8 +269,8 @@ jobs:
 
           add_platform "windows-x86_64" "$win_zip" "$win_sig"
           add_platform "linux-x86_64"   "$lin_img" "$lin_sig"
-          add_platform "darwin-x86_64"  "$mac_tar" "$mac_sig"
-          add_platform "darwin-aarch64" "$mac_tar" "$mac_sig"
+          add_platform "darwin-x86_64"  "$mac_x64_tar" "$mac_x64_sig"
+          add_platform "darwin-aarch64" "$mac_arm_tar" "$mac_arm_sig"
 
           jq -n \
             --arg version "$version" \
@@ -284,7 +296,7 @@ jobs:
 
             - **Windows**: run the `-setup.exe` installer, or the `-portable.exe` directly.
             - **Linux**: `.deb` for Debian/Ubuntu, `.rpm` for Fedora, or the `.AppImage` (make it executable and run it).
-            - **macOS**: the build is unsigned. Right-click the `.app` and choose **Open** the first time, or run `xattr -dr com.apple.quarantine /Applications/GeoHelper.app`. See the [FAQ](https://geohelperapp.vercel.app/#faq) for details.
+            - **macOS**: download the `macos-aarch64` build for Apple Silicon Macs, or `macos-x86_64` for Intel Macs. The build is unsigned. Right-click the `.app` and choose **Open** the first time, or run `xattr -dr com.apple.quarantine /Applications/GeoHelper.app`. See the [FAQ](https://geohelperapp.vercel.app/#faq) for details.
 
             Existing installs on 0.12+ update automatically. Checksums are in `SHA256SUMS.txt`.
           draft: false

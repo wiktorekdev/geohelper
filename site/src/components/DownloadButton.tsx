@@ -1,25 +1,154 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Apple, ChevronDown, Check, Download, Monitor, Terminal } from "lucide-react";
-import { EXTERNAL_LINK_PROPS, GITHUB_API_URL, RELEASES_LATEST_URL } from "../links";
+import {
+  Apple,
+  ChevronDown,
+  Check,
+  Download,
+  Monitor,
+  Package,
+  Terminal,
+  type LucideIcon,
+} from "lucide-react";
+import {
+  ARCH_PACKAGE_URL,
+  EXTERNAL_LINK_PROPS,
+  GITHUB_API_URL,
+  RELEASES_LATEST_URL,
+} from "../links";
 
-type OsId = "windows" | "macos" | "linux" | "desktop";
+type TargetId =
+  | "windows"
+  | "macos"
+  | "macos-aarch64"
+  | "macos-x86_64"
+  | "linux-appimage"
+  | "linux-deb"
+  | "linux-rpm"
+  | "linux-arch"
+  | "desktop";
 
-const OS_LABEL: Record<OsId, string> = {
-  windows: "Windows",
-  macos: "macOS",
-  linux: "Linux",
-  desktop: "Desktop app",
+type Target = {
+  id: TargetId;
+  label: string;
+  menuLabel: string;
+  assetPattern?: string;
+  href?: string;
+  icon: LucideIcon;
 };
 
-function detectOs(): OsId {
+const TARGETS: Target[] = [
+  {
+    id: "windows",
+    label: "Windows",
+    menuLabel: "Windows installer",
+    assetPattern: "windows-setup.exe",
+    icon: Monitor,
+  },
+  {
+    id: "macos",
+    label: "macOS",
+    menuLabel: "macOS downloads",
+    href: RELEASES_LATEST_URL,
+    icon: Apple,
+  },
+  {
+    id: "macos-aarch64",
+    label: "macOS Apple Silicon",
+    menuLabel: "macOS Apple Silicon",
+    assetPattern: "macos-aarch64.dmg",
+    icon: Apple,
+  },
+  {
+    id: "macos-x86_64",
+    label: "macOS Intel",
+    menuLabel: "macOS Intel",
+    assetPattern: "macos-x86_64.dmg",
+    icon: Apple,
+  },
+  {
+    id: "linux-appimage",
+    label: "Linux AppImage",
+    menuLabel: "Linux AppImage",
+    assetPattern: "linux.AppImage",
+    icon: Terminal,
+  },
+  {
+    id: "linux-deb",
+    label: "Debian/Ubuntu",
+    menuLabel: "Debian/Ubuntu .deb",
+    assetPattern: "linux.deb",
+    icon: Package,
+  },
+  {
+    id: "linux-rpm",
+    label: "Fedora/RHEL",
+    menuLabel: "Fedora/RHEL .rpm",
+    assetPattern: "linux.rpm",
+    icon: Package,
+  },
+  {
+    id: "linux-arch",
+    label: "Arch/CachyOS",
+    menuLabel: "Arch/CachyOS package",
+    href: ARCH_PACKAGE_URL,
+    icon: Package,
+  },
+  {
+    id: "desktop",
+    label: "Desktop app",
+    menuLabel: "All downloads",
+    href: RELEASES_LATEST_URL,
+    icon: Download,
+  },
+];
+
+const TARGET_BY_ID = Object.fromEntries(TARGETS.map((target) => [target.id, target])) as Record<
+  TargetId,
+  Target
+>;
+
+function detectByUserAgent(): TargetId {
   if (typeof navigator === "undefined") return "desktop";
+
   const ua = navigator.userAgent.toLowerCase();
   if (/android|iphone|ipad|ipod|mobile|tablet/.test(ua)) return "desktop";
   if (ua.includes("mac")) return "macos";
-  if (ua.includes("linux") || ua.includes("x11")) return "linux";
+  if (ua.includes("linux") || ua.includes("x11")) return "linux-appimage";
   return "windows";
+}
+
+async function detectTarget(): Promise<TargetId> {
+  const fallback = detectByUserAgent();
+  const nav = navigator as Navigator & {
+    userAgentData?: {
+      platform?: string;
+      getHighEntropyValues?: (hints: string[]) => Promise<{
+        architecture?: string;
+        platform?: string;
+      }>;
+    };
+  };
+
+  if (!nav.userAgentData?.getHighEntropyValues) return fallback;
+
+  try {
+    const hints = await nav.userAgentData.getHighEntropyValues(["architecture", "platform"]);
+    const platform = (hints.platform || nav.userAgentData.platform || "").toLowerCase();
+    const architecture = (hints.architecture || "").toLowerCase();
+
+    if (platform.includes("mac")) {
+      if (architecture === "x86" || architecture === "x86_64") return "macos-x86_64";
+      if (architecture === "arm" || architecture === "arm64" || architecture === "aarch64") {
+        return "macos-aarch64";
+      }
+    }
+  } catch {
+    return fallback;
+  }
+
+  return fallback;
 }
 
 type ReleaseAsset = {
@@ -28,13 +157,13 @@ type ReleaseAsset = {
 };
 
 export default function DownloadButton() {
-  const [os, setOs] = useState<OsId>("desktop");
+  const [targetId, setTargetId] = useState<TargetId>("desktop");
   const [open, setOpen] = useState(false);
   const [assets, setAssets] = useState<ReleaseAsset[]>([]);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setOs(detectOs());
+    detectTarget().then(setTargetId);
   }, []);
 
   useEffect(() => {
@@ -57,23 +186,17 @@ export default function DownloadButton() {
     return () => window.removeEventListener("mousedown", onDoc);
   }, [open]);
 
-  const Icon = os === "macos" ? Apple : os === "linux" ? Terminal : Monitor;
+  const getDownloadUrl = (target: Target): string => {
+    if (target.href) return target.href;
+    if (!target.assetPattern) return RELEASES_LATEST_URL;
 
-  const getDownloadUrl = (targetOs: OsId): string => {
-    if (targetOs === "desktop") return RELEASES_LATEST_URL;
-
-    const patterns = {
-      windows: "windows-setup.exe",
-      macos: "macos.dmg",
-      linux: "linux.AppImage",
-    };
-
-    const pattern = patterns[targetOs];
-    const asset = assets.find((a) => a.name.includes(pattern));
+    const asset = assets.find((a) => a.name.includes(target.assetPattern || ""));
     return asset?.browser_download_url || RELEASES_LATEST_URL;
   };
 
-  const href = getDownloadUrl(os);
+  const selected = TARGET_BY_ID[targetId];
+  const Icon = selected.icon;
+  const href = getDownloadUrl(selected);
 
   return (
     <div ref={ref} className="relative inline-flex overflow-visible rounded-lg">
@@ -84,10 +207,10 @@ export default function DownloadButton() {
       >
         <Download className="size-[18px]" />
         <span className="hidden sm:inline">
-          {os === "desktop" ? "Download" : "Download for"}
+          {targetId === "desktop" ? "Download" : "Download for"}
         </span>
         <Icon className="size-[18px] sm:hidden" />
-        <span>{OS_LABEL[os]}</span>
+        <span>{selected.label}</span>
       </a>
       <button
         type="button"
@@ -99,21 +222,21 @@ export default function DownloadButton() {
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-lg border border-white/10 bg-neutral-950/95 p-1 text-left text-sm shadow-xl shadow-black/50 backdrop-blur">
-          {(["windows", "macos", "linux"] as OsId[]).map((id) => {
-            const OsIcon = id === "macos" ? Apple : id === "linux" ? Terminal : Monitor;
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 min-w-64 rounded-lg border border-white/10 bg-neutral-950/95 p-1 text-left text-sm shadow-xl shadow-black/50 backdrop-blur">
+          {TARGETS.filter((target) => target.id !== "desktop").map((target) => {
+            const TargetIcon = target.icon;
             return (
               <button
-                key={id}
+                key={target.id}
                 onClick={() => {
-                  setOs(id);
+                  setTargetId(target.id);
                   setOpen(false);
                 }}
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-neutral-200 hover:bg-white/5"
               >
-                <OsIcon className="size-4 text-neutral-400" />
-                {OS_LABEL[id]}
-                {os === id && <Check className="ml-auto size-3.5 text-red-400" />}
+                <TargetIcon className="size-4 text-neutral-400" />
+                {target.menuLabel}
+                {targetId === target.id && <Check className="ml-auto size-3.5 text-red-400" />}
               </button>
             );
           })}

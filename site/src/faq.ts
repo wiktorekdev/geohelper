@@ -5,7 +5,7 @@ export const FAQ_ENTRIES = [
   },
   {
     q: "Does it work on Mac and Linux?",
-    a: "Builds are produced for all three OSes. On Arch-based distros like Arch Linux and CachyOS, install webkit2gtk-4.1, libsoup3, gtk3 and libayatana-appindicator first. Your GeoGuessr Steam client still needs to expose CDP on localhost:9222 the same way it does on Windows.",
+    a: "Builds are produced for all three OSes, with separate macOS downloads for Apple Silicon and Intel Macs. On Arch-based distros like Arch Linux and CachyOS, use the Arch package instructions so the needed WebKitGTK dependencies are installed with the app. Your GeoGuessr Steam client still needs to expose CDP on localhost:9222 the same way it does on Windows.",
   },
   {
     q: "Why macOS shows a security warning",
