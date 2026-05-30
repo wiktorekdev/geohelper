@@ -1,9 +1,9 @@
 import { m, AnimatePresence } from "motion/react"
 import { Check, Map, MapPin, MapPinOff, Pencil, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
-import * as Toolbar from "@radix-ui/react-toolbar"
 
 import { Button } from "@/components/ui/button"
+import { Toolbar, ToolbarButton } from "@/components/ui/toolbar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useDisplayStore } from "@/lib/display-store"
 import { clearMockIfPresent } from "@/lib/mock-data"
@@ -37,90 +37,108 @@ export function EditToolbar() {
           className="pointer-events-none fixed inset-x-0 z-[2000] flex justify-center px-2 transition-[bottom,left] duration-500"
           style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 12 : 54 }}
         >
-          <Toolbar.Root className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-nowrap items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
+          <Toolbar className="pointer-events-auto flex max-w-[calc(100vw-16px)] flex-nowrap items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
             <div className="inline-flex shrink-0 items-center gap-1.5 px-1 text-[12px] font-medium">
               <Pencil className="size-3.5 text-brand" />
               {mapVisible && <span className="leading-tight">{t("toolbar.editing")}</span>}
             </div>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
-                    onClick={() => setMapVisible(!mapVisible)}
-                    title={mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
-                  >
-                    {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
-                    {mapVisible && t("toolbar.hideMap")}
-                    {!mapVisible && <span className="sr-only">{t("toolbar.showMap")}</span>}
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
+                        onClick={() => setMapVisible(!mapVisible)}
+                        title={mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
+                      >
+                        {mapVisible ? (
+                          <Map className="size-3.5" />
+                        ) : (
+                          <MapPinOff className="size-3.5" />
+                        )}
+                        {mapVisible && t("toolbar.hideMap")}
+                        {!mapVisible && <span className="sr-only">{t("toolbar.showMap")}</span>}
+                      </Button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">
                 {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
               </TooltipContent>
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "size-7 shrink-0 rounded-full",
-                      markerToolbarOpen && "bg-accent text-foreground"
-                    )}
-                    aria-label={t("marker.customizeTitle")}
-                    title={t("marker.customizeTitle")}
-                    aria-pressed={markerToolbarOpen}
-                    onClick={() => setMarkerToolbarOpen(!markerToolbarOpen)}
-                  >
-                    <MapPin className="size-3.5" />
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "size-7 shrink-0 rounded-full",
+                          markerToolbarOpen && "bg-accent text-foreground"
+                        )}
+                        aria-label={t("marker.customizeTitle")}
+                        title={t("marker.customizeTitle")}
+                        aria-pressed={markerToolbarOpen}
+                        onClick={() => setMarkerToolbarOpen(!markerToolbarOpen)}
+                      >
+                        <MapPin className="size-3.5" />
+                      </Button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">{t("marker.customizeTitle")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
-                    onClick={() => {
-                      resetAll()
-                      toast.success(t("toolbar.resetSuccess"))
-                    }}
-                    title={t("toolbar.reset")}
-                  >
-                    <RotateCcw className="size-3.5" />
-                    {mapVisible && t("toolbar.reset")}
-                    {!mapVisible && <span className="sr-only">{t("toolbar.reset")}</span>}
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
+                        onClick={() => {
+                          resetAll()
+                          toast.success(t("toolbar.resetSuccess"))
+                        }}
+                        title={t("toolbar.reset")}
+                      >
+                        <RotateCcw className="size-3.5" />
+                        {mapVisible && t("toolbar.reset")}
+                        {!mapVisible && <span className="sr-only">{t("toolbar.reset")}</span>}
+                      </Button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
             </Tooltip>
 
-            <Toolbar.Button asChild>
-              <Button
-                size="sm"
-                className="h-7 shrink-0 gap-1.5 rounded-full px-2.5 text-xs"
-                onClick={finishEditing}
-                title={t("toolbar.done")}
-              >
-                <Check className="size-3.5" />
-                {mapVisible && t("toolbar.done")}
-                {!mapVisible && <span className="sr-only">{t("toolbar.done")}</span>}
-              </Button>
-            </Toolbar.Button>
-          </Toolbar.Root>
+            <ToolbarButton
+              render={
+                <Button
+                  size="sm"
+                  className="h-7 shrink-0 gap-1.5 rounded-full px-2.5 text-xs"
+                  onClick={finishEditing}
+                  title={t("toolbar.done")}
+                >
+                  <Check className="size-3.5" />
+                  {mapVisible && t("toolbar.done")}
+                  {!mapVisible && <span className="sr-only">{t("toolbar.done")}</span>}
+                </Button>
+              }
+            />
+          </Toolbar>
         </m.div>
       )}
     </AnimatePresence>

@@ -1,9 +1,9 @@
 import { m, AnimatePresence } from "motion/react"
 import { MapPin, RotateCcw } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import * as Toolbar from "@radix-ui/react-toolbar"
 
 import { Button } from "@/components/ui/button"
+import { Toolbar, ToolbarButton } from "@/components/ui/toolbar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ColorPicker, ColorPickerHue, ColorPickerSelection } from "@/components/ui/color-picker"
@@ -62,25 +62,26 @@ function MarkerColorButton({ label, value, onChange }: MarkerColorButtonProps) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex h-7 items-center gap-1.5 rounded-md border border-sidebar-border bg-background/50 px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-          aria-label={label}
-          title={label}
-        >
-          <span
-            className="size-3.5 rounded-sm border border-sidebar-border"
-            style={{ backgroundColor: value }}
-          />
-          <span className="font-mono uppercase">{value.replace("#", "")}</span>
-        </button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className="inline-flex h-7 items-center gap-1.5 rounded-md border border-sidebar-border bg-background/50 px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            aria-label={label}
+            title={label}
+          >
+            <span
+              className="size-3.5 rounded-sm border border-sidebar-border"
+              style={{ backgroundColor: value }}
+            />
+            <span className="font-mono uppercase">{value.replace("#", "")}</span>
+          </button>
+        }
+      />
       <PopoverContent
         side="top"
         align="center"
         sideOffset={10}
-        collisionPadding={12}
         className="z-[2300] w-64 rounded-lg border border-sidebar-border bg-popover p-4 shadow-2xl"
       >
         <ColorPicker value={value} onChange={handleChange} className="flex flex-col gap-3">
@@ -146,7 +147,7 @@ export function MarkerToolbar() {
           className="pointer-events-none fixed inset-x-0 z-[2100] flex justify-center px-2 transition-[bottom,left] duration-500"
           style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 64 : 106 }}
         >
-          <Toolbar.Root className="pointer-events-auto flex max-w-[calc(100vw-16px)] items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+          <Toolbar className="pointer-events-auto flex max-w-[calc(100vw-16px)] items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
             <div className="inline-flex items-center gap-1.5 px-1 text-[12px] font-medium">
               <MapPin className="size-3.5 text-brand" />
               <span>{t("marker.customizeTitle")}</span>
@@ -181,26 +182,30 @@ export function MarkerToolbar() {
             </div>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7 rounded-md"
-                    onClick={() => {
-                      setMarkerColor(DEFAULT_MARKER_COLOR)
-                      setMarkerBorderColor(DEFAULT_MARKER_BORDER)
-                      setMarkerSize(DEFAULT_MARKER_SIZE)
-                    }}
-                    aria-label={t("selection.reset")}
-                  >
-                    <RotateCcw className="size-3.5" />
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7 rounded-md"
+                        onClick={() => {
+                          setMarkerColor(DEFAULT_MARKER_COLOR)
+                          setMarkerBorderColor(DEFAULT_MARKER_BORDER)
+                          setMarkerSize(DEFAULT_MARKER_SIZE)
+                        }}
+                        aria-label={t("selection.reset")}
+                      >
+                        <RotateCcw className="size-3.5" />
+                      </Button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">{t("selection.reset")}</TooltipContent>
             </Tooltip>
-          </Toolbar.Root>
+          </Toolbar>
         </m.div>
       )}
     </AnimatePresence>

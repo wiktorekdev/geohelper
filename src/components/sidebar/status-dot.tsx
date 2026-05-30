@@ -9,16 +9,18 @@ export function StatusDot({ conn }: { conn: ConnState }) {
   const { tone, title } = connectionTone(conn, sticky)
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          className={cn(
-            "mr-1 inline-block size-1.5 rounded-full",
-            tone === "ok" && "bg-emerald-500",
-            tone === "warn" && "bg-amber-500 animate-pulse",
-            tone === "bad" && "bg-rose-500"
-          )}
-        />
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={
+          <span
+            className={cn(
+              "mr-1 inline-block size-1.5 rounded-full",
+              tone === "ok" && "bg-emerald-500",
+              tone === "warn" && "bg-amber-500 animate-pulse",
+              tone === "bad" && "bg-rose-500"
+            )}
+          />
+        }
+      />
       <TooltipContent side="bottom">{title}</TooltipContent>
     </Tooltip>
   )

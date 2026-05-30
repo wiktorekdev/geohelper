@@ -1,7 +1,7 @@
 "use client"
 
 import { colord } from "colord"
-import { Slider as SliderPrimitive } from "radix-ui"
+import { Slider as SliderPrimitive } from "@base-ui/react/slider"
 import {
   type ComponentProps,
   createContext,
@@ -212,15 +212,19 @@ export const ColorPickerHue = ({ className, ...props }: ColorPickerHueProps) => 
     <SliderPrimitive.Root
       className={cn("relative flex h-4 w-full touch-none", className)}
       max={360}
-      onValueChange={([hue]) => setHue(hue)}
+      onValueChange={(value) => setHue(Array.isArray(value) ? value[0] : value)}
       step={1}
-      value={[hue]}
+      value={hue}
       {...props}
     >
-      <SliderPrimitive.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,#FF0000,#FFFF00,#00FF00,#00FFFF,#0000FF,#FF00FF,#FF0000)]">
-        <SliderPrimitive.Range className="absolute h-full" />
-      </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block size-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
+      <SliderPrimitive.Control className="flex h-4 w-full items-center">
+        <SliderPrimitive.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,#FF0000,#FFFF00,#00FF00,#00FFFF,#0000FF,#FF00FF,#FF0000)]">
+          <SliderPrimitive.Thumb
+            index={0}
+            className="block size-4 rounded-full border border-primary/50 bg-background shadow outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        </SliderPrimitive.Track>
+      </SliderPrimitive.Control>
     </SliderPrimitive.Root>
   )
 }

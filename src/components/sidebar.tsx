@@ -136,46 +136,52 @@ export function Sidebar() {
         <div className="flex items-center gap-1">
           <StatusDot conn={conn} />
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-8"
-                onClick={() => setMapVisible(!mapVisible)}
-                aria-pressed={mapVisible}
-              >
-                {mapVisible ? <Map className="size-4" /> : <MapPinOff className="size-4" />}
-              </Button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-8"
+                  onClick={() => setMapVisible(!mapVisible)}
+                  aria-pressed={mapVisible}
+                >
+                  {mapVisible ? <Map className="size-4" /> : <MapPinOff className="size-4" />}
+                </Button>
+              }
+            />
             <TooltipContent side="bottom">
               {mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className={cn(
-                  "size-8",
-                  editing && "bg-brand/15 text-brand hover:bg-brand/20 hover:text-brand"
-                )}
-                onClick={handleToggleEditing}
-                aria-pressed={editing}
-              >
-                <Pencil className="size-4" />
-              </Button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className={cn(
+                    "size-8",
+                    editing && "bg-brand/15 text-brand hover:bg-brand/20 hover:text-brand"
+                  )}
+                  onClick={handleToggleEditing}
+                  aria-pressed={editing}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+              }
+            />
             <TooltipContent side="bottom">
               {editing ? t("sidebar.finishEditing") : t("sidebar.editLayout")}
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" className="size-8" onClick={openSettings}>
-                <SettingsIcon className="size-4" />
-              </Button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Button size="icon" variant="ghost" className="size-8" onClick={openSettings}>
+                  <SettingsIcon className="size-4" />
+                </Button>
+              }
+            />
             <TooltipContent side="bottom">{t("sidebar.settings")}</TooltipContent>
           </Tooltip>
         </div>

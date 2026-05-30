@@ -14,6 +14,7 @@ import { formatCoords } from "@/lib/coords"
 import { MOCK_COORDS } from "@/lib/mock-data"
 import { SelectableText } from "@/components/display/selectable-text"
 import { useT } from "@/lib/i18n"
+import { cn } from "@/lib/utils"
 
 export function CoordsSection() {
   const t = useT()
@@ -61,23 +62,27 @@ export function CoordsSection() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               <SelectableText id="coordinates.action.copy" className="block">
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Action onClick={copy}>
-                      {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      {copied ? t("coordinates.copied") : t("coordinates.copy")}
-                    </Action>
-                  </TooltipTrigger>
+                  <TooltipTrigger
+                    render={
+                      <Action onClick={copy}>
+                        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                        {copied ? t("coordinates.copied") : t("coordinates.copy")}
+                      </Action>
+                    }
+                  />
                   <TooltipContent side="bottom">{t("coordinates.copyTooltip")}</TooltipContent>
                 </Tooltip>
               </SelectableText>
               <SelectableText id="coordinates.action.maps" className="block">
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Action onClick={openInGoogleMaps}>
-                      <GoogleMaps className="size-3.5" />
-                      {t("coordinates.googleMaps")}
-                    </Action>
-                  </TooltipTrigger>
+                  <TooltipTrigger
+                    render={
+                      <Action onClick={openInGoogleMaps}>
+                        <GoogleMaps className="size-3.5" />
+                        {t("coordinates.googleMaps")}
+                      </Action>
+                    }
+                  />
                   <TooltipContent side="bottom">{t("coordinates.mapsTooltip")}</TooltipContent>
                 </Tooltip>
               </SelectableText>
@@ -104,13 +109,16 @@ function Value({ id, label, value }: { id: string; label: string; value: number 
   )
 }
 
-function Action({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function Action({ children, className, ...props }: React.ComponentProps<typeof Button>) {
   return (
     <Button
       variant="outline"
       size="sm"
-      onClick={onClick}
-      className="h-8 w-full gap-1.5 border-sidebar-border text-xs text-muted-foreground hover:text-foreground"
+      className={cn(
+        "h-8 w-full gap-1.5 border-sidebar-border text-xs text-muted-foreground hover:text-foreground",
+        className
+      )}
+      {...props}
     >
       {children}
     </Button>

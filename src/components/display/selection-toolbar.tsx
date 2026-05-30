@@ -1,8 +1,8 @@
 import { m, AnimatePresence } from "motion/react"
 import { Bold, Eye, EyeOff, RotateCcw, Type, X } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import * as Toolbar from "@radix-ui/react-toolbar"
 
+import { Toolbar, ToolbarButton } from "@/components/ui/toolbar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ColorPicker, ColorPickerSelection, ColorPickerHue } from "@/components/ui/color-picker"
@@ -58,7 +58,7 @@ export function SelectionToolbar() {
             bottom: mapVisible ? (markerToolbarOpen ? 116 : 64) : markerToolbarOpen ? 158 : 106,
           }}
         >
-          <Toolbar.Root className="pointer-events-auto flex items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+          <Toolbar className="pointer-events-auto flex items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
             <div className="inline-flex items-center gap-1.5 px-1.5 text-[12px] font-medium">
               <Type className="size-3.5 text-brand" />
               <span className="tabular-nums">
@@ -71,41 +71,48 @@ export function SelectionToolbar() {
 
             <div className="inline-flex h-7 items-center gap-0.5 rounded-md border border-sidebar-border bg-background/50 p-0.5">
               {FONT_SIZES.map((f) => (
-                <Toolbar.Button asChild key={f.id}>
-                  <button
-                    onClick={() => setSelectionStyle({ fontSize: f.id })}
-                    className={cn(
-                      "h-6 w-7 rounded text-[11px] font-medium transition-colors",
-                      summary.fontSize === f.id
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                </Toolbar.Button>
+                <ToolbarButton
+                  key={f.id}
+                  render={
+                    <button
+                      onClick={() => setSelectionStyle({ fontSize: f.id })}
+                      className={cn(
+                        "h-6 w-7 rounded text-[11px] font-medium transition-colors",
+                        summary.fontSize === f.id
+                          ? "bg-accent text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {f.label}
+                    </button>
+                  }
+                />
               ))}
             </div>
 
             {showBold && (
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <Toolbar.Button asChild>
-                    <button
-                      onClick={() => setSelectionStyle({ bold: !summary.bold })}
-                      className={cn(
-                        "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
-                        summary.bold
-                          ? "bg-accent text-foreground"
-                          : "bg-background/50 text-muted-foreground hover:text-foreground"
-                      )}
-                      aria-pressed={summary.bold}
-                      aria-label={t("selection.bold")}
-                    >
-                      <Bold className="size-3.5" />
-                    </button>
-                  </Toolbar.Button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <ToolbarButton
+                      render={
+                        <button
+                          onClick={() => setSelectionStyle({ bold: !summary.bold })}
+                          className={cn(
+                            "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                            summary.bold
+                              ? "bg-accent text-foreground"
+                              : "bg-background/50 text-muted-foreground hover:text-foreground"
+                          )}
+                          aria-pressed={summary.bold}
+                          aria-label={t("selection.bold")}
+                        >
+                          <Bold className="size-3.5" />
+                        </button>
+                      }
+                    />
+                  }
+                />
                 <TooltipContent side="top">{t("selection.bold")}</TooltipContent>
               </Tooltip>
             )}
@@ -120,58 +127,70 @@ export function SelectionToolbar() {
             <Divider />
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <button
-                    onClick={() => setSelectionHidden(!allHidden)}
-                    className={cn(
-                      "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
-                      allHidden
-                        ? "bg-accent text-foreground"
-                        : "bg-background/50 text-muted-foreground hover:text-foreground"
-                    )}
-                    aria-pressed={allHidden}
-                    aria-label={allHidden ? t("selection.show") : t("selection.hide")}
-                  >
-                    {allHidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                  </button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <button
+                        onClick={() => setSelectionHidden(!allHidden)}
+                        className={cn(
+                          "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                          allHidden
+                            ? "bg-accent text-foreground"
+                            : "bg-background/50 text-muted-foreground hover:text-foreground"
+                        )}
+                        aria-pressed={allHidden}
+                        aria-label={allHidden ? t("selection.show") : t("selection.hide")}
+                      >
+                        {allHidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                      </button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">
                 {allHidden ? t("selection.showSelected") : t("selection.hideSelected")}
               </TooltipContent>
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <button
-                    onClick={resetSelection}
-                    className="inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border bg-background/50 text-muted-foreground transition-colors hover:text-foreground"
-                    aria-label={t("selection.reset")}
-                  >
-                    <RotateCcw className="size-3.5" />
-                  </button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <button
+                        onClick={resetSelection}
+                        className="inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border bg-background/50 text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label={t("selection.reset")}
+                      >
+                        <RotateCcw className="size-3.5" />
+                      </button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">{t("selection.resetSelected")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <button
-                    onClick={clearSelection}
-                    className="inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border bg-background/50 text-muted-foreground transition-colors hover:text-foreground"
-                    aria-label={t("selection.deselect")}
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </Toolbar.Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <ToolbarButton
+                    render={
+                      <button
+                        onClick={clearSelection}
+                        className="inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border bg-background/50 text-muted-foreground transition-colors hover:text-foreground"
+                        aria-label={t("selection.deselect")}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    }
+                  />
+                }
+              />
               <TooltipContent side="top">{t("selection.deselect")}</TooltipContent>
             </Tooltip>
-          </Toolbar.Root>
+          </Toolbar>
         </m.div>
       )}
     </AnimatePresence>
@@ -272,19 +291,19 @@ function ColorPickerButton({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="relative size-7 shrink-0 overflow-hidden rounded-md border border-sidebar-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          style={{ backgroundColor: value ?? "#ffffff" }}
-        />
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className="relative size-7 shrink-0 overflow-hidden rounded-md border border-sidebar-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            style={{ backgroundColor: value ?? "#ffffff" }}
+          />
+        }
+      />
       <PopoverContent
         side="top"
         align="end"
         sideOffset={10}
-        collisionPadding={12}
-        avoidCollisions
         className="z-[2200] w-64 p-4 border border-sidebar-border bg-popover rounded-lg shadow-2xl"
       >
         <ColorPicker

@@ -79,6 +79,10 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer base {
@@ -94,13 +98,7 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family:
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      "Segoe UI",
-      Roboto,
-      sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }
@@ -129,7 +127,7 @@
 }
 
 /* Custom Leaflet divIcon for the panorama marker. Kept here so the icon
-   HTML returned from React doesn't carry an inline <style> tag. */
+   HTML returned from React doesn't carry an inline \3c style> tag. */
 .geohelper-marker {
   position: relative;
   filter: drop-shadow(0 2.5px 4.5px rgba(0, 0, 0, 0.35));
