@@ -95,9 +95,9 @@ Click the pencil icon to enter **Edit Mode**:
 ## Build from Source
 
 ```bash
-npm install
-npm run dev          # development with hot reload
-npm run build        # create release builds
+bun install
+bun run dev          # development with hot reload
+bun run build        # create release builds
 ```
 
 ## Support
