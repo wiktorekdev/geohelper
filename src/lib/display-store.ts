@@ -240,8 +240,7 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
   },
 
   setSelection: (ids) => set({ selection: dedupeTextIds(ids) }),
-  addToSelection: (ids) =>
-    set({ selection: dedupeTextIds([...get().selection, ...ids]) }),
+  addToSelection: (ids) => set({ selection: dedupeTextIds([...get().selection, ...ids]) }),
   toggleSelection: (id) => {
     const current = get().selection
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id]

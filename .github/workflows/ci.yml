@@ -37,6 +37,12 @@ jobs:
       - name: install bun deps
         run: bun install --frozen-lockfile
 
+      - name: check formatting
+        run: bun x prettier --check "src/**/*.{ts,tsx,css,json}" "*.json"
+
+      - name: run linter
+        run: bun run lint
+
       - name: frontend build
         run: bun run vite:build
 
@@ -52,6 +58,8 @@ jobs:
 
       - name: cache cargo
         uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
 
       - name: cargo fmt
         run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check

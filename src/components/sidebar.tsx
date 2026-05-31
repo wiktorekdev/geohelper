@@ -123,9 +123,7 @@ export function Sidebar() {
         <div
           className={cn(
             "absolute inset-y-0 right-[-3px] z-50 w-2 cursor-col-resize transition-colors",
-            resizing
-              ? "bg-brand/30"
-              : "bg-transparent hover:bg-brand/20"
+            resizing ? "bg-brand/30" : "bg-transparent hover:bg-brand/20"
           )}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}

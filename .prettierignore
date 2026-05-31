@@ -1,0 +1,14 @@
+# Build outputs
+dist/
+dist-tsc/
+out/
+.next/
+src-tauri/target/
+src-tauri/gen/
+
+# Locks and logs
+bun.lock
+yarn.lock
+package-lock.json
+*.log
+changelog.cache

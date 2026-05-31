@@ -68,7 +68,8 @@ export function SelectionToolbar() {
               <Type className="size-3.5 text-brand" />
               <span className="tabular-nums">
                 {selection.length}
-                {mapVisible && (selection.length === 1 ? ` ${t("selection.text")}` : ` ${t("selection.texts")}`)}
+                {mapVisible &&
+                  (selection.length === 1 ? ` ${t("selection.text")}` : ` ${t("selection.texts")}`)}
               </span>
             </div>
 
@@ -77,7 +78,9 @@ export function SelectionToolbar() {
             {!onlyFlag && (
               <Select
                 value={summary.fontFamily ?? DEFAULT_TEXT_STYLE.fontFamily}
-                onValueChange={(fontFamily) => setSelectionStyle({ fontFamily: fontFamily as TextFont })}
+                onValueChange={(fontFamily) =>
+                  setSelectionStyle({ fontFamily: fontFamily as TextFont })
+                }
               >
                 <SelectTrigger className="h-7 w-[128px] shrink-0 border-sidebar-border bg-background/50 px-2 text-[11px]">
                   <SelectValue />
@@ -395,7 +398,11 @@ function ColorPickerButton({
               ? "linear-gradient(90deg, #ff3355, #ff9f1c, #f7ff00, #2ee66b, #18c8ff, #7c5cff, #ff4fd8, #ff3355)"
               : undefined,
           }}
-          title={rainbow ? "Rainbow on. Click 10x in 10s to turn off." : "Click 10x in 10s for rainbow text."}
+          title={
+            rainbow
+              ? "Rainbow on. Click 10x in 10s to turn off."
+              : "Click 10x in 10s for rainbow text."
+          }
         />
       </PopoverTrigger>
       <PopoverContent

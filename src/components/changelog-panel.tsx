@@ -105,16 +105,14 @@ export function ChangelogSidebar() {
 
       const matchingItems = ver.items.filter(
         (item) =>
-          item.text.toLowerCase().includes(query) ||
-          item.category.toLowerCase().includes(query)
+          item.text.toLowerCase().includes(query) || item.category.toLowerCase().includes(query)
       )
 
       return {
         ...ver,
         items: matchingItems,
         isVersionMatch:
-          ver.version.toLowerCase().includes(query) ||
-          ver.date.toLowerCase().includes(query),
+          ver.version.toLowerCase().includes(query) || ver.date.toLowerCase().includes(query),
       }
     })
     .filter((ver) => ver.items.length > 0 || ver.isVersionMatch)
@@ -360,10 +358,7 @@ export function ChangelogSidebar() {
                           <p className="text-xs text-muted-foreground">Maintenance updates.</p>
                         ) : (
                           ver.items.map((item, i) => (
-                            <div
-                              key={i}
-                              className="text-xs leading-relaxed text-foreground/80"
-                            >
+                            <div key={i} className="text-xs leading-relaxed text-foreground/80">
                               <span
                                 className={cn(
                                   "mr-2 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",

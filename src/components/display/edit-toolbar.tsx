@@ -17,9 +17,21 @@ const DEFAULT_MARKER_BORDER = "#ffffff"
 const DEFAULT_MARKER_SIZE = 24
 
 const RESET_ITEMS = [
-  { id: "order", label: "Widget order", description: "Country, road, details and coordinates order." },
-  { id: "text", label: "Text styles", description: "Fonts, sizes, bold, italic, underline, colors and rainbow." },
-  { id: "visibility", label: "Hidden texts", description: "Restores text fields hidden during editing." },
+  {
+    id: "order",
+    label: "Widget order",
+    description: "Country, road, details and coordinates order.",
+  },
+  {
+    id: "text",
+    label: "Text styles",
+    description: "Fonts, sizes, bold, italic, underline, colors and rainbow.",
+  },
+  {
+    id: "visibility",
+    label: "Hidden texts",
+    description: "Restores text fields hidden during editing.",
+  },
   { id: "panel", label: "Sidebar and map", description: "Sidebar width and map visibility." },
   { id: "marker", label: "Marker style", description: "Marker colors and size." },
 ] as const
@@ -81,87 +93,99 @@ export function EditToolbar() {
             className="pointer-events-none flex w-full justify-center"
           >
             <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
-            <div className="inline-flex shrink-0 items-center gap-1.5 px-1 text-[12px] font-medium">
-              <Pencil className="size-3.5 text-brand" />
-              {mapVisible && (
-                <span className="hidden leading-tight min-[420px]:inline">{t("toolbar.editing")}</span>
-              )}
-            </div>
+              <div className="inline-flex shrink-0 items-center gap-1.5 px-1 text-[12px] font-medium">
+                <Pencil className="size-3.5 text-brand" />
+                {mapVisible && (
+                  <span className="hidden leading-tight min-[420px]:inline">
+                    {t("toolbar.editing")}
+                  </span>
+                )}
+              </div>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
-                    onClick={() => setMapVisible(!mapVisible)}
-                    title={mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
-                  >
-                    {mapVisible ? <Map className="size-3.5" /> : <MapPinOff className="size-3.5" />}
-                    {mapVisible && <span className="hidden min-[420px]:inline">{t("toolbar.hideMap")}</span>}
-                    {!mapVisible && <span className="sr-only">{t("toolbar.showMap")}</span>}
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
-              </TooltipContent>
-            </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toolbar.Button asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
+                      onClick={() => setMapVisible(!mapVisible)}
+                      title={mapVisible ? t("toolbar.hideMap") : t("toolbar.showMap")}
+                    >
+                      {mapVisible ? (
+                        <Map className="size-3.5" />
+                      ) : (
+                        <MapPinOff className="size-3.5" />
+                      )}
+                      {mapVisible && (
+                        <span className="hidden min-[420px]:inline">{t("toolbar.hideMap")}</span>
+                      )}
+                      {!mapVisible && <span className="sr-only">{t("toolbar.showMap")}</span>}
+                    </Button>
+                  </Toolbar.Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {mapVisible ? t("toolbar.hideMapTooltip") : t("toolbar.showMapTooltip")}
+                </TooltipContent>
+              </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "size-7 shrink-0 rounded-full",
-                      markerToolbarOpen && "bg-accent text-foreground"
-                    )}
-                    aria-label={t("marker.customizeTitle")}
-                    title={t("marker.customizeTitle")}
-                    aria-pressed={markerToolbarOpen}
-                    onClick={() => setMarkerToolbarOpen(!markerToolbarOpen)}
-                  >
-                    <MapPin className="size-3.5" />
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">{t("marker.customizeTitle")}</TooltipContent>
-            </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toolbar.Button asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "size-7 shrink-0 rounded-full",
+                        markerToolbarOpen && "bg-accent text-foreground"
+                      )}
+                      aria-label={t("marker.customizeTitle")}
+                      title={t("marker.customizeTitle")}
+                      aria-pressed={markerToolbarOpen}
+                      onClick={() => setMarkerToolbarOpen(!markerToolbarOpen)}
+                    >
+                      <MapPin className="size-3.5" />
+                    </Button>
+                  </Toolbar.Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">{t("marker.customizeTitle")}</TooltipContent>
+              </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Toolbar.Button asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
-                    onClick={() => setResetOpen(true)}
-                    title={t("toolbar.reset")}
-                  >
-                    <RotateCcw className="size-3.5" />
-                    {mapVisible && <span className="hidden min-[420px]:inline">{t("toolbar.reset")}</span>}
-                    {!mapVisible && <span className="sr-only">{t("toolbar.reset")}</span>}
-                  </Button>
-                </Toolbar.Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
-            </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toolbar.Button asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 shrink-0 gap-1.5 rounded-full px-2 text-xs"
+                      onClick={() => setResetOpen(true)}
+                      title={t("toolbar.reset")}
+                    >
+                      <RotateCcw className="size-3.5" />
+                      {mapVisible && (
+                        <span className="hidden min-[420px]:inline">{t("toolbar.reset")}</span>
+                      )}
+                      {!mapVisible && <span className="sr-only">{t("toolbar.reset")}</span>}
+                    </Button>
+                  </Toolbar.Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">{t("toolbar.resetTooltip")}</TooltipContent>
+              </Tooltip>
 
-            <Toolbar.Button asChild>
-              <Button
-                size="sm"
-                className="h-7 shrink-0 gap-1.5 rounded-full px-2.5 text-xs"
-                onClick={finishEditing}
-                title={t("toolbar.done")}
-              >
-                <Check className="size-3.5" />
-                {mapVisible && <span className="hidden min-[420px]:inline">{t("toolbar.done")}</span>}
-                {!mapVisible && <span className="sr-only">{t("toolbar.done")}</span>}
-              </Button>
-            </Toolbar.Button>
+              <Toolbar.Button asChild>
+                <Button
+                  size="sm"
+                  className="h-7 shrink-0 gap-1.5 rounded-full px-2.5 text-xs"
+                  onClick={finishEditing}
+                  title={t("toolbar.done")}
+                >
+                  <Check className="size-3.5" />
+                  {mapVisible && (
+                    <span className="hidden min-[420px]:inline">{t("toolbar.done")}</span>
+                  )}
+                  {!mapVisible && <span className="sr-only">{t("toolbar.done")}</span>}
+                </Button>
+              </Toolbar.Button>
             </Toolbar.Root>
           </m.div>
         )}
@@ -187,7 +211,9 @@ export function EditToolbar() {
               <div className="flex items-center justify-between border-b border-sidebar-border/60 px-4 py-3">
                 <div>
                   <div className="text-sm font-semibold text-foreground">Reset layout</div>
-                  <div className="text-[11px] text-muted-foreground">Choose what should go back to default.</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Choose what should go back to default.
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -217,15 +243,24 @@ export function EditToolbar() {
                       className="mt-0.5 size-4 accent-primary"
                     />
                     <span className="min-w-0">
-                      <span className="block text-xs font-medium text-foreground">{item.label}</span>
-                      <span className="block text-[11px] leading-snug text-muted-foreground">{item.description}</span>
+                      <span className="block text-xs font-medium text-foreground">
+                        {item.label}
+                      </span>
+                      <span className="block text-[11px] leading-snug text-muted-foreground">
+                        {item.description}
+                      </span>
                     </span>
                   </label>
                 ))}
               </div>
 
               <div className="flex items-center justify-end gap-2 border-t border-sidebar-border/60 px-4 py-3">
-                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setResetOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => setResetOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button size="sm" className="h-8 text-xs" onClick={applyReset}>

@@ -9,8 +9,7 @@ import { useT } from "@/lib/i18n"
 
 export function ChangelogModal() {
   const t = useT()
-  const { versions, hasUnread, fetchChangelog, markAsRead, setSelectedVersion } =
-    useWhatsNewStore()
+  const { versions, hasUnread, fetchChangelog, markAsRead, setSelectedVersion } = useWhatsNewStore()
   const openChangelog = useStore((s) => s.openChangelog)
   const [dismissed, setDismissed] = useState(false)
 
@@ -63,7 +62,9 @@ export function ChangelogModal() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 text-[11px] font-semibold leading-tight text-foreground">
-                  <span className="truncate">{t("update.installedTitle") || "GeoHelper Updated!"}</span>
+                  <span className="truncate">
+                    {t("update.installedTitle") || "GeoHelper Updated!"}
+                  </span>
                   <ChevronRight className="size-3 shrink-0 text-muted-foreground opacity-60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
                 </div>
                 <div className="mt-0.5 truncate text-[10px] text-muted-foreground/80">

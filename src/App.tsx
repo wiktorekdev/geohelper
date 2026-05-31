@@ -128,7 +128,6 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [])
 
-
   const settingsOpen = useStore((s) => s.settingsOpen)
   const changelogOpen = useStore((s) => s.changelogOpen)
   const hydrateSettings = useStore((s) => s.hydrateSettings)
@@ -211,7 +210,9 @@ export default function App() {
 
   return (
     <LazyMotion features={domAnimation}>
-      <div className={`flex h-screen w-screen overflow-hidden bg-background ${isBarrelRolling ? "animate-barrel-roll" : ""}`}>
+      <div
+        className={`flex h-screen w-screen overflow-hidden bg-background ${isBarrelRolling ? "animate-barrel-roll" : ""}`}
+      >
         <div className="flex h-full w-full">
           <div
             className={

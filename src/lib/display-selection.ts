@@ -30,7 +30,11 @@ export const MAX_TEXT_SIZE = 40
 export const TEXT_FONT_OPTIONS = [
   { id: "default", label: "Default", family: undefined },
   { id: "Poppins", label: "Poppins", family: "'Poppins', ui-sans-serif, system-ui, sans-serif" },
-  { id: "Montserrat", label: "Montserrat", family: "'Montserrat', ui-sans-serif, system-ui, sans-serif" },
+  {
+    id: "Montserrat",
+    label: "Montserrat",
+    family: "'Montserrat', ui-sans-serif, system-ui, sans-serif",
+  },
   { id: "Nunito", label: "Nunito", family: "'Nunito', ui-sans-serif, system-ui, sans-serif" },
   { id: "Lato", label: "Lato", family: "'Lato', ui-sans-serif, system-ui, sans-serif" },
   { id: "Oswald", label: "Oswald", family: "'Oswald', ui-sans-serif, system-ui, sans-serif" },
@@ -40,15 +44,27 @@ export const TEXT_FONT_OPTIONS = [
   { id: "Inter", label: "Inter", family: "'Inter', ui-sans-serif, system-ui, sans-serif" },
   { id: "Raleway", label: "Raleway", family: "'Raleway', ui-sans-serif, system-ui, sans-serif" },
   { id: "Merriweather", label: "Merriweather", family: "'Merriweather', Georgia, serif" },
-  { id: "Bebas Neue", label: "Bebas Neue", family: "'Bebas Neue', ui-sans-serif, system-ui, sans-serif" },
+  {
+    id: "Bebas Neue",
+    label: "Bebas Neue",
+    family: "'Bebas Neue', ui-sans-serif, system-ui, sans-serif",
+  },
   { id: "Pacifico", label: "Pacifico", family: "'Pacifico', cursive" },
   { id: "Rubik", label: "Rubik", family: "'Rubik', ui-sans-serif, system-ui, sans-serif" },
   { id: "Caveat", label: "Caveat", family: "'Caveat', cursive" },
   { id: "Dancing Script", label: "Dancing Script", family: "'Dancing Script', cursive" },
   { id: "Archivo", label: "Archivo", family: "'Archivo', ui-sans-serif, system-ui, sans-serif" },
   { id: "Manrope", label: "Manrope", family: "'Manrope', ui-sans-serif, system-ui, sans-serif" },
-  { id: "Quicksand", label: "Quicksand", family: "'Quicksand', ui-sans-serif, system-ui, sans-serif" },
-  { id: "Work Sans", label: "Work Sans", family: "'Work Sans', ui-sans-serif, system-ui, sans-serif" },
+  {
+    id: "Quicksand",
+    label: "Quicksand",
+    family: "'Quicksand', ui-sans-serif, system-ui, sans-serif",
+  },
+  {
+    id: "Work Sans",
+    label: "Work Sans",
+    family: "'Work Sans', ui-sans-serif, system-ui, sans-serif",
+  },
 ] as const
 
 const TEXT_FONTS = new Set<string>(TEXT_FONT_OPTIONS.map((font) => font.id))
@@ -124,18 +140,19 @@ export function applySelectionStyle(
       : patch
   const nextStyles = { ...textStyles }
   for (const id of selection) {
-    const applicablePatch = id === "country.flag" ? pickFlagStylePatch(normalizedPatch) : normalizedPatch
+    const applicablePatch =
+      id === "country.flag" ? pickFlagStylePatch(normalizedPatch) : normalizedPatch
     if (Object.keys(applicablePatch).length === 0) continue
     const current = nextStyles[id] ?? { ...DEFAULT_TEXT_STYLE }
-    nextStyles[id] = normalizeTextStyle({ ...current, ...applicablePatch }) ?? { ...DEFAULT_TEXT_STYLE }
+    nextStyles[id] = normalizeTextStyle({ ...current, ...applicablePatch }) ?? {
+      ...DEFAULT_TEXT_STYLE,
+    }
   }
   return nextStyles
 }
 
 function pickFlagStylePatch(patch: Partial<TextStyle>): Partial<TextStyle> {
-  return patch.fontSize !== undefined
-    ? { fontSize: normalizeTextSize(patch.fontSize) }
-    : {}
+  return patch.fontSize !== undefined ? { fontSize: normalizeTextSize(patch.fontSize) } : {}
 }
 
 export function setSelectionHiddenState(

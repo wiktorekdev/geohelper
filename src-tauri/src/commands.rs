@@ -178,8 +178,7 @@ pub async fn sync_and_read_changelog(app: AppHandle) -> Result<String, String> {
 
     // Fallback: Read cache
     if cache_file.exists() {
-        fs::read_to_string(&cache_file)
-            .map_err(|e| format!("Failed to read cached changelog: {e}"))
+        fs::read_to_string(&cache_file).map_err(|e| format!("Failed to read cached changelog: {e}"))
     } else {
         Ok("# Changelog\n\nNo cached changelog available. Connect to the internet to fetch updates.".to_string())
     }
