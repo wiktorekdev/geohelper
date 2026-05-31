@@ -33,6 +33,7 @@ export function SelectableText({ id, children, className, mono }: Props) {
       <span
         className={cn(
           "transition-[color,font-size,font-weight,opacity] duration-200 ease-out",
+          style?.rainbow && "animate-rainbow-text bg-[length:220%_100%]",
           className
         )}
         style={css}
@@ -69,12 +70,21 @@ export function SelectableText({ id, children, className, mono }: Props) {
         hidden && "opacity-40 line-through decoration-from-font",
         // Force descendants to inherit so Button's text-xs / colors don't win.
         style && "[&_*]:!text-[length:inherit] [&_*]:!text-[color:inherit] [&_*]:!font-[inherit]",
+        style?.rainbow && "animate-rainbow-text bg-[length:220%_100%]",
         className
       )}
       style={css}
     >
       {/* pointer-events-none so child buttons/links don't fire while editing. */}
-      <span className="pointer-events-none block">{children}</span>
+      <span
+        className={cn(
+          "pointer-events-none block",
+          style?.rainbow && "animate-rainbow-text bg-[length:220%_100%]"
+        )}
+        style={style?.rainbow ? css : undefined}
+      >
+        {children}
+      </span>
     </span>
   )
 }

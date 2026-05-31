@@ -6,7 +6,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const LIST_URL = "http://localhost:9222/json";
+const LIST_URL = "http://localhost:34788/json";
 const MAX_BODY = 40_000;
 const POLL_MS = 2000;
 

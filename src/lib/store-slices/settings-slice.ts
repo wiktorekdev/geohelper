@@ -15,8 +15,8 @@ const DEFAULT_COPY_FORMAT: CopyFormat = "lat, lng"
 const DEFAULT_MARKER_COLOR = "#dc2626"
 const DEFAULT_MARKER_BORDER = "#ffffff"
 const DEFAULT_MARKER_SIZE = 24
-const MARKER_MIN_SIZE = 16
-const MARKER_MAX_SIZE = 48
+const MARKER_MIN_SIZE = 8
+const MARKER_MAX_SIZE = 96
 const MARKER_SAVE_DELAY_MS = 250
 
 const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
@@ -45,6 +45,7 @@ export type SettingsSlice = {
   copyFormat: CopyFormat
   alwaysOnTop: boolean
   settingsOpen: boolean
+  changelogOpen: boolean
   markerColor: string
   markerBorderColor: string
   markerSize: number
@@ -60,6 +61,8 @@ export type SettingsSlice = {
   hydrateSettings: () => Promise<void>
   openSettings: () => void
   closeSettings: () => void
+  openChangelog: () => void
+  closeChangelog: () => void
 }
 
 export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (set) => ({
@@ -69,6 +72,7 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
   copyFormat: DEFAULT_COPY_FORMAT,
   alwaysOnTop: false,
   settingsOpen: false,
+  changelogOpen: false,
   markerColor: DEFAULT_MARKER_COLOR,
   markerBorderColor: DEFAULT_MARKER_BORDER,
   markerSize: DEFAULT_MARKER_SIZE,
@@ -145,6 +149,8 @@ export const createSettingsSlice: StateCreator<Store, [], [], SettingsSlice> = (
       logger.error("Failed to hydrate settings slice:", e)
     }
   },
-  openSettings: () => set({ settingsOpen: true }),
+  openSettings: () => set({ settingsOpen: true, changelogOpen: false }),
   closeSettings: () => set({ settingsOpen: false }),
+  openChangelog: () => set({ changelogOpen: true, settingsOpen: false }),
+  closeChangelog: () => set({ changelogOpen: false }),
 })

@@ -1,6 +1,6 @@
 # Maintainer: wiktorekdev
 pkgname=geohelper-bin
-pkgver=0.19.1
+pkgver=0.20.0
 pkgrel=1
 pkgdesc="GeoGuessr Steam helper"
 arch=("x86_64")

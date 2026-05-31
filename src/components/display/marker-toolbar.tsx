@@ -15,6 +15,8 @@ import { useT } from "@/lib/i18n"
 const DEFAULT_MARKER_COLOR = "#dc2626"
 const DEFAULT_MARKER_BORDER = "#ffffff"
 const DEFAULT_MARKER_SIZE = 24
+const MARKER_MIN_SIZE = 8
+const MARKER_MAX_SIZE = 96
 
 type MarkerColorButtonProps = {
   label: string
@@ -65,7 +67,7 @@ function MarkerColorButton({ label, value, onChange }: MarkerColorButtonProps) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-7 items-center gap-1.5 rounded-md border border-sidebar-border bg-background/50 px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex h-7 w-[78px] items-center gap-1.5 rounded-md border border-sidebar-border bg-background/50 px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           aria-label={label}
           title={label}
         >
@@ -73,7 +75,7 @@ function MarkerColorButton({ label, value, onChange }: MarkerColorButtonProps) {
             className="size-3.5 rounded-sm border border-sidebar-border"
             style={{ backgroundColor: value }}
           />
-          <span className="font-mono uppercase">{value.replace("#", "")}</span>
+          <span className="min-w-0 truncate font-mono uppercase">{value.replace("#", "")}</span>
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -123,7 +125,6 @@ export function MarkerToolbar() {
   const editing = useDisplayStore((s) => s.editing)
   const open = useDisplayStore((s) => s.markerToolbarOpen)
   const mapVisible = useDisplayStore((s) => s.mapVisible)
-  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth)
 
   const markerColor = useStore((s) => s.markerColor)
   const setMarkerColor = useStore((s) => s.setMarkerColor)
@@ -139,17 +140,19 @@ export function MarkerToolbar() {
       {visible && (
         <m.div
           data-no-marquee
+          layout="position"
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-          className="pointer-events-none fixed inset-x-0 z-[2100] flex justify-center px-2 transition-[bottom,left] duration-500"
-          style={{ left: mapVisible ? sidebarWidth : 0, bottom: mapVisible ? 64 : 106 }}
+          className="pointer-events-none flex w-full justify-center"
         >
-          <Toolbar.Root className="pointer-events-auto flex max-w-[calc(100vw-16px)] items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
-            <div className="inline-flex items-center gap-1.5 px-1 text-[12px] font-medium">
+          <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+            <div className="inline-flex shrink-0 items-center gap-1.5 px-1 text-[12px] font-medium">
               <MapPin className="size-3.5 text-brand" />
-              <span>{t("marker.customizeTitle")}</span>
+              {mapVisible && (
+                <span className="hidden min-[420px]:inline">{t("marker.customizeTitle")}</span>
+              )}
             </div>
 
             <Divider />
@@ -167,15 +170,26 @@ export function MarkerToolbar() {
 
             <Divider />
 
-            <div className="inline-flex h-7 items-center gap-2 rounded-md border border-sidebar-border bg-background/50 px-2">
-              <span className="font-mono text-[11px] text-muted-foreground">{markerSize}px</span>
+            <div className="inline-flex h-7 shrink-0 items-center gap-2 rounded-md border border-sidebar-border bg-background/50 px-2">
               <input
-                type="range"
-                min="16"
-                max="48"
+                type="number"
+                min={MARKER_MIN_SIZE}
+                max={MARKER_MAX_SIZE}
                 value={markerSize}
                 onChange={(e) => setMarkerSize(Number(e.target.value))}
-                className="h-1 w-24 cursor-pointer appearance-none rounded-lg bg-accent accent-primary focus:outline-none"
+                className="number-input-clean h-5 w-10 rounded border border-sidebar-border bg-transparent px-1 text-right font-mono text-[11px] text-muted-foreground outline-none focus:border-ring"
+                aria-label={t("marker.size")}
+              />
+              <input
+                type="range"
+                min={MARKER_MIN_SIZE}
+                max={MARKER_MAX_SIZE}
+                value={markerSize}
+                onChange={(e) => setMarkerSize(Number(e.target.value))}
+                className={cn(
+                  "h-1 cursor-pointer appearance-none rounded-lg bg-accent accent-primary focus:outline-none",
+                  mapVisible ? "w-24" : "w-20"
+                )}
                 aria-label={t("marker.size")}
               />
             </div>

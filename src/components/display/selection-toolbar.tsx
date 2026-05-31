@@ -1,20 +1,30 @@
 import { m, AnimatePresence } from "motion/react"
-import { Bold, Eye, EyeOff, RotateCcw, Type, X } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+import { Bold, Eye, EyeOff, Italic, RotateCcw, Type, Underline, X } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import * as Toolbar from "@radix-ui/react-toolbar"
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ColorPicker, ColorPickerSelection, ColorPickerHue } from "@/components/ui/color-picker"
-import { DEFAULT_TEXT_STYLE, useDisplayStore, type FontSize } from "@/lib/display-store"
+import {
+  DEFAULT_TEXT_STYLE,
+  MAX_TEXT_SIZE,
+  MIN_TEXT_SIZE,
+  TEXT_FONT_OPTIONS,
+  normalizeTextSize,
+  useDisplayStore,
+  type TextFont,
+  type TextStyle,
+} from "@/lib/display-store"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useT } from "@/lib/i18n"
-
-const FONT_SIZES: { id: FontSize; label: string }[] = [
-  { id: "sm", label: "S" },
-  { id: "md", label: "M" },
-  { id: "lg", label: "L" },
-]
 
 export function SelectionToolbar() {
   const t = useT()
@@ -23,12 +33,10 @@ export function SelectionToolbar() {
   const textStyles = useDisplayStore((s) => s.textStyles)
   const hiddenTexts = useDisplayStore((s) => s.hiddenTexts)
   const mapVisible = useDisplayStore((s) => s.mapVisible)
-  const markerToolbarOpen = useDisplayStore((s) => s.markerToolbarOpen)
   const setSelectionStyle = useDisplayStore((s) => s.setSelectionStyle)
   const setSelectionHidden = useDisplayStore((s) => s.setSelectionHidden)
   const resetSelection = useDisplayStore((s) => s.resetSelection)
   const clearSelection = useDisplayStore((s) => s.clearSelection)
-  const sidebarWidth = useDisplayStore((s) => s.sidebarWidth)
 
   const visible = editing && selection.length > 0
 
@@ -48,43 +56,61 @@ export function SelectionToolbar() {
       {visible && (
         <m.div
           data-no-marquee
+          layout="position"
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-          className="pointer-events-none fixed inset-x-0 z-[2100] flex justify-center px-2 transition-[bottom,left] duration-500"
-          style={{
-            left: mapVisible ? sidebarWidth : 0,
-            bottom: mapVisible ? (markerToolbarOpen ? 116 : 64) : markerToolbarOpen ? 158 : 106,
-          }}
+          className="pointer-events-none flex w-full justify-center"
         >
-          <Toolbar.Root className="pointer-events-auto flex items-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
-            <div className="inline-flex items-center gap-1.5 px-1.5 text-[12px] font-medium">
+          <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+            <div className="inline-flex shrink-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
               <Type className="size-3.5 text-brand" />
               <span className="tabular-nums">
-                {selection.length}{" "}
-                {selection.length === 1 ? t("selection.text") : t("selection.texts")}
+                {selection.length}
+                {mapVisible && (selection.length === 1 ? ` ${t("selection.text")}` : ` ${t("selection.texts")}`)}
               </span>
             </div>
 
             <Divider />
 
-            <div className="inline-flex h-7 items-center gap-0.5 rounded-md border border-sidebar-border bg-background/50 p-0.5">
-              {FONT_SIZES.map((f) => (
-                <Toolbar.Button asChild key={f.id}>
-                  <button
-                    onClick={() => setSelectionStyle({ fontSize: f.id })}
-                    className={cn(
-                      "h-6 w-7 rounded text-[11px] font-medium transition-colors",
-                      summary.fontSize === f.id
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                </Toolbar.Button>
-              ))}
+            {!onlyFlag && (
+              <Select
+                value={summary.fontFamily ?? DEFAULT_TEXT_STYLE.fontFamily}
+                onValueChange={(fontFamily) => setSelectionStyle({ fontFamily: fontFamily as TextFont })}
+              >
+                <SelectTrigger className="h-7 w-[128px] shrink-0 border-sidebar-border bg-background/50 px-2 text-[11px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent side="top" align="start" className="z-[2300] max-h-72">
+                  {TEXT_FONT_OPTIONS.map((font) => (
+                    <SelectItem key={font.id} value={font.id} style={{ fontFamily: font.family }}>
+                      {font.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            <div className="inline-flex h-7 shrink-0 items-center gap-2 rounded-md border border-sidebar-border bg-background/50 px-2">
+              <input
+                type="number"
+                min={MIN_TEXT_SIZE}
+                max={MAX_TEXT_SIZE}
+                value={summary.fontSize ?? DEFAULT_TEXT_STYLE.fontSize}
+                onChange={(e) => setSelectionStyle({ fontSize: normalizeTextSize(e.target.value) })}
+                className="number-input-clean h-5 w-10 rounded border border-sidebar-border bg-transparent px-1 text-right font-mono text-[11px] text-muted-foreground outline-none focus:border-ring"
+                aria-label="Text size"
+              />
+              <input
+                type="range"
+                min={MIN_TEXT_SIZE}
+                max={MAX_TEXT_SIZE}
+                value={summary.fontSize ?? DEFAULT_TEXT_STYLE.fontSize}
+                onChange={(e) => setSelectionStyle({ fontSize: Number(e.target.value) })}
+                className="h-1 w-24 cursor-pointer appearance-none rounded-lg bg-accent accent-primary focus:outline-none"
+                aria-label="Text size"
+              />
             </div>
 
             {showBold && (
@@ -110,10 +136,58 @@ export function SelectionToolbar() {
               </Tooltip>
             )}
 
+            {showBold && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Toolbar.Button asChild>
+                      <button
+                        onClick={() => setSelectionStyle({ italic: !summary.italic })}
+                        className={cn(
+                          "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                          summary.italic
+                            ? "bg-accent text-foreground"
+                            : "bg-background/50 text-muted-foreground hover:text-foreground"
+                        )}
+                        aria-pressed={summary.italic}
+                        aria-label="Italic"
+                      >
+                        <Italic className="size-3.5" />
+                      </button>
+                    </Toolbar.Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Italic</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Toolbar.Button asChild>
+                      <button
+                        onClick={() => setSelectionStyle({ underline: !summary.underline })}
+                        className={cn(
+                          "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                          summary.underline
+                            ? "bg-accent text-foreground"
+                            : "bg-background/50 text-muted-foreground hover:text-foreground"
+                        )}
+                        aria-pressed={summary.underline}
+                        aria-label="Underline"
+                      >
+                        <Underline className="size-3.5" />
+                      </button>
+                    </Toolbar.Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Underline</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+
             {showColor && (
               <ColorPickerButton
                 value={summary.color}
-                onChange={(color: string | null) => setSelectionStyle({ color })}
+                rainbow={summary.rainbow}
+                onChange={(color: string | null) => setSelectionStyle({ color, rainbow: false })}
+                onRainbowChange={(rainbow) => setSelectionStyle({ rainbow })}
               />
             )}
 
@@ -187,22 +261,42 @@ function kindForId(id: string): "flag" | "text" {
   return "text"
 }
 
-function summarize(styles: { color: string | null; bold: boolean; fontSize: FontSize }[]): {
+function summarize(styles: TextStyle[]): {
   color: string | null
   bold: boolean
-  fontSize: FontSize | undefined
+  italic: boolean
+  underline: boolean
+  rainbow: boolean
+  fontSize: number | undefined
+  fontFamily: TextFont | undefined
 } {
   if (styles.length === 0) {
-    return { color: null, bold: false, fontSize: undefined }
+    return {
+      color: null,
+      bold: false,
+      italic: false,
+      underline: false,
+      rainbow: false,
+      fontSize: undefined,
+      fontFamily: undefined,
+    }
   }
   const first = styles[0]
   const sameColor = styles.every((s) => s.color === first.color)
   const sameBold = styles.every((s) => s.bold === first.bold)
+  const sameItalic = styles.every((s) => s.italic === first.italic)
+  const sameUnderline = styles.every((s) => s.underline === first.underline)
+  const sameRainbow = styles.every((s) => s.rainbow === first.rainbow)
   const sameSize = styles.every((s) => s.fontSize === first.fontSize)
+  const sameFont = styles.every((s) => s.fontFamily === first.fontFamily)
   return {
     color: sameColor ? first.color : null,
     bold: sameBold ? first.bold : false,
+    italic: sameItalic ? first.italic : false,
+    underline: sameUnderline ? first.underline : false,
+    rainbow: sameRainbow ? first.rainbow : false,
     fontSize: sameSize ? first.fontSize : undefined,
+    fontFamily: sameFont ? first.fontFamily : undefined,
   }
 }
 
@@ -225,14 +319,20 @@ function parseColorInput(raw: string): string | null {
 
 function ColorPickerButton({
   value,
+  rainbow,
   onChange,
+  onRainbowChange,
 }: {
   value: string | null
+  rainbow: boolean
   onChange: (color: string | null) => void
+  onRainbowChange: (rainbow: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const [inputVal, setInputVal] = useState(value ?? "")
   const [invalid, setInvalid] = useState(false)
+  const rainbowClicks = useRef<number[]>([])
+  const swatchColor = value ?? "var(--foreground)"
 
   useEffect(() => {
     if (!open) queueMicrotask(() => setInputVal(value ?? ""))
@@ -270,13 +370,32 @@ function ColorPickerButton({
     }
   }
 
+  function handleSwatchClick() {
+    const now = Date.now()
+    rainbowClicks.current = [...rainbowClicks.current.filter((time) => now - time <= 10_000), now]
+    if (rainbowClicks.current.length >= 10) {
+      rainbowClicks.current = []
+      onRainbowChange(!rainbow)
+    }
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative size-7 shrink-0 overflow-hidden rounded-md border border-sidebar-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          style={{ backgroundColor: value ?? "#ffffff" }}
+          onClick={handleSwatchClick}
+          className={cn(
+            "relative size-7 shrink-0 overflow-hidden rounded-md border border-sidebar-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            rainbow && "animate-rainbow-swatch bg-[length:220%_100%]"
+          )}
+          style={{
+            backgroundColor: rainbow ? undefined : swatchColor,
+            backgroundImage: rainbow
+              ? "linear-gradient(90deg, #ff3355, #ff9f1c, #f7ff00, #2ee66b, #18c8ff, #7c5cff, #ff4fd8, #ff3355)"
+              : undefined,
+          }}
+          title={rainbow ? "Rainbow on. Click 10x in 10s to turn off." : "Click 10x in 10s for rainbow text."}
         />
       </PopoverTrigger>
       <PopoverContent
@@ -288,7 +407,7 @@ function ColorPickerButton({
         className="z-[2200] w-64 p-4 border border-sidebar-border bg-popover rounded-lg shadow-2xl"
       >
         <ColorPicker
-          value={value ?? "#ffffff"}
+          value={value ?? "#f9f9f9"}
           onChange={handleChange}
           className="flex flex-col gap-3"
         >
@@ -297,8 +416,16 @@ function ColorPickerButton({
         </ColorPicker>
         <div className="mt-2 flex items-center gap-2 border-t border-sidebar-border pt-2">
           <div
-            className="size-5 shrink-0 rounded border border-sidebar-border"
-            style={{ backgroundColor: value ?? "#ffffff" }}
+            className={cn(
+              "size-5 shrink-0 rounded border border-sidebar-border",
+              rainbow && "animate-rainbow-swatch bg-[length:220%_100%]"
+            )}
+            style={{
+              backgroundColor: rainbow ? undefined : swatchColor,
+              backgroundImage: rainbow
+                ? "linear-gradient(90deg, #ff3355, #ff9f1c, #f7ff00, #2ee66b, #18c8ff, #7c5cff, #ff4fd8, #ff3355)"
+                : undefined,
+            }}
           />
           <input
             className={cn(
@@ -321,7 +448,17 @@ function ColorPickerButton({
               commitInput(pasted)
             }}
           />
-          {value && (
+          {rainbow && (
+            <button
+              type="button"
+              onClick={() => onRainbowChange(false)}
+              className="shrink-0 rounded px-1 text-[10px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              title="Disable rainbow"
+            >
+              RGB
+            </button>
+          )}
+          {value && !rainbow && (
             <button
               type="button"
               onClick={() => {

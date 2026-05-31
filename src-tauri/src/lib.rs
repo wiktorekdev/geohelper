@@ -60,6 +60,7 @@ pub fn run() {
             commands::is_installed,
             commands::get_store_path,
             commands::handle_corrupted_store,
+            commands::sync_and_read_changelog,
         ])
         .run(tauri::generate_context!())
         .expect("failed to start GeoHelper");

@@ -1,5 +1,5 @@
-import { GripVertical, Map, MapPinOff, Pencil, Settings as SettingsIcon } from "lucide-react"
-import { useRef, useCallback, useState } from "react"
+import { Map, MapPinOff, Pencil, Settings as SettingsIcon, Bell } from "lucide-react"
+import { useRef, useCallback } from "react"
 import { m, AnimatePresence } from "motion/react"
 import {
   closestCenter,
@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { SocialFooter } from "./social-footer"
 import { UpdateBanner } from "./update-banner"
+import { ChangelogModal } from "./changelog-modal"
 import { SortableSection } from "./display/sortable-section"
 import { MarqueeSelect } from "./display/marquee-select"
 import { LocationSection } from "./sidebar/location-section"
@@ -25,6 +26,7 @@ import { CoordsSection } from "./sidebar/coords-section"
 import { EmptyState } from "./sidebar/empty-state"
 import { GeocodeNotice } from "./sidebar/geocode-notice"
 import { StatusDot } from "./sidebar/status-dot"
+import { useWhatsNewStore } from "@/lib/whats-new-store"
 import {
   useDisplayStore,
   type WidgetId,
@@ -40,10 +42,14 @@ import logoUrl from "@/assets/logo.png"
 export function Sidebar() {
   const t = useT()
   const openSettings = useStore((s) => s.openSettings)
+  const openChangelog = useStore((s) => s.openChangelog)
+  const hasUnreadChangelog = useWhatsNewStore((s) => s.hasUnread)
   const conn = useStore((s) => s.conn)
   const current = useStore((s) => s.current)
 
   const editing = useDisplayStore((s) => s.editing)
+  const resizing = useDisplayStore((s) => s.resizing)
+  const setResizing = useDisplayStore((s) => s.setResizing)
   const toggleEditing = useDisplayStore((s) => s.toggleEditing)
   const order = useDisplayStore((s) => s.order)
   const setOrder = useDisplayStore((s) => s.setOrder)
@@ -55,7 +61,6 @@ export function Sidebar() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
   const dragStartX = useRef(0)
   const dragStartWidth = useRef(0)
-  const [resizing, setResizing] = useState(false)
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -65,7 +70,7 @@ export function Sidebar() {
       dragStartWidth.current = sidebarWidth
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
-    [editing, sidebarWidth]
+    [editing, setResizing, sidebarWidth]
   )
 
   const handlePointerMove = useCallback(
@@ -87,7 +92,7 @@ export function Sidebar() {
       setResizing(false)
       ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
     },
-    [resizing]
+    [resizing, setResizing]
   )
 
   function handleToggleEditing() {
@@ -106,11 +111,9 @@ export function Sidebar() {
   }
 
   return (
-    <m.aside
-      layout="size"
-      transition={resizing ? { duration: 0 } : { duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+    <aside
       className={cn(
-        "relative flex h-full flex-col bg-sidebar border-r border-sidebar-border",
+        "relative flex h-full flex-col overflow-hidden bg-sidebar border-r border-sidebar-border",
         editing && "ring-1 ring-inset ring-brand/20",
         mapVisible ? "shrink-0" : "flex-1"
       )}
@@ -118,15 +121,17 @@ export function Sidebar() {
     >
       {editing && mapVisible && (
         <div
-          className="absolute inset-y-0 right-0 z-50 flex w-4 cursor-col-resize items-center justify-center"
+          className={cn(
+            "absolute inset-y-0 right-[-3px] z-50 w-2 cursor-col-resize transition-colors",
+            resizing
+              ? "bg-brand/30"
+              : "bg-transparent hover:bg-brand/20"
+          )}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-        >
-          <div className="flex h-8 items-center rounded-full border border-sidebar-border bg-sidebar/90 px-0.5 shadow-sm backdrop-blur">
-            <GripVertical className="size-3 text-muted-foreground" />
-          </div>
-        </div>
+          aria-label="Resize sidebar"
+        />
       )}
       <header className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2.5">
@@ -172,6 +177,25 @@ export function Sidebar() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="relative size-8"
+                onClick={openChangelog}
+              >
+                <Bell className="size-4" />
+                {hasUnreadChangelog && (
+                  <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+                  </span>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t("update.whatsNew")}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button size="icon" variant="ghost" className="size-8" onClick={openSettings}>
                 <SettingsIcon className="size-4" />
               </Button>
@@ -181,7 +205,7 @@ export function Sidebar() {
         </div>
       </header>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <AnimatePresence mode="wait">
           {current || editing ? (
             <m.div
@@ -214,9 +238,12 @@ export function Sidebar() {
         </AnimatePresence>
       </ScrollArea>
 
-      <UpdateBanner />
-      <SocialFooter />
-    </m.aside>
+      <div className="shrink-0 flex flex-col">
+        <ChangelogModal />
+        <UpdateBanner />
+        <SocialFooter />
+      </div>
+    </aside>
   )
 }
 

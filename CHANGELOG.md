@@ -2,7 +2,54 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.20.0] - 2026-05-31
+
+### Added
+
+- **Added some easter eggs** 🫣
+- **Changelog sidebar and update card** - added an in-app changelog view with release details and a compact update notification card.
+- **Advanced text customization** - selected text can now use 20 bundled Google Fonts, numeric sizing, bold, italic, underline, custom colors, hidden state, and a saved rainbow text mode.
+- **Marker customization upgrades** - marker fill, border, and size controls now support a wider size range with numeric input and cleaner responsive toolbar layout.
+- **Selective reset dialog** - global reset now opens a confirmation dialog where users can choose whether to reset widget order, text styles, hidden text state, sidebar/map layout, and marker styling.
+- **React Hot Toast notifications** - replaced Sonner with `react-hot-toast` and a compact dark top-center notification style.
+
+### Changed
+
+- **Layout editor responsiveness** - edit, text, and marker toolbars now wrap and stack more predictably on narrow windows, with marker customization appearing above text customization.
+- **Sidebar resize handle** - replaced the visible dotted resize pill with a subtle edge-only resize target.
+- **Flag customization rules** - country flags can still be resized, but font, color, bold, italic, underline, and rainbow styles no longer apply to flags.
+- **Map toggle sizing** - restored the previous sidebar-width collapse behavior when hiding the map and removed the max-size logic that interfered with window resizing.
+- **Simplified error recovery page** - replaced the multiple action options on the unexpected error boundary fallback screen with a single, clear "Reload" button.
+
+### Fixed
+
+- **Sidebar crash in customization mode** - restored the missing Motion import that caused `m is not defined` when opening customization.
+- **Color swatch default** - the text color picker now reflects the current default foreground color instead of always showing white.
+- **Number input spinners** - numeric text and marker size inputs no longer show browser spinner arrows.
+- **Changelog detail overflow** - release detail cards use tighter spacing to avoid unnecessary scrollbars for short releases.
+
+---
+
+## [0.19.2] - 2026-05-30
+
+### Changed
+
+- **Remote debugging port changed to `34788`** — switched from the generic `9222` to a dedicated port that is far less likely to conflict with other Chromium-based apps (Brave, Chrome, VS Code, etc.). Update your Steam launch options to:
+  ```
+  --remote-debugging-port=34788 --remote-allow-origins=*
+  ```
+- **`--remote-allow-origins=*` is now required** — a recent GeoGuessr game update changed how Electron validates WebSocket origins. The flag must be present alongside the port flag or the game will reject the DevTools connection.
+- **Updated documentation and landing page** — updated `README.md` and the marketing website (`site/`) to reflect the new `34788` port and origin validation flag instructions.
+- **Developer sniffer script updated** — changed the local RPC sniffer tool port to `34788`.
+
+### Fixed
+
+- **Targeted error message for missing `--remote-allow-origins=*`** — when the game is running but the flag is absent, GeoHelper now shows a clear prompt to add the Steam launch option instead of the generic "Connection lost" message.
+
+---
+
 ## [0.19.1] - 2026-05-27
+
 
 ### Added
 

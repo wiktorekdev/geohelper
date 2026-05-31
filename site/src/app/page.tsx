@@ -212,7 +212,7 @@ function Customizer() {
 }
 
 function GetStarted() {
-  const flags = "--remote-debugging-port=9222";
+  const flags = "--remote-debugging-port=34788 --remote-allow-origins=*";
 
   return (
     <Reveal>

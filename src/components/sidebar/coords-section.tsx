@@ -2,7 +2,7 @@ import { m, AnimatePresence } from "motion/react"
 import { Check, Copy } from "lucide-react"
 import { useState } from "react"
 import { openUrl } from "@tauri-apps/plugin-opener"
-import { toast } from "sonner"
+import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -30,7 +30,7 @@ export function CoordsSection() {
       await navigator.clipboard.writeText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
-      toast.success(t("coordinates.copySuccess"), { description: text })
+      toast.success(`${t("coordinates.copySuccess")} ${text}`)
     } catch {
       toast.error(t("coordinates.clipboardError"))
     }

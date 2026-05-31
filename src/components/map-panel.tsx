@@ -124,8 +124,11 @@ function InvalidateMapSize() {
   const sidebarWidth = useDisplayStore((s) => s.sidebarWidth)
   const editing = useDisplayStore((s) => s.editing)
   const mapVisible = useDisplayStore((s) => s.mapVisible)
+  const resizing = useDisplayStore((s) => s.resizing)
 
   useEffect(() => {
+    if (resizing) return
+
     // 1. Invalidate size immediately for fast visual feedback
     map.invalidateSize({ animate: false })
 
@@ -135,7 +138,7 @@ function InvalidateMapSize() {
     }, 400)
 
     return () => clearTimeout(timer)
-  }, [sidebarWidth, editing, mapVisible, map])
+  }, [sidebarWidth, editing, mapVisible, resizing, map])
 
   return null
 }

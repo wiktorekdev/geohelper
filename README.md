@@ -36,14 +36,14 @@ Perfect for **custom maps, singleplayer, solo practice and learning geography**.
 
 ## How it works
 
-GeoHelper connects to the Chrome DevTools Protocol endpoint exposed by Steam (`--remote-debugging-port=9222`) and reads the game’s own network RPC traffic. Everything is processed locally on your machine.
+GeoHelper connects to the Chrome DevTools Protocol endpoint exposed by Steam (`--remote-debugging-port=34788 --remote-allow-origins=*`) and reads the game’s own network RPC traffic. Everything is processed locally on your machine.
 
 ## Getting Started
 
 1. Download the latest release from [Releases](../../releases/latest)
 2. Right-click **GeoGuessr** in Steam → Properties → Launch Options and add:
    ```
-   --remote-debugging-port=9222
+   --remote-debugging-port=34788 --remote-allow-origins=*
    ```
 3. Run GeoHelper and start playing
 

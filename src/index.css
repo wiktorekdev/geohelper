@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Bebas+Neue&family=Caveat:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=Inter:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Lato:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Manrope:wght@400;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400;1,700&family=Montserrat:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Oswald:wght@400;600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Poppins:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Quicksand:wght@400;600;700&family=Raleway:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Rubik:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Work+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -91,6 +92,8 @@
     height: 100%;
     margin: 0;
   }
+  /* Global base styling: keep text selectable on content elements by default,
+     but disable on interactive buttons, triggers, icons, inputs range, and toolbar boxes. */
   body {
     background: var(--background);
     color: var(--foreground);
@@ -103,6 +106,29 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
+  }
+
+  button,
+  a,
+  input[type="range"],
+  [role="button"],
+  [role="combobox"],
+  [role="tab"],
+  svg,
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .number-input-clean {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .number-input-clean::-webkit-outer-spin-button,
+  .number-input-clean::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 }
 
@@ -162,3 +188,52 @@
     transform: translateX(400%);
   }
 }
+
+@keyframes rainbow-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-rainbow-text,
+.animate-rainbow-swatch {
+  animation: rainbow-shift 2.5s linear infinite;
+}
+
+@keyframes float-heart {
+  0% {
+    transform: translateY(0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-8vh) scale(1.2) rotate(15deg);
+  }
+  100% {
+    transform: translateY(-110vh) scale(0.6) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-heart {
+  animation-name: float-heart;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation-fill-mode: forwards;
+}
+
+@keyframes barrel-roll {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-barrel-roll {
+  animation: barrel-roll 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+

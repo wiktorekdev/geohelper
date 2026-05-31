@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use serde::Deserialize;
 use thiserror::Error;
 
-const LAUNCH_FLAGS: &str = "--remote-debugging-port=9222";
+const LAUNCH_FLAGS: &str = "--remote-debugging-port=34788";
 const LAUNCH_PROBE_TTL: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Error)]
@@ -22,6 +22,8 @@ pub enum TargetError {
     InvalidTargetList(#[from] reqwest::Error),
     #[error("CDP WebSocket target is invalid: {0}")]
     InvalidWebSocketTarget(String),
+    #[error("missing --remote-allow-origins=*")]
+    MissingAllowOrigins,
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,12 +41,13 @@ pub struct Target {
 pub async fn find() -> Result<Target, TargetError> {
     // Detect dynamic remote debugging port from running process
     let launch_opts = cached_launch_options().await;
-    let port = match &launch_opts {
+    let port_str = match &launch_opts {
         LaunchOptions::DetectedOtherPort(p) => p.as_str(),
-        _ => "9222",
+        _ => "34788",
     };
+    let port_num: u16 = port_str.parse().unwrap_or(34788);
 
-    let cdp_url = format!("http://localhost:{}/json", port);
+    let cdp_url = format!("http://localhost:{}/json", port_str);
 
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(4))
@@ -60,7 +63,21 @@ pub async fn find() -> Result<Target, TargetError> {
             });
         }
     };
-    let targets: Vec<Target> = res.json().await?;
+    let text = match res.text().await {
+        Ok(t) => t,
+        Err(e) => return Err(TargetError::InvalidTargetList(e)),
+    };
+
+    // Newer Electron/Chromium versions return a plain-text error when
+    // --remote-allow-origins=* is missing instead of the JSON target list.
+    if text.contains("WebSockets request was expected") || text.contains("400 Bad Request") {
+        return Err(TargetError::MissingAllowOrigins);
+    }
+
+    let targets: Vec<Target> = match serde_json::from_str(&text) {
+        Ok(v) => v,
+        Err(_) => return Err(TargetError::MissingAllowOrigins),
+    };
 
     let game_iframe = targets
         .iter()
@@ -80,7 +97,7 @@ pub async fn find() -> Result<Target, TargetError> {
         .or(any_iframe)
         .or(any_page)
         .ok_or(TargetError::GeoGuessrNotActive)?;
-    let ws_url = validate_ws_url(&picked.ws_url)?;
+    let ws_url = validate_ws_url(&picked.ws_url, port_num)?;
 
     Ok(Target {
         r#type: picked.r#type.clone(),
@@ -107,7 +124,7 @@ fn looks_like_game(t: &Target) -> bool {
         || u.contains("/play")
 }
 
-fn validate_ws_url(raw: &str) -> Result<String, TargetError> {
+fn validate_ws_url(raw: &str, expected_port: u16) -> Result<String, TargetError> {
     let url =
         reqwest::Url::parse(raw).map_err(|e| TargetError::InvalidWebSocketTarget(e.to_string()))?;
 
@@ -129,9 +146,9 @@ fn validate_ws_url(raw: &str) -> Result<String, TargetError> {
         }
     }
 
-    if url.port_or_known_default() != Some(9222) {
+    if url.port_or_known_default() != Some(expected_port) {
         return Err(TargetError::InvalidWebSocketTarget(
-            "expected DevTools port 9222".into(),
+            format!("expected DevTools port {expected_port}").into(),
         ));
     }
 
@@ -157,13 +174,13 @@ fn validate_ws_url(raw: &str) -> Result<String, TargetError> {
 async fn launch_diagnostic() -> String {
     match cached_launch_options().await {
         LaunchOptions::DetectedWithPort => {
-            "CDP port is not reachable, but GeoGuessr has the 9222 launch flag. Restart GeoGuessr or check whether another process owns the port.".into()
+            "CDP port is not reachable, but GeoGuessr has the 34788 launch flag. Restart GeoGuessr or check whether another process owns the port.".into()
         }
         LaunchOptions::DetectedWithoutPort => {
             format!("CDP port is not reachable. GeoGuessr is running without the required Steam launch options: {LAUNCH_FLAGS}")
         }
         LaunchOptions::DetectedOtherPort(port) => {
-            format!("CDP port 9222 is not reachable. GeoGuessr is running with remote debugging port {port}; use {LAUNCH_FLAGS} or make the app configurable.")
+            format!("CDP port 34788 is not reachable. GeoGuessr is running with remote debugging port {port}; use {LAUNCH_FLAGS} or make the app configurable.")
         }
         LaunchOptions::NotRunning => {
             format!("CDP port is not reachable and GeoGuessr.exe is not running. Start GeoGuessr with Steam launch options: {LAUNCH_FLAGS}")
@@ -233,7 +250,7 @@ fn detect_launch_options() -> LaunchOptions {
     }
     if command_lines
         .iter()
-        .any(|line| line.contains("--remote-debugging-port=9222"))
+        .any(|line| line.contains("--remote-debugging-port=34788"))
     {
         return LaunchOptions::DetectedWithPort;
     }
@@ -268,14 +285,14 @@ mod tests {
 
     #[test]
     fn accepts_loopback_devtools_target_on_expected_port() {
-        let raw = "ws://127.0.0.1:9222/devtools/page/ABC";
-        assert_eq!(validate_ws_url(raw).unwrap(), raw);
+        let raw = "ws://127.0.0.1:34788/devtools/page/ABC";
+        assert_eq!(validate_ws_url(raw, 34788).unwrap(), raw);
     }
 
     #[test]
     fn rejects_alternate_websocket_port() {
         assert!(matches!(
-            validate_ws_url("ws://127.0.0.1:9876/devtools/page/ABC"),
+            validate_ws_url("ws://127.0.0.1:9876/devtools/page/ABC", 34788),
             Err(TargetError::InvalidWebSocketTarget(_))
         ));
     }
@@ -283,7 +300,7 @@ mod tests {
     #[test]
     fn rejects_non_devtools_path() {
         assert!(matches!(
-            validate_ws_url("ws://127.0.0.1:9222/attacker-controlled"),
+            validate_ws_url("ws://127.0.0.1:34788/attacker-controlled", 34788),
             Err(TargetError::InvalidWebSocketTarget(_))
         ));
     }
@@ -291,7 +308,7 @@ mod tests {
     #[test]
     fn rejects_non_loopback_host() {
         assert!(matches!(
-            validate_ws_url("ws://example.com:9222/devtools/page/ABC"),
+            validate_ws_url("ws://example.com:34788/devtools/page/ABC", 34788),
             Err(TargetError::InvalidWebSocketTarget(_))
         ));
     }

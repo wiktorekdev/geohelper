@@ -13,9 +13,17 @@ import {
   type TextStyle,
 } from "./display-selection"
 
-export { DEFAULT_TEXT_STYLE, FLAG_SIZE, FONT_SIZE_PX, textStyleToCss } from "./display-selection"
+export {
+  DEFAULT_TEXT_STYLE,
+  MAX_TEXT_SIZE,
+  MIN_TEXT_SIZE,
+  TEXT_FONT_OPTIONS,
+  normalizeTextFont,
+  normalizeTextSize,
+  textStyleToCss,
+} from "./display-selection"
 
-export type { FontSize, TextStyle } from "./display-selection"
+export type { TextFont, TextStyle } from "./display-selection"
 
 export const SIDEBAR_MIN_WIDTH = 320
 export const SIDEBAR_MAX_WIDTH = 700
@@ -29,6 +37,13 @@ export type DisplayConfig = {
   hiddenTexts: Record<string, true>
   mapVisible: boolean
   sidebarWidth: number
+}
+
+export type DisplayResetOptions = {
+  order?: boolean
+  text?: boolean
+  visibility?: boolean
+  panel?: boolean
 }
 
 const ALL_WIDGETS: WidgetId[] = ["country", "road", "details", "coordinates"]
@@ -140,6 +155,7 @@ function schedulePersistDisplayConfig(state: DisplayConfig) {
 
 type DisplayStore = DisplayConfig & {
   editing: boolean
+  resizing: boolean
   markerToolbarOpen: boolean
   selection: string[]
   registeredIds: Record<string, true>
@@ -147,6 +163,7 @@ type DisplayStore = DisplayConfig & {
   hydrate: () => Promise<void>
   toggleEditing: () => void
   stopEditing: () => void
+  setResizing: (resizing: boolean) => void
   setMarkerToolbarOpen: (open: boolean) => void
   setOrder: (order: WidgetId[]) => void
   setMapVisible: (visible: boolean) => void
@@ -164,12 +181,14 @@ type DisplayStore = DisplayConfig & {
   setSelectionHidden: (hidden: boolean) => void
   resetSelection: () => void
   resetWidget: (id: WidgetId) => void
+  resetParts: (options: DisplayResetOptions) => void
   resetAll: () => void
 }
 
 export const useDisplayStore = create<DisplayStore>((set, get) => ({
   ...cloneDefault(),
   editing: false,
+  resizing: false,
   markerToolbarOpen: false,
   selection: [],
   registeredIds: {},
@@ -199,9 +218,10 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
 
   toggleEditing: () => {
     const editing = !get().editing
-    set({ editing, markerToolbarOpen: false, selection: [] })
+    set({ editing, selection: [] })
   },
-  stopEditing: () => set({ editing: false, markerToolbarOpen: false, selection: [] }),
+  stopEditing: () => set({ editing: false, selection: [] }),
+  setResizing: (resizing) => set({ resizing }),
   setMarkerToolbarOpen: (markerToolbarOpen) => set({ markerToolbarOpen }),
 
   setOrder: (order) => {
@@ -219,13 +239,13 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     schedulePersistDisplayConfig(get())
   },
 
-  setSelection: (ids) => set({ selection: dedupeTextIds(ids), markerToolbarOpen: false }),
+  setSelection: (ids) => set({ selection: dedupeTextIds(ids) }),
   addToSelection: (ids) =>
-    set({ selection: dedupeTextIds([...get().selection, ...ids]), markerToolbarOpen: false }),
+    set({ selection: dedupeTextIds([...get().selection, ...ids]) }),
   toggleSelection: (id) => {
     const current = get().selection
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
-    set({ selection: next, markerToolbarOpen: false })
+    set({ selection: next })
   },
   clearSelection: () => set({ selection: [] }),
   selectWidget: (widget, additive = false) => {
@@ -255,6 +275,18 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     const { textStyles, hiddenTexts, selection } = get()
     set(resetWidgetTextState(id, textStyles, hiddenTexts, selection))
     void persistDisplayConfig(get())
+  },
+  resetParts: (options) => {
+    const current = get()
+    const next: DisplayConfig = {
+      order: options.order ? [...DEFAULT_CONFIG.order] : current.order,
+      textStyles: options.text ? {} : current.textStyles,
+      hiddenTexts: options.visibility ? {} : current.hiddenTexts,
+      mapVisible: options.panel ? DEFAULT_CONFIG.mapVisible : current.mapVisible,
+      sidebarWidth: options.panel ? DEFAULT_CONFIG.sidebarWidth : current.sidebarWidth,
+    }
+    set({ ...next, selection: [] })
+    void persistDisplayConfig(next)
   },
   resetAll: () => {
     const fresh = cloneDefault()

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { deriveLocationDisplay } from "@/lib/location-display"
 import { useStore } from "@/lib/store"
 import { SelectableText } from "@/components/display/selectable-text"
-import { FLAG_SIZE, useDisplayStore } from "@/lib/display-store"
+import { normalizeTextSize, useDisplayStore } from "@/lib/display-store"
 import { useT } from "@/lib/i18n"
 
 export function LocationSection() {
@@ -76,10 +76,9 @@ function SettlementView({
   display: Extract<ReturnType<typeof deriveLocationDisplay>, { kind: "settlement" }>
 }) {
   const flagStyle = useDisplayStore((s) => s.textStyles["country.flag"])
-  const flagSize = FLAG_SIZE[flagStyle?.fontSize ?? "md"]
-  const fontSizePx = flagStyle?.fontSize ? { sm: 11, md: 13, lg: 15 }[flagStyle.fontSize] : 13
-  // Slightly non-linear so the rounding stays visually obvious at the large size
-  // where a strict proportional radius would feel harsh.
+  const fontSizePx = normalizeTextSize(flagStyle?.fontSize ?? 13)
+  const flagWidth = Math.max(18, Math.round(fontSizePx * 2.2))
+  const flagHeight = Math.max(14, Math.round(flagWidth * 0.72))
   const flagRadius = Math.round(fontSizePx * 0.28)
 
   return (
@@ -90,8 +89,8 @@ function SettlementView({
             <span
               className="inline-flex align-middle transition-[width,height,border-radius,font-size] duration-200 ease-out"
               style={{
-                width: flagSize.width,
-                height: flagSize.height,
+                width: `${flagWidth}px`,
+                height: `${flagHeight}px`,
                 borderRadius: `${flagRadius}px`,
                 overflow: "hidden",
                 isolation: "isolate",

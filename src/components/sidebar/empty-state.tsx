@@ -43,7 +43,7 @@ export function EmptyState({ conn }: { conn: ConnState }) {
         >
           {t("sidebar.addSteamLaunchOptions")}
           <code className="mt-1.5 block break-all rounded bg-accent px-2 py-1 font-mono text-[10px]">
-            --remote-debugging-port=9222
+            --remote-debugging-port=34788 --remote-allow-origins=*
           </code>
         </m.div>
       )}

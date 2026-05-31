@@ -18,6 +18,14 @@ function detailsForReason(reason: string): ConnectionDetails {
     return { title: t("connection.notRunning"), body: "", showFlags: false }
   }
 
+  if (reason.includes("missing --remote-allow-origins")) {
+    return {
+      title: t("connection.noOrigins"),
+      body: t("connection.body.noOrigins"),
+      showFlags: true,
+    }
+  }
+
   if (reason.includes("CDP port is not reachable")) {
     return {
       title: t("connection.noPort"),

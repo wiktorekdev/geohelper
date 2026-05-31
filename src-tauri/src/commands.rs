@@ -137,3 +137,50 @@ pub fn handle_corrupted_store(app: AppHandle, path: String) -> Result<(), String
     }
     Ok(())
 }
+#[tauri::command]
+pub async fn sync_and_read_changelog(app: AppHandle) -> Result<String, String> {
+    use std::fs;
+    use tauri::Manager;
+
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get AppData dir: {e}"))?;
+
+    // Create the directory if it doesn't exist
+    if !app_data_dir.exists() {
+        fs::create_dir_all(&app_data_dir)
+            .map_err(|e| format!("Failed to create AppData directory: {e}"))?;
+    }
+
+    let cache_file = app_data_dir.join("changelog.cache");
+
+    // Try fetching from GitHub with a client setup
+    let client = reqwest::Client::new();
+    let url = "https://raw.githubusercontent.com/wiktorekdev/geohelper/main/CHANGELOG.md";
+
+    match client.get(url).send().await {
+        Ok(res) => {
+            if res.status().is_success() {
+                if let Ok(text) = res.text().await {
+                    // Update cache asynchronously
+                    if let Err(e) = fs::write(&cache_file, &text) {
+                        eprintln!("Failed to write changelog cache: {e}");
+                    }
+                    return Ok(text);
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to fetch changelog online, falling back to cache: {e}");
+        }
+    }
+
+    // Fallback: Read cache
+    if cache_file.exists() {
+        fs::read_to_string(&cache_file)
+            .map_err(|e| format!("Failed to read cached changelog: {e}"))
+    } else {
+        Ok("# Changelog\n\nNo cached changelog available. Connect to the internet to fetch updates.".to_string())
+    }
+}
