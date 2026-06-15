@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use serde::Deserialize;
 use thiserror::Error;
 
-const LAUNCH_FLAGS: &str = "--remote-debugging-port=34788";
+const LAUNCH_FLAGS: &str = "--remote-debugging-port=34788 --remote-allow-origins=*";
 const LAUNCH_PROBE_TTL: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Error)]
@@ -147,9 +147,9 @@ fn validate_ws_url(raw: &str, expected_port: u16) -> Result<String, TargetError>
     }
 
     if url.port_or_known_default() != Some(expected_port) {
-        return Err(TargetError::InvalidWebSocketTarget(
-            format!("expected DevTools port {expected_port}").into(),
-        ));
+        return Err(TargetError::InvalidWebSocketTarget(format!(
+            "expected DevTools port {expected_port}"
+        )));
     }
 
     if !url.path().starts_with("/devtools/") {

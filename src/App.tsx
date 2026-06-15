@@ -148,7 +148,7 @@ export default function App() {
   useEffect(() => {
     void (async () => {
       try {
-        // 1. Perform automatic migration from legacy localStorage/themes.json
+        // 1. Perform automatic migration from legacy localStorage
         await migrateLegacyStorage()
 
         // 2. Hydrate all stores concurrently from settings.json, catching individual rejections

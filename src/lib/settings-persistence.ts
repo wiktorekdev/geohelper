@@ -114,21 +114,7 @@ export async function migrateLegacyStorage() {
 
     const settingsPath = await resolveStorePath()
 
-    // 1. Migrate themes from themes.json (delete only the migrated key, never clear).
-    try {
-      const themesPath = await invoke<string>("get_store_path", { filename: "themes.json" })
-      const oldThemesStore = await TauriStore.load(themesPath, { defaults: {}, autoSave: true })
-      const active = await oldThemesStore.get<string>("active")
-      if (active) {
-        await store.set("activeThemeId", active)
-        await oldThemesStore.delete("active")
-        await oldThemesStore.save()
-      }
-    } catch (e) {
-      logger.warn("Themes migration failed:", e)
-    }
-
-    // 2. Migrate Google API key from a legacy *relative* settings.json - only if
+    // 1. Migrate Google API key from a legacy *relative* settings.json - only if
     //    that path resolves to a different file than the active store. We never
     //    call .clear() on it: a relative-vs-absolute path race once wiped data.
     try {
@@ -149,7 +135,7 @@ export async function migrateLegacyStorage() {
       logger.warn("Legacy settings.json migration failed:", e)
     }
 
-    // 3. Migrate from localStorage.
+    // 2. Migrate from localStorage.
     for (const [localKey, storeKey] of Object.entries(LEGACY_LOCAL_STORAGE_KEYS)) {
       try {
         const value = localStorage.getItem(localKey)

@@ -77,7 +77,7 @@ Click the pencil icon to enter **Edit Mode**:
 
 - Drag & drop widgets anywhere on screen
 - Toggle and resize individual widgets
-- Custom Themes (built-in + fully custom via `themes.json`)
+- Light/Dark theme selector
 - Per-widget styling (colors, fonts, padding, etc.)
 
 <p align="center">

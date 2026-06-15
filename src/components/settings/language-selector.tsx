@@ -17,10 +17,13 @@ import { cn } from "@/lib/utils"
 export function LanguageSelector() {
   const t = useT()
   const locale = useI18n((s) => s.locale)
+  const localePreference = useI18n((s) => s.localePreference)
+  const detectedLocale = useI18n((s) => s.detectedLocale)
   const setLocale = useI18n((s) => s.setLocale)
   const [open, setOpen] = useState(false)
 
   const current = SUPPORTED_LOCALES.find((l) => l.id === locale) ?? SUPPORTED_LOCALES[0]
+  const detected = SUPPORTED_LOCALES.find((l) => l.id === detectedLocale) ?? SUPPORTED_LOCALES[0]
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,7 +46,11 @@ export function LanguageSelector() {
               svg
               style={{ width: 18, height: 13, borderRadius: 2, flexShrink: 0 }}
             />
-            <span className="truncate">{current.nativeLabel}</span>
+            <span className="truncate">
+              {localePreference === "auto"
+                ? t("settings.appearance.languageAutoValue", { language: current.nativeLabel })
+                : current.nativeLabel}
+            </span>
           </span>
           <ChevronsUpDown className="size-3.5 shrink-0 opacity-60" />
         </button>
@@ -58,6 +65,28 @@ export function LanguageSelector() {
           <CommandList id="language-listbox">
             <CommandEmpty>{t("settings.appearance.languageEmpty")}</CommandEmpty>
             <CommandGroup>
+              <CommandItem
+                value={`auto system windows ${detected.label} ${detected.nativeLabel}`}
+                onSelect={() => {
+                  setLocale("auto")
+                  setOpen(false)
+                }}
+              >
+                <ReactCountryFlag
+                  countryCode={detected.countryCode}
+                  svg
+                  style={{ width: 18, height: 13, borderRadius: 2, flexShrink: 0 }}
+                />
+                <span className="truncate">
+                  {t("settings.appearance.languageAuto", { language: detected.nativeLabel })}
+                </span>
+                <Check
+                  className={cn(
+                    "ml-auto size-3.5",
+                    localePreference === "auto" ? "opacity-100 text-brand" : "opacity-0"
+                  )}
+                />
+              </CommandItem>
               {SUPPORTED_LOCALES.map((l) => (
                 <CommandItem
                   key={l.id}
@@ -76,7 +105,7 @@ export function LanguageSelector() {
                   <Check
                     className={cn(
                       "ml-auto size-3.5",
-                      locale === l.id ? "opacity-100 text-brand" : "opacity-0"
+                      localePreference === l.id ? "opacity-100 text-brand" : "opacity-0"
                     )}
                   />
                 </CommandItem>

@@ -36,6 +36,7 @@ When adding release items in `CHANGELOG.md`, use exactly these categories under 
 - `### Added` — for completely new UI widgets, languages, or features.
 - `### Changed` — for structural adjustments, refactors, port shifts, or performance upgrades.
 - `### Fixed` — for precise bugs, parsing errors, or crash prevention.
+- `### Removed` — for intentionally retired features, assets, documentation, or compatibility paths.
 
 ---
 

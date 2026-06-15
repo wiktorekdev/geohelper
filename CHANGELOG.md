@@ -2,6 +2,28 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.21.0] - 2026-06-15
+
+### Added
+
+- **German locale** - added a complete German translation and automatic detection for German Windows locales.
+- **Automatic language selection** - language settings can now follow the system language when supported.
+
+### Changed
+
+- **Changelog UX refresh** - simplified the changelog sidebar with cleaner release headers, quieter category groups, and less decorative styling.
+
+### Fixed
+
+- **DevTools port validation lint** - removed a redundant Rust string conversion that failed Clippy with `-D warnings`.
+- **Launch option diagnostics** - backend diagnostics now show both required Steam flags.
+
+### Removed
+
+- **Custom theme system** - removed the low-use custom `themes.json` system, its migration path, example file, and documentation. The reliable built-in Light/Dark selector remains.
+
+---
+
 ## [0.20.0] - 2026-05-31
 
 ### Added
