@@ -21,7 +21,7 @@ export default function CopyButton({ text }: { text: string }) {
       type="button"
       onClick={copy}
       aria-label="Copy launch flags"
-      className="shrink-0 rounded border border-white/10 p-1 text-neutral-400 transition hover:bg-white/5 hover:text-white"
+      className="shrink-0 rounded border border-white/[0.06] p-1 text-zinc-500 transition hover:text-zinc-300"
     >
       {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
     </button>

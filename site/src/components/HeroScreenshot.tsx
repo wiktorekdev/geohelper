@@ -18,9 +18,9 @@ export default function HeroScreenshot() {
   }, [shots.length]);
 
   return (
-    <section className="relative mx-auto max-w-6xl px-6 pb-24">
+    <section className="relative mx-auto max-w-6xl px-6 pb-28">
       <div
-        className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-950"
+        className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-950 shadow-2xl shadow-indigo-500/[0.03]"
         onMouseEnter={() => {
           paused.current = true;
         }}
@@ -33,13 +33,11 @@ export default function HeroScreenshot() {
             key={s.src}
             src={s.src}
             alt={`GeoHelper showing ${s.label}`}
-            // Optimized LCP: first image has fetchPriority="high" and transitions normally
             fetchPriority={i === 0 ? "high" : "low"}
             className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
             style={{ opacity: i === idx ? 1 : 0 }}
           />
         ))}
-        {/* Render visible placeholder for layout constraints during SSG */}
         <img
           src={shots[0].src}
           aria-hidden

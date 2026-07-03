@@ -16,32 +16,32 @@ export default function NavMobileMenu() {
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex size-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.02] text-neutral-200 transition hover:bg-white/[0.06] md:hidden"
+        className="inline-flex size-9 items-center justify-center rounded-md border border-white/[0.06] text-zinc-400 transition hover:text-zinc-200 md:hidden"
       >
         {open ? <X className="size-4" /> : <Menu className="size-4" />}
       </button>
 
       {open && (
-        <nav className="mobile-menu-drawer absolute left-0 right-0 top-full border-t border-white/10 bg-neutral-950/95 px-6 py-4 md:hidden">
+        <nav className="mobile-menu-drawer absolute left-0 right-0 top-full border-t border-white/[0.06] bg-zinc-950/95 px-6 py-4 backdrop-blur-md md:hidden">
           <div className="flex flex-col gap-1 text-sm">
             <a
               href="#features"
               onClick={close}
-              className="rounded-md px-3 py-2.5 text-neutral-300 transition hover:bg-white/5 hover:text-white"
+              className="rounded-md px-3 py-2.5 text-zinc-400 transition hover:text-zinc-100"
             >
               Features
             </a>
             <a
               href="#customize"
               onClick={close}
-              className="rounded-md px-3 py-2.5 text-neutral-300 transition hover:bg-white/5 hover:text-white"
+              className="rounded-md px-3 py-2.5 text-zinc-400 transition hover:text-zinc-100"
             >
               Customize
             </a>
             <a
               href="#get-started"
               onClick={close}
-              className="rounded-md px-3 py-2.5 text-neutral-300 transition hover:bg-white/5 hover:text-white"
+              className="rounded-md px-3 py-2.5 text-zinc-400 transition hover:text-zinc-100"
             >
               Get started
             </a>
@@ -49,7 +49,7 @@ export default function NavMobileMenu() {
               href={GITHUB_URL}
               {...EXTERNAL_LINK_PROPS}
               onClick={close}
-              className="rounded-md px-3 py-2.5 text-neutral-300 transition hover:bg-white/5 hover:text-white"
+              className="rounded-md px-3 py-2.5 text-zinc-400 transition hover:text-zinc-100"
             >
               GitHub
             </a>
@@ -57,7 +57,7 @@ export default function NavMobileMenu() {
               href={RELEASES_LATEST_URL}
               {...EXTERNAL_LINK_PROPS}
               onClick={close}
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2.5 font-medium text-black transition hover:bg-neutral-200"
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-indigo-500 px-4 py-2.5 font-medium text-white transition hover:bg-indigo-400"
             >
               <Download className="size-4" />
               Download

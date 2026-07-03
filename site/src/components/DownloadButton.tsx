@@ -155,7 +155,7 @@ export default function DownloadButton() {
       <a
         href={href}
         {...EXTERNAL_LINK_PROPS}
-        className="inline-flex items-center gap-2 rounded-l-lg bg-white px-5 py-3 font-semibold text-black transition hover:bg-neutral-200"
+        className="inline-flex items-center gap-2 rounded-l-lg bg-indigo-500 px-5 py-3 font-semibold text-white transition hover:bg-indigo-400"
       >
         <Download className="size-[18px]" />
         <span className="hidden sm:inline">
@@ -168,13 +168,13 @@ export default function DownloadButton() {
         type="button"
         aria-label="Pick another platform"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex w-10 items-center justify-center rounded-r-lg border-l border-black/10 bg-white text-black transition hover:bg-neutral-200"
+        className="inline-flex w-10 items-center justify-center rounded-r-lg border-l border-indigo-400/30 bg-indigo-500 text-white transition hover:bg-indigo-400"
       >
         <ChevronDown className="size-4" />
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-lg border border-white/10 bg-neutral-950/95 p-1 text-left text-sm shadow-xl shadow-black/50 backdrop-blur">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-lg border border-white/[0.08] bg-zinc-950/95 p-1 text-left text-sm shadow-xl shadow-black/50 backdrop-blur-md">
           {TARGETS.filter((target) => target.id !== "desktop").map((target) => {
             const TargetIcon = target.icon;
             return (
@@ -184,19 +184,19 @@ export default function DownloadButton() {
                   setTargetId(target.id);
                   setOpen(false);
                 }}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-neutral-200 hover:bg-white/5"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-zinc-300 hover:bg-white/[0.04]"
               >
-                <TargetIcon className="size-4 text-neutral-400" />
+                <TargetIcon className="size-4 text-zinc-500" />
                 {target.label}
-                {targetId === target.id && <Check className="ml-auto size-3.5 text-red-400" />}
+                {targetId === target.id && <Check className="ml-auto size-3.5 text-indigo-400" />}
               </button>
             );
           })}
-          <div className="mt-1 border-t border-white/10 pt-1">
+          <div className="mt-1 border-t border-white/[0.06] pt-1">
             <a
               href={RELEASES_LATEST_URL}
               {...EXTERNAL_LINK_PROPS}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-neutral-400 hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-zinc-500 hover:bg-white/[0.04] hover:text-zinc-200"
             >
               All downloads
             </a>

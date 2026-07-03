@@ -17,7 +17,7 @@ export default function StickyHeader({ children }: { children: React.ReactNode }
       className={
         "sticky top-0 z-40 transition-colors duration-200 sticky-header-container " +
         (scrolled
-          ? "border-b border-white/10 bg-neutral-950/80 backdrop-blur-md"
+          ? "border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl"
           : "border-b border-transparent")
       }
     >
