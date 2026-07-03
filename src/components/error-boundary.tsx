@@ -11,7 +11,7 @@ function ErrorFallback({ error }: FallbackProps) {
       <div className="max-w-md space-y-4 text-center">
         <h1 className="text-lg font-semibold">{t("error.title")}</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">{t("error.message")}</p>
-        <pre className="max-h-32 overflow-auto rounded-md border border-sidebar-border bg-sidebar p-3 text-left text-[11px] text-muted-foreground font-mono">
+        <pre className="max-h-32 overflow-auto rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-left text-[11px] text-muted-foreground font-mono">
           {errorMessage}
         </pre>
         <div className="flex items-center justify-center pt-2">

@@ -48,16 +48,16 @@ export function ChangelogModal() {
           exit={{ opacity: 0, y: 8, scale: 0.96 }}
           transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           onClick={handleOpenDetails}
-          className="absolute inset-x-3 bottom-[64px] z-40 cursor-pointer overflow-hidden rounded-lg border border-sidebar-border bg-gradient-to-br from-background/90 via-background/75 to-amber-500/[0.06] shadow-xl backdrop-blur-md transition-all duration-300 hover:border-amber-500/20 hover:bg-amber-500/[0.02] group"
+          className="absolute inset-x-3 bottom-[64px] z-40 cursor-pointer overflow-hidden rounded-xl border border-white/[0.06] bg-sidebar/90 shadow-xl backdrop-blur-lg transition-all duration-300 hover:border-white/[0.1] group"
         >
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent"
           />
 
           <div className="flex items-center justify-between gap-3 px-3 py-2">
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-md border border-amber-500/10 bg-amber-500/15 text-amber-500 transition-transform duration-200 group-hover:scale-105">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-md border border-brand/10 bg-brand/15 text-brand transition-transform duration-200 group-hover:scale-105">
                 <Sparkles className="size-3.5" />
               </div>
               <div className="min-w-0 flex-1">

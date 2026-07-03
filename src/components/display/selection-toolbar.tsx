@@ -63,7 +63,7 @@ export function SelectionToolbar() {
           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
           className="pointer-events-none flex w-full justify-center"
         >
-          <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+          <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border border-white/[0.06] bg-sidebar/90 px-2 py-1.5 shadow-2xl shadow-black/30 backdrop-blur-xl">
             <div className="inline-flex shrink-0 items-center gap-1.5 px-1.5 text-[12px] font-medium">
               <Type className="size-3.5 text-brand" />
               <span className="tabular-nums">
@@ -82,7 +82,7 @@ export function SelectionToolbar() {
                   setSelectionStyle({ fontFamily: fontFamily as TextFont })
                 }
               >
-                <SelectTrigger className="h-7 w-[128px] shrink-0 border-sidebar-border bg-background/50 px-2 text-[11px]">
+                <SelectTrigger className="h-7 w-[128px] shrink-0 border-0 bg-white/[0.04] px-2 text-[11px] hover:bg-white/[0.08]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent side="top" align="start" className="z-[2300] max-h-72">
@@ -95,14 +95,14 @@ export function SelectionToolbar() {
               </Select>
             )}
 
-            <div className="inline-flex h-7 shrink-0 items-center gap-2 rounded-md border border-sidebar-border bg-background/50 px-2">
+            <div className="inline-flex h-7 shrink-0 items-center gap-2 rounded-lg bg-white/[0.04] px-2">
               <input
                 type="number"
                 min={MIN_TEXT_SIZE}
                 max={MAX_TEXT_SIZE}
                 value={summary.fontSize ?? DEFAULT_TEXT_STYLE.fontSize}
                 onChange={(e) => setSelectionStyle({ fontSize: normalizeTextSize(e.target.value) })}
-                className="number-input-clean h-5 w-10 rounded border border-sidebar-border bg-transparent px-1 text-right font-mono text-[11px] text-muted-foreground outline-none focus:border-ring"
+                className="number-input-clean h-5 w-8 bg-transparent text-right font-mono text-[10px] text-muted-foreground outline-none"
                 aria-label="Text size"
               />
               <input
@@ -111,7 +111,7 @@ export function SelectionToolbar() {
                 max={MAX_TEXT_SIZE}
                 value={summary.fontSize ?? DEFAULT_TEXT_STYLE.fontSize}
                 onChange={(e) => setSelectionStyle({ fontSize: Number(e.target.value) })}
-                className="h-1 w-24 cursor-pointer appearance-none rounded-lg bg-accent accent-primary focus:outline-none"
+                className="h-1 w-20 cursor-pointer appearance-none rounded-lg bg-white/[0.08] accent-primary focus:outline-none"
                 aria-label="Text size"
               />
             </div>
@@ -123,10 +123,10 @@ export function SelectionToolbar() {
                     <button
                       onClick={() => setSelectionStyle({ bold: !summary.bold })}
                       className={cn(
-                        "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                        "inline-flex size-7 items-center justify-center rounded-lg transition-colors",
                         summary.bold
-                          ? "bg-accent text-foreground"
-                          : "bg-background/50 text-muted-foreground hover:text-foreground"
+                          ? "bg-white/[0.1] text-foreground"
+                          : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                       )}
                       aria-pressed={summary.bold}
                       aria-label={t("selection.bold")}
@@ -147,10 +147,10 @@ export function SelectionToolbar() {
                       <button
                         onClick={() => setSelectionStyle({ italic: !summary.italic })}
                         className={cn(
-                          "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                          "inline-flex size-7 items-center justify-center rounded-lg transition-colors",
                           summary.italic
-                            ? "bg-accent text-foreground"
-                            : "bg-background/50 text-muted-foreground hover:text-foreground"
+                            ? "bg-white/[0.1] text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                         )}
                         aria-pressed={summary.italic}
                         aria-label="Italic"
@@ -168,10 +168,10 @@ export function SelectionToolbar() {
                       <button
                         onClick={() => setSelectionStyle({ underline: !summary.underline })}
                         className={cn(
-                          "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                          "inline-flex size-7 items-center justify-center rounded-lg transition-colors",
                           summary.underline
-                            ? "bg-accent text-foreground"
-                            : "bg-background/50 text-muted-foreground hover:text-foreground"
+                            ? "bg-white/[0.1] text-foreground"
+                            : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                         )}
                         aria-pressed={summary.underline}
                         aria-label="Underline"
@@ -202,10 +202,10 @@ export function SelectionToolbar() {
                   <button
                     onClick={() => setSelectionHidden(!allHidden)}
                     className={cn(
-                      "inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border transition-colors",
+                      "inline-flex size-7 items-center justify-center rounded-lg transition-colors",
                       allHidden
-                        ? "bg-accent text-foreground"
-                        : "bg-background/50 text-muted-foreground hover:text-foreground"
+                        ? "bg-white/[0.1] text-foreground"
+                        : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                     )}
                     aria-pressed={allHidden}
                     aria-label={allHidden ? t("selection.show") : t("selection.hide")}
@@ -224,7 +224,7 @@ export function SelectionToolbar() {
                 <Toolbar.Button asChild>
                   <button
                     onClick={resetSelection}
-                    className="inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border bg-background/50 text-muted-foreground transition-colors hover:text-foreground"
+                    className="inline-flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
                     aria-label={t("selection.reset")}
                   >
                     <RotateCcw className="size-3.5" />
@@ -239,7 +239,7 @@ export function SelectionToolbar() {
                 <Toolbar.Button asChild>
                   <button
                     onClick={clearSelection}
-                    className="inline-flex size-7 items-center justify-center rounded-md border border-sidebar-border bg-background/50 text-muted-foreground transition-colors hover:text-foreground"
+                    className="inline-flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
                     aria-label={t("selection.deselect")}
                   >
                     <X className="size-3.5" />
@@ -256,7 +256,7 @@ export function SelectionToolbar() {
 }
 
 function Divider() {
-  return <span className="mx-0.5 h-5 w-px bg-sidebar-border" />
+  return <span className="mx-0.5 h-5 w-px bg-white/[0.06]" />
 }
 
 function kindForId(id: string): "flag" | "text" {
@@ -389,7 +389,7 @@ function ColorPickerButton({
           type="button"
           onClick={handleSwatchClick}
           className={cn(
-            "relative size-7 shrink-0 overflow-hidden rounded-md border border-sidebar-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "relative size-7 shrink-0 overflow-hidden rounded-lg ring-1 ring-white/[0.1] transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             rainbow && "animate-rainbow-swatch bg-[length:220%_100%]"
           )}
           style={{
@@ -411,7 +411,7 @@ function ColorPickerButton({
         sideOffset={10}
         collisionPadding={12}
         avoidCollisions
-        className="z-[2200] w-64 p-4 border border-sidebar-border bg-popover rounded-lg shadow-2xl"
+        className="z-[2200] w-64 p-4 border border-white/[0.08] bg-popover rounded-lg shadow-2xl backdrop-blur-lg"
       >
         <ColorPicker
           value={value ?? "#f9f9f9"}
@@ -421,10 +421,10 @@ function ColorPickerButton({
           <ColorPickerSelection className="h-32 rounded-lg" />
           <ColorPickerHue />
         </ColorPicker>
-        <div className="mt-2 flex items-center gap-2 border-t border-sidebar-border pt-2">
+        <div className="mt-2 flex items-center gap-2 border-t border-white/[0.06] pt-2">
           <div
             className={cn(
-              "size-5 shrink-0 rounded border border-sidebar-border",
+              "size-5 shrink-0 rounded-full ring-1 ring-white/[0.1]",
               rainbow && "animate-rainbow-swatch bg-[length:220%_100%]"
             )}
             style={{
@@ -437,7 +437,7 @@ function ColorPickerButton({
           <input
             className={cn(
               "h-7 flex-1 rounded-md border px-2 text-[11px] font-mono bg-background outline-none transition-colors",
-              invalid ? "border-red-500 text-red-500" : "border-sidebar-border focus:border-ring"
+              invalid ? "border-red-500 text-red-500" : "border-white/[0.08] focus:border-brand/40"
             )}
             value={inputVal}
             placeholder="#rrggbb or r, g, b"

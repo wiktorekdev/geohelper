@@ -136,11 +136,11 @@ export function ChangelogSidebar() {
         className="flex h-full shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar animate-in slide-in-from-left duration-200"
         style={{ width: sidebarWidth }}
       >
-        <header className="flex items-center gap-2 border-b border-sidebar-border/20 p-3">
+        <header className="flex items-center gap-2 border-b border-white/[0.04] p-3.5">
           <Button
             size="icon"
             variant="ghost"
-            className="size-8 text-muted-foreground hover:text-foreground"
+            className="size-7 text-muted-foreground hover:text-foreground"
             onClick={() => {
               if (backToSidebar) {
                 setSelectedVersion(null, false)
@@ -152,14 +152,14 @@ export function ChangelogSidebar() {
           >
             <ArrowLeft className="size-4" />
           </Button>
-          <div className="text-[14px] font-semibold tracking-tight text-foreground">
+          <div className="text-[13px] font-semibold tracking-tight text-foreground">
             {t("update.releaseDetails")}
           </div>
         </header>
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-4 py-4">
-            <div className="mb-4 border-l-2 border-brand/70 pl-3">
+            <div className="mb-4 border-l-2 border-brand/40 pl-3">
               <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {formatDate(selectedVersion.date, locale)}
               </div>
@@ -238,21 +238,21 @@ export function ChangelogSidebar() {
       className="flex h-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar"
       style={{ width: sidebarWidth }}
     >
-      <header className="flex items-center gap-2 border-b border-sidebar-border/20 p-3">
+      <header className="flex items-center gap-2 border-b border-white/[0.04] p-3.5">
         <Button
           size="icon"
           variant="ghost"
-          className="size-8 text-muted-foreground hover:text-foreground"
+          className="size-7 text-muted-foreground hover:text-foreground"
           onClick={close}
         >
           <ArrowLeft className="size-4" />
         </Button>
-        <div className="text-[15px] font-semibold tracking-tight text-foreground">
+        <div className="text-[13px] font-semibold tracking-tight text-foreground">
           {t("update.changelog")}
         </div>
       </header>
 
-      <div className="border-b border-sidebar-border/10 px-4 py-2">
+      <div className="border-b border-white/[0.03] px-4 py-2.5">
         <div className="relative flex items-center">
           <Search className="absolute left-2.5 size-3.5 text-muted-foreground" />
           <input
@@ -260,7 +260,7 @@ export function ChangelogSidebar() {
             placeholder={t("update.searchChangelog")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-md border border-sidebar-border/40 bg-accent/30 py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-brand/40 focus:outline-none focus:ring-1 focus:ring-brand/40"
+            className="w-full rounded-lg border border-white/[0.06] bg-white/[0.03] py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-brand/30 focus:outline-none focus:ring-1 focus:ring-brand/30"
           />
         </div>
       </div>
@@ -290,10 +290,10 @@ export function ChangelogSidebar() {
                 return (
                   <div key={ver.version} className="relative pl-5">
                     {idx !== filteredVersions.length - 1 && (
-                      <span className="absolute bottom-0 left-[5px] top-6 w-px bg-sidebar-border/35" />
+                      <span className="absolute bottom-0 left-[4px] top-6 w-px bg-white/[0.08]" />
                     )}
 
-                    <span className="absolute left-0 top-2 h-3 w-3 rounded-sm border border-brand/70 bg-sidebar" />
+                    <span className="absolute left-[2px] top-[10px] size-[5px] rounded-full bg-brand/70" />
 
                     <div className="-m-1 mb-2 flex w-full items-center justify-between rounded-md p-1 transition-colors hover:bg-accent/20 group">
                       <button

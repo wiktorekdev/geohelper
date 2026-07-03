@@ -20,7 +20,7 @@ export function RoadSection() {
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
         >
-          <Card className="mx-4 my-2 p-3.5 space-y-1.5">
+          <Card className="mx-3 my-1.5 p-4 space-y-1.5">
             {place.road && <InfoRow id="road.road" label={t("location.road")} value={place.road} />}
             {place.postcode && (
               <InfoRow

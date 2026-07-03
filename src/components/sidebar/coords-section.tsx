@@ -53,7 +53,7 @@ export function CoordsSection() {
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
         >
-          <Card className="mx-4 my-2 p-3">
+          <Card className="mx-3 my-1.5 p-4">
             <div className="grid grid-cols-2 gap-2">
               <Value id="coordinates.lat" label={t("coordinates.lat")} value={coords.lat} />
               <Value id="coordinates.lng" label={t("coordinates.lng")} value={coords.lng} />
@@ -91,8 +91,8 @@ export function CoordsSection() {
 
 function Value({ id, label, value }: { id: string; label: string; value: number }) {
   return (
-    <div className="rounded border border-sidebar-border bg-background/50 px-2.5 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+    <div className="rounded-lg bg-white/[0.03] px-2.5 py-2">
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
         <SelectableText id={`${id}.label`}>{label}</SelectableText>
       </div>
       <div className="mt-0.5 truncate font-mono text-[12px] tabular-nums">
@@ -110,7 +110,7 @@ function Action({ onClick, children }: { onClick: () => void; children: React.Re
       variant="outline"
       size="sm"
       onClick={onClick}
-      className="h-8 w-full gap-1.5 border-sidebar-border text-xs text-muted-foreground hover:text-foreground"
+      className="h-7 w-full gap-1.5 text-xs text-muted-foreground hover:text-foreground"
     >
       {children}
     </Button>

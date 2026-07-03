@@ -33,13 +33,13 @@ const ScrollBar = ({ className, orientation = "vertical", ref, ...props }: Scrol
     orientation={orientation}
     className={cn(
       "flex touch-none select-none transition-colors",
-      orientation === "vertical" && "h-full w-1.5 border-l border-l-transparent p-[1px]",
-      orientation === "horizontal" && "h-1.5 flex-col border-t border-t-transparent p-[1px]",
+      orientation === "vertical" && "h-full w-1 border-l border-l-transparent p-[1px]",
+      orientation === "horizontal" && "h-1 flex-col border-t border-t-transparent p-[1px]",
       className
     )}
     {...props}
   >
-    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-white/[0.08]" />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 )
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName

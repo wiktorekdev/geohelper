@@ -33,11 +33,11 @@ export function UpdateBanner() {
           animate={{ opacity: 1, height: "auto", scale: 1, marginBottom: 8 }}
           exit={{ opacity: 0, height: 0, scale: 0.95, marginBottom: 0 }}
           transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
-          className="relative mx-3 overflow-hidden rounded-lg border border-sidebar-border bg-gradient-to-br from-background/80 via-background/60 to-brand/[0.04] shadow-sm"
+          className="relative mx-3 overflow-hidden rounded-xl border border-white/[0.06] bg-sidebar/90 shadow-sm backdrop-blur-sm"
         >
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/20 to-transparent"
           />
 
           <div className="px-3 pt-2.5 pb-2">
@@ -77,7 +77,7 @@ export function UpdateBanner() {
                 </div>
                 <div className="relative h-1.5 overflow-hidden rounded-full bg-accent/50">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-brand to-emerald-500 transition-[width] duration-200"
+                    className="h-full rounded-full bg-gradient-to-r from-brand to-brand/60 transition-[width] duration-200"
                     style={{ width: pct !== null ? `${pct}%` : "40%" }}
                   />
                   {pct === null && (

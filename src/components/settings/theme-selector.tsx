@@ -87,8 +87,8 @@ export function ThemeSelector() {
 }
 
 function ThemeSwatch({ theme }: { theme: Theme }) {
-  const bg = theme.mode === "dark" ? "oklch(0.18 0 0)" : "oklch(0.98 0 0)"
-  const fg = theme.mode === "dark" ? "oklch(0.96 0 0)" : "oklch(0.145 0 0)"
+  const bg = theme.mode === "dark" ? "oklch(0.18 0.006 286)" : "oklch(0.98 0.003 286)"
+  const fg = theme.mode === "dark" ? "oklch(0.96 0.003 286)" : "oklch(0.145 0.006 286)"
 
   return (
     <span

@@ -57,8 +57,8 @@ export function SettingsSidebar() {
       className="flex h-full shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar"
       style={{ width: sidebarWidth }}
     >
-      <header className="flex items-center gap-2 p-3">
-        <Button size="icon" variant="ghost" className="size-8" onClick={close}>
+      <header className="flex items-center gap-2 border-b border-white/[0.04] p-3.5">
+        <Button size="icon" variant="ghost" className="size-7" onClick={close}>
           <ArrowLeft className="size-4" />
         </Button>
         <div className="text-[15px] font-semibold tracking-tight">{t("settings.title")}</div>
@@ -89,7 +89,7 @@ export function SettingsSidebar() {
         />
       </ScrollArea>
 
-      <footer className="flex items-center justify-center gap-1 border-t border-sidebar-border px-4 py-3">
+      <footer className="flex items-center justify-center gap-1 border-t border-white/[0.04] px-4 py-3.5">
         <SocialIcon title="GitHub" onClick={() => openUrl(GITHUB_URL)}>
           <GithubIcon className="size-4" />
         </SocialIcon>

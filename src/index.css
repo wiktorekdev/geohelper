@@ -4,54 +4,54 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0 0);
-  --foreground: oklch(0.145 0 0);
-  --sidebar: oklch(1 0 0);
-  --sidebar-border: oklch(0.9 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.94 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.98 0.003 286);
+  --foreground: oklch(0.145 0.006 286);
+  --sidebar: oklch(0.985 0.002 286);
+  --sidebar-border: oklch(0.91 0.004 286);
+  --card: oklch(0.99 0.002 286);
+  --card-foreground: oklch(0.145 0.006 286);
+  --popover: oklch(0.99 0.002 286);
+  --popover-foreground: oklch(0.145 0.006 286);
+  --primary: oklch(0.205 0.006 286);
+  --primary-foreground: oklch(0.985 0.002 286);
+  --secondary: oklch(0.955 0.004 286);
+  --secondary-foreground: oklch(0.205 0.006 286);
+  --muted: oklch(0.955 0.004 286);
+  --muted-foreground: oklch(0.48 0.006 286);
+  --accent: oklch(0.94 0.004 286);
+  --accent-foreground: oklch(0.205 0.006 286);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.9 0 0);
-  --ring: oklch(0.705 0.015 286);
-  --brand: oklch(0.6 0.22 25);
-  --radius: 0.5rem;
+  --destructive-foreground: oklch(0.985 0.002 286);
+  --border: oklch(0.91 0.004 286);
+  --input: oklch(0.91 0.004 286);
+  --ring: oklch(0.585 0.233 277);
+  --brand: oklch(0.585 0.233 277);
+  --radius: 0.625rem;
 }
 
 .dark {
-  --background: oklch(0.105 0 0);
-  --foreground: oklch(0.96 0 0);
-  --sidebar: oklch(0.16 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --card: oklch(0.18 0 0);
-  --card-foreground: oklch(0.96 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.96 0 0);
-  --primary: oklch(0.92 0 0);
-  --primary-foreground: oklch(0.18 0 0);
-  --secondary: oklch(0.22 0 0);
-  --secondary-foreground: oklch(0.96 0 0);
-  --muted: oklch(0.22 0 0);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.24 0 0);
-  --accent-foreground: oklch(0.96 0 0);
+  --background: oklch(0.09 0.006 286);
+  --foreground: oklch(0.95 0.004 286);
+  --sidebar: oklch(0.135 0.006 286);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --card: oklch(0.155 0.006 286);
+  --card-foreground: oklch(0.95 0.004 286);
+  --popover: oklch(0.155 0.006 286);
+  --popover-foreground: oklch(0.95 0.004 286);
+  --primary: oklch(0.92 0.004 286);
+  --primary-foreground: oklch(0.155 0.006 286);
+  --secondary: oklch(0.2 0.006 286);
+  --secondary-foreground: oklch(0.95 0.004 286);
+  --muted: oklch(0.2 0.006 286);
+  --muted-foreground: oklch(0.55 0.006 286);
+  --accent: oklch(0.22 0.006 286);
+  --accent-foreground: oklch(0.95 0.004 286);
   --destructive: oklch(0.7 0.2 22);
-  --destructive-foreground: oklch(0.96 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.55 0.015 286);
-  --brand: oklch(0.68 0.22 25);
+  --destructive-foreground: oklch(0.95 0.004 286);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.65 0.233 277);
+  --brand: oklch(0.65 0.233 277);
 }
 
 @theme inline {
@@ -92,12 +92,11 @@
     height: 100%;
     margin: 0;
   }
-  /* Global base styling: keep text selectable on content elements by default,
-     but disable on interactive buttons, triggers, icons, inputs range, and toolbar boxes. */
   body {
     background: var(--background);
     color: var(--foreground);
     font-family:
+      "Inter",
       ui-sans-serif,
       system-ui,
       -apple-system,
@@ -154,8 +153,6 @@
   background: var(--accent) !important;
 }
 
-/* Custom Leaflet divIcon for the panorama marker. Kept here so the icon
-   HTML returned from React doesn't carry an inline <style> tag. */
 .geohelper-marker {
   position: relative;
   filter: drop-shadow(0 2.5px 4.5px rgba(0, 0, 0, 0.35));
@@ -235,4 +232,59 @@
 
 .animate-barrel-roll {
   animation: barrel-roll 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Light-mode remap of white-alpha surface utilities.
+   The app's surfaces are authored for dark mode with white/[alpha] tints;
+   on a light background those are invisible, so flip them to black tints. */
+html:not(.dark) {
+  .border-white\/\[0\.03\] {
+    border-color: rgb(0 0 0 / 0.04);
+  }
+  .border-white\/\[0\.04\] {
+    border-color: rgb(0 0 0 / 0.05);
+  }
+  .border-white\/\[0\.06\] {
+    border-color: rgb(0 0 0 / 0.08);
+  }
+  .border-white\/\[0\.08\] {
+    border-color: rgb(0 0 0 / 0.1);
+  }
+  .bg-white\/\[0\.01\] {
+    background-color: rgb(0 0 0 / 0.015);
+  }
+  .bg-white\/\[0\.02\] {
+    background-color: rgb(0 0 0 / 0.025);
+  }
+  .bg-white\/\[0\.03\] {
+    background-color: rgb(0 0 0 / 0.035);
+  }
+  .bg-white\/\[0\.04\] {
+    background-color: rgb(0 0 0 / 0.045);
+  }
+  .bg-white\/\[0\.06\] {
+    background-color: rgb(0 0 0 / 0.07);
+  }
+  .bg-white\/\[0\.08\] {
+    background-color: rgb(0 0 0 / 0.09);
+  }
+  .bg-white\/\[0\.1\] {
+    background-color: rgb(0 0 0 / 0.11);
+  }
+  .ring-white\/\[0\.1\] {
+    --tw-ring-color: rgb(0 0 0 / 0.15);
+  }
+  .hover\:bg-white\/\[0\.04\]:hover,
+  .focus\:bg-white\/\[0\.04\]:focus {
+    background-color: rgb(0 0 0 / 0.045);
+  }
+  .hover\:bg-white\/\[0\.06\]:hover {
+    background-color: rgb(0 0 0 / 0.07);
+  }
+  .hover\:bg-white\/\[0\.08\]:hover {
+    background-color: rgb(0 0 0 / 0.09);
+  }
+  .hover\:border-white\/\[0\.1\]:hover {
+    border-color: rgb(0 0 0 / 0.12);
+  }
 }

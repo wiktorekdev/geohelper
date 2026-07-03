@@ -21,13 +21,13 @@ export function LocationSection() {
     switch (display.kind) {
       case "error":
         return (
-          <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">
+          <Card className="mx-3 my-1.5 p-4 text-sm text-muted-foreground">
             {t("location.couldNotShow")}
           </Card>
         )
       case "sparse":
         return (
-          <Card className="mx-4 my-2 p-4 space-y-2">
+          <Card className="mx-3 my-1.5 p-4 space-y-2">
             <div className="text-sm font-medium leading-snug">{display.primary}</div>
             {display.continent && (
               <div className="text-[11px] text-muted-foreground">{display.continent}</div>
@@ -39,7 +39,7 @@ export function LocationSection() {
         )
       case "loading":
         return (
-          <Card className="mx-4 my-2 p-4 space-y-1 text-sm text-muted-foreground">
+          <Card className="mx-3 my-1.5 p-4 space-y-1 text-sm text-muted-foreground">
             {display.rough ? (
               <div className="text-[13px] text-foreground/90">{display.rough}</div>
             ) : null}
@@ -48,7 +48,7 @@ export function LocationSection() {
         )
       case "empty":
         return (
-          <Card className="mx-4 my-2 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>
+          <Card className="mx-3 my-1.5 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>
         )
       case "settlement":
         return <SettlementView display={display} />
@@ -82,7 +82,7 @@ function SettlementView({
   const flagRadius = Math.round(fontSizePx * 0.28)
 
   return (
-    <Card className="mx-4 my-2 p-4 space-y-3">
+    <Card className="mx-3 my-1.5 p-4 space-y-3">
       <div className="flex items-center gap-3">
         {display.countryCode && (
           <SelectableText id="country.flag">
@@ -107,11 +107,11 @@ function SettlementView({
           </SelectableText>
         )}
         <div className="min-w-0 flex-1">
-          <div className="truncate text-base font-semibold">
+          <div className="truncate text-[15px] font-semibold">
             <SelectableText id="country.title">{display.country}</SelectableText>
           </div>
           {display.continentLine && (
-            <div className="truncate text-[11px] text-muted-foreground">
+            <div className="truncate text-[10px] text-muted-foreground">
               <SelectableText id="country.continent">{display.continentLine}</SelectableText>
             </div>
           )}

@@ -12,7 +12,7 @@ import { clearMockIfPresent } from "@/lib/mock-data"
 import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
-const DEFAULT_MARKER_COLOR = "#dc2626"
+const DEFAULT_MARKER_COLOR = "#818cf8"
 const DEFAULT_MARKER_BORDER = "#ffffff"
 const DEFAULT_MARKER_SIZE = 24
 
@@ -92,7 +92,7 @@ export function EditToolbar() {
             transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
             className="pointer-events-none flex w-full justify-center"
           >
-            <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-xl backdrop-blur">
+            <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 whitespace-nowrap rounded-2xl border border-white/[0.06] bg-sidebar/90 backdrop-blur-xl px-2 py-1.5 shadow-xl backdrop-blur">
               <div className="inline-flex shrink-0 items-center gap-1.5 px-1 text-[12px] font-medium">
                 <Pencil className="size-3.5 text-brand" />
                 {mapVisible && (
@@ -201,14 +201,14 @@ export function EditToolbar() {
             onMouseDown={() => setResetOpen(false)}
           >
             <m.div
-              className="w-full max-w-[360px] overflow-hidden rounded-xl border border-sidebar-border bg-sidebar/95 shadow-2xl backdrop-blur-md"
+              className="w-full max-w-[360px] overflow-hidden rounded-2xl border border-white/[0.06] bg-sidebar/90 backdrop-blur-xl shadow-2xl backdrop-blur-md"
               initial={{ y: 18, scale: 0.96 }}
               animate={{ y: 0, scale: 1 }}
               exit={{ y: 18, scale: 0.96 }}
               transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
               onMouseDown={(event) => event.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-sidebar-border/60 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
                 <div>
                   <div className="text-sm font-semibold text-foreground">Reset layout</div>
                   <div className="text-[11px] text-muted-foreground">
@@ -254,7 +254,7 @@ export function EditToolbar() {
                 ))}
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-sidebar-border/60 px-4 py-3">
+              <div className="flex items-center justify-end gap-2 border-t border-white/[0.06] px-4 py-3">
                 <Button
                   variant="ghost"
                   size="sm"

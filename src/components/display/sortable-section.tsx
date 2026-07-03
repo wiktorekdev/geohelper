@@ -50,14 +50,14 @@ export function SortableSection({ id, children }: Props) {
         isDragging
           ? "z-10 border-brand/60 bg-background/80 shadow-lg"
           : sectionSelected
-            ? "border-brand/50 bg-brand/[0.04]"
-            : "border-sidebar-border/70 bg-background/30",
+            ? "border-brand/40 bg-brand/[0.03]"
+            : "border-white/[0.08] bg-white/[0.01]",
         allHidden && "opacity-50"
       )}
     >
       <div
         data-no-marquee
-        className="flex items-center gap-1 border-b border-sidebar-border/50 bg-background/40 px-1.5 py-1"
+        className="flex items-center gap-1 border-b border-white/[0.04] bg-white/[0.02] px-1.5 py-1"
       >
         <button
           {...attributes}
@@ -71,7 +71,7 @@ export function SortableSection({ id, children }: Props) {
           type="button"
           onClick={(event) => selectWidget(id, event.shiftKey || event.ctrlKey || event.metaKey)}
           className={cn(
-            "flex-1 truncate rounded px-1 py-0.5 text-left text-[10px] font-medium uppercase tracking-wide transition-colors",
+            "flex-1 truncate rounded px-1 py-0.5 text-left text-[9px] font-medium uppercase tracking-wider transition-colors",
             sectionSelected
               ? "text-brand"
               : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"

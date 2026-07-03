@@ -12,7 +12,7 @@ export function StatusDot({ conn }: { conn: ConnState }) {
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "mr-1 inline-block size-1.5 rounded-full",
+            "mr-1.5 inline-block size-1 rounded-full",
             tone === "ok" && "bg-emerald-500",
             tone === "warn" && "bg-amber-500 animate-pulse",
             tone === "bad" && "bg-rose-500"

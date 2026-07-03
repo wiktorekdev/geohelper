@@ -12,7 +12,7 @@ import { useStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { useT } from "@/lib/i18n"
 
-const DEFAULT_MARKER_COLOR = "#dc2626"
+const DEFAULT_MARKER_COLOR = "#818cf8"
 const DEFAULT_MARKER_BORDER = "#ffffff"
 const DEFAULT_MARKER_SIZE = 24
 const MARKER_MIN_SIZE = 8
@@ -67,15 +67,15 @@ function MarkerColorButton({ label, value, onChange }: MarkerColorButtonProps) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-7 w-[78px] items-center gap-1.5 rounded-md border border-sidebar-border bg-background/50 px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-white/[0.04] px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground"
           aria-label={label}
           title={label}
         >
           <span
-            className="size-3.5 rounded-sm border border-sidebar-border"
+            className="size-3 rounded-full ring-1 ring-white/[0.1]"
             style={{ backgroundColor: value }}
           />
-          <span className="min-w-0 truncate font-mono uppercase">{value.replace("#", "")}</span>
+          <span className="min-w-0 truncate font-mono text-[10px] uppercase">{value.replace("#", "")}</span>
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -83,21 +83,21 @@ function MarkerColorButton({ label, value, onChange }: MarkerColorButtonProps) {
         align="center"
         sideOffset={10}
         collisionPadding={12}
-        className="z-[2300] w-64 rounded-lg border border-sidebar-border bg-popover p-4 shadow-2xl"
+        className="z-[2300] w-64 rounded-lg border border-white/[0.08] bg-popover p-4 shadow-2xl backdrop-blur-lg"
       >
         <ColorPicker value={value} onChange={handleChange} className="flex flex-col gap-3">
           <ColorPickerSelection className="h-32 rounded-lg" />
           <ColorPickerHue />
         </ColorPicker>
-        <div className="mt-2 flex items-center gap-2 border-t border-sidebar-border pt-2">
+        <div className="mt-2 flex items-center gap-2 border-t border-white/[0.06] pt-2">
           <div
-            className="size-5 shrink-0 rounded border border-sidebar-border"
+            className="size-5 shrink-0 rounded-full ring-1 ring-white/[0.1]"
             style={{ backgroundColor: value }}
           />
           <input
             className={cn(
               "h-7 flex-1 rounded-md border bg-background px-2 font-mono text-[11px] outline-none transition-colors",
-              invalid ? "border-red-500 text-red-500" : "border-sidebar-border focus:border-ring"
+              invalid ? "border-red-500 text-red-500" : "border-white/[0.08] focus:border-brand/40"
             )}
             value={inputValue}
             onChange={(e) => {
@@ -147,7 +147,7 @@ export function MarkerToolbar() {
           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
           className="pointer-events-none flex w-full justify-center"
         >
-          <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-xl border border-sidebar-border bg-sidebar/95 px-2 py-1.5 shadow-lg backdrop-blur">
+          <Toolbar.Root className="pointer-events-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border border-white/[0.06] bg-sidebar/90 backdrop-blur-xl px-2 py-1.5 shadow-lg backdrop-blur">
             <div className="inline-flex shrink-0 items-center gap-1.5 px-1 text-[12px] font-medium">
               <MapPin className="size-3.5 text-brand" />
               {mapVisible && (
@@ -170,14 +170,14 @@ export function MarkerToolbar() {
 
             <Divider />
 
-            <div className="inline-flex h-7 shrink-0 items-center gap-2 rounded-md border border-sidebar-border bg-background/50 px-2">
+            <div className="inline-flex h-7 shrink-0 items-center gap-2 rounded-lg bg-white/[0.04] px-2">
               <input
                 type="number"
                 min={MARKER_MIN_SIZE}
                 max={MARKER_MAX_SIZE}
                 value={markerSize}
                 onChange={(e) => setMarkerSize(Number(e.target.value))}
-                className="number-input-clean h-5 w-10 rounded border border-sidebar-border bg-transparent px-1 text-right font-mono text-[11px] text-muted-foreground outline-none focus:border-ring"
+                className="number-input-clean h-5 w-8 bg-transparent text-right font-mono text-[10px] text-muted-foreground outline-none"
                 aria-label={t("marker.size")}
               />
               <input
@@ -187,8 +187,8 @@ export function MarkerToolbar() {
                 value={markerSize}
                 onChange={(e) => setMarkerSize(Number(e.target.value))}
                 className={cn(
-                  "h-1 cursor-pointer appearance-none rounded-lg bg-accent accent-primary focus:outline-none",
-                  mapVisible ? "w-24" : "w-20"
+                  "h-1 cursor-pointer appearance-none rounded-lg bg-white/[0.08] accent-primary focus:outline-none",
+                  mapVisible ? "w-20" : "w-16"
                 )}
                 aria-label={t("marker.size")}
               />
@@ -222,5 +222,5 @@ export function MarkerToolbar() {
 }
 
 function Divider() {
-  return <span className="mx-0.5 h-5 w-px bg-sidebar-border" />
+  return <span className="mx-0.5 h-4 w-px bg-white/[0.06]" />
 }

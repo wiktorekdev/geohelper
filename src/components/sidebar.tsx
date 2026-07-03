@@ -114,7 +114,7 @@ export function Sidebar() {
     <aside
       className={cn(
         "relative flex h-full flex-col overflow-hidden bg-sidebar border-r border-sidebar-border",
-        editing && "ring-1 ring-inset ring-brand/20",
+        editing && "ring-1 ring-inset ring-brand/10",
         mapVisible ? "shrink-0" : "flex-1"
       )}
       style={{ width: mapVisible ? sidebarWidth : undefined }}
@@ -131,9 +131,9 @@ export function Sidebar() {
           aria-label="Resize sidebar"
         />
       )}
-      <header className="flex items-center justify-between px-4 py-3">
+      <header className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3.5">
         <div className="flex items-center gap-2.5">
-          <img src={logoUrl} alt="" className="size-8 shrink-0" />
+          <img src={logoUrl} alt="" className="size-7 shrink-0 opacity-90" />
           <div className="text-[15px] font-semibold tracking-tight">{t("app.name")}</div>
         </div>
         <div className="flex items-center gap-1">
@@ -143,7 +143,7 @@ export function Sidebar() {
               <Button
                 size="icon"
                 variant="ghost"
-                className="size-8"
+                className="size-7"
                 onClick={() => setMapVisible(!mapVisible)}
                 aria-pressed={mapVisible}
               >
@@ -160,8 +160,8 @@ export function Sidebar() {
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "size-8",
-                  editing && "bg-brand/15 text-brand hover:bg-brand/20 hover:text-brand"
+                  "size-7",
+                  editing && "bg-brand/10 text-brand hover:bg-brand/15 hover:text-brand"
                 )}
                 onClick={handleToggleEditing}
                 aria-pressed={editing}
@@ -178,15 +178,12 @@ export function Sidebar() {
               <Button
                 size="icon"
                 variant="ghost"
-                className="relative size-8"
+                className="relative size-7"
                 onClick={openChangelog}
               >
                 <Bell className="size-4" />
                 {hasUnreadChangelog && (
-                  <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
-                  </span>
+                  <span className="absolute top-1 right-1 size-1.5 rounded-full bg-brand"></span>
                 )}
               </Button>
             </TooltipTrigger>
@@ -194,7 +191,7 @@ export function Sidebar() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" className="size-8" onClick={openSettings}>
+              <Button size="icon" variant="ghost" className="size-7" onClick={openSettings}>
                 <SettingsIcon className="size-4" />
               </Button>
             </TooltipTrigger>

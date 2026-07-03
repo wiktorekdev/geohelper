@@ -17,14 +17,14 @@ const SelectTrigger = ({ className, children, ref, ...props }: SelectTriggerProp
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-8 w-full items-center justify-between rounded-md border border-border bg-transparent px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground hover:bg-accent focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-8 w-full items-center justify-between rounded-md border border-white/[0.08] bg-white/[0.02] px-3 py-1 text-xs transition-colors placeholder:text-muted-foreground hover:bg-white/[0.04] focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="size-3.5 opacity-60" />
+      <ChevronDown className="size-3.5 opacity-50" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 )
@@ -48,7 +48,7 @@ const SelectContent = ({
       ref={ref}
       position={position}
       className={cn(
-        "relative z-[4000] max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
+        "relative z-[4000] max-h-96 min-w-[8rem] overflow-hidden rounded-lg border border-white/[0.08] bg-popover text-popover-foreground shadow-xl backdrop-blur-lg",
         position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
         className
       )}
@@ -76,7 +76,7 @@ const SelectItem = ({ className, children, ref, ...props }: SelectItemProps) => 
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-7 pr-2 text-xs outline-none focus:bg-white/[0.04] focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
@@ -113,7 +113,7 @@ interface SelectSeparatorProps extends React.ComponentPropsWithoutRef<
 const SelectSeparator = ({ className, ref, ...props }: SelectSeparatorProps) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-border/60", className)}
+    className={cn("-mx-1 my-1 h-px bg-white/[0.06]", className)}
     {...props}
   />
 )
