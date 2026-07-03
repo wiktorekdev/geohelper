@@ -54,3 +54,4 @@ old/
 
 # raw screenshot captures (intermediates for scripts/process-screenshots.mjs)
 /raw-*.png
+readmeold.md

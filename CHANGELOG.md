@@ -2,6 +2,24 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.22.0] - 2026-07-03
+
+### Added
+
+- **New logo** - refreshed the app logo with an indigo color scheme that matches the new design language, regenerated all platform icons (Windows, macOS, Linux, web favicons).
+
+### Changed
+
+- **Complete UI redesign** - the entire app has been redesigned with a clean, minimal aesthetic: indigo accent color, zinc-tinted neutral palette, quieter borders, frosted-glass surfaces, and refined typography across every screen.
+- **Redesigned marketing website** - the landing page and 404 page were rebuilt to match the new design system with a darker look, subtler gradients, and tighter layouts.
+- **Refined floating toolbars** - the edit, text, and marker customization toolbars are now pill-shaped with glass-morphism backgrounds and borderless controls for a cleaner editing experience.
+- **Cleaner changelog timeline** - version history now uses small solid dots and a clearer connecting line.
+- **Improved empty states** - the "GeoGuessr is not running" and "waiting for round" screens now show a proper icon card with helpful subtitles instead of a single bare line of text.
+- **Modernized UI primitives** - cards, buttons, inputs, selects, switches, tooltips, and scrollbars were all restyled: flatter surfaces, thinner scrollbars, smaller switches, and arrow-less tooltips.
+- **Default marker color** - the map marker default changed from red to indigo to match the new brand color.
+
+---
+
 ## [0.21.0] - 2026-06-15
 
 ### Added
