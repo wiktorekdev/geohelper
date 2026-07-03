@@ -6,6 +6,7 @@ import { AnimatePresence, m } from "motion/react"
 import { useWhatsNewStore } from "@/lib/whats-new-store"
 import { useStore } from "@/lib/store"
 import { useT } from "@/lib/i18n"
+import { isVersionInstalled } from "@/lib/links"
 
 export function ChangelogModal() {
   const t = useT()
@@ -37,7 +38,11 @@ export function ChangelogModal() {
     openChangelog()
   }
 
-  const visible = (hasUnread || import.meta.env.DEV) && !dismissed && !!latestVersion
+  const visible =
+    (hasUnread || import.meta.env.DEV) &&
+    !dismissed &&
+    !!latestVersion &&
+    isVersionInstalled(latestVersion.version)
 
   return (
     <AnimatePresence>

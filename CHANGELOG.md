@@ -2,6 +2,13 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.23.0] - 2026-07-03
+
+### Fixed
+
+- **Overlapping update popups** — `ChangelogModal` no longer shows release notes for a version that hasn't been installed yet, preventing two glassmorphic cards from stacking on top of each other when a new update is available.
+- **Progress bar polish** — replaced the wide rainbow shimmer on the download progress bar with a clean, contained shine effect that respects the bar's rounded shape, matching the app's minimal design language.
+
 ## [0.22.0] - 2026-07-03
 
 ### Added

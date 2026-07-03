@@ -77,11 +77,15 @@ export function UpdateBanner() {
                 </div>
                 <div className="relative h-1.5 overflow-hidden rounded-full bg-accent/50">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-brand to-brand/60 transition-[width] duration-200"
-                    style={{ width: pct !== null ? `${pct}%` : "40%" }}
-                  />
+                    className="relative h-full rounded-full bg-brand transition-[width] duration-200 ease-out"
+                    style={{ width: pct !== null ? `${pct}%` : "100%" }}
+                  >
+                    <div className="absolute inset-0 overflow-hidden rounded-full">
+                      <div className="absolute inset-y-0 -left-1/2 w-1/2 animate-[shimmer_1.4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                    </div>
+                  </div>
                   {pct === null && (
-                    <div className="absolute inset-y-0 -left-1/3 w-1/3 animate-[shimmer_1.4s_ease-in-out_infinite] rounded-full bg-white/20 blur-sm" />
+                    <div className="absolute inset-y-0 left-0 w-1/3 animate-[shimmer_1.4s_ease-in-out_infinite] rounded-full bg-brand/50" />
                   )}
                 </div>
               </div>
