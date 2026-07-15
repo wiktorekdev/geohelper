@@ -1,5 +1,7 @@
 mod conn;
+mod network;
 mod pipeline;
+mod resolution;
 mod resolver;
 mod rpc;
 mod target;
@@ -8,7 +10,6 @@ use std::sync::Arc;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
-use base64::Engine;
 use futures_util::stream::FuturesUnordered;
 use futures_util::{future::BoxFuture, FutureExt, StreamExt};
 use serde_json::{json, Value};
@@ -21,13 +22,12 @@ use crate::geo::is_valid;
 use crate::state::{ConnState, Coords, Shared};
 
 use conn::Conn;
+use network::{fetch_body, is_maps_rpc_url, parse_event, NetworkEvent};
 use pipeline::{
-    PanoCandidate, PanoIngest, ResolveAction, ResolveOutcome, ResolveWork, ResolvedCandidate,
-    RoundPipeline,
+    PanoCandidate, PanoIngest, ResolveAction, ResolveWork, ResolvedCandidate, RoundPipeline,
 };
 
 const BURST_DEBOUNCE: Duration = Duration::from_millis(10);
-const RESOLVE_TIMEOUT: Duration = Duration::from_secs(3);
 const RETRY_MIN: Duration = Duration::from_secs(1);
 const RETRY_MAX: Duration = Duration::from_secs(30);
 const MAX_CONCURRENT_RESOLVES: usize = 4;
@@ -155,7 +155,13 @@ async fn attempt(app: &AppHandle, state: &Shared, reconnect_epoch: u64) -> Resul
     log_line(app, "success", "CDP connected");
 
     conn.call("Network.enable", json!({})).await?;
-    tokio::spawn(prewarm_google_maps(conn.clone(), app.clone()));
+    let prewarm_conn = conn.clone();
+    let prewarm_app = app.clone();
+    tokio::spawn(async move {
+        if resolution::prewarm_google_maps(prewarm_conn).await {
+            log_line(&prewarm_app, "info", "Google Maps resolver prewarmed");
+        }
+    });
 
     let result = tokio::select! {
         res = controller(app.clone(), state.clone(), reconnect_epoch, conn.clone(), evt_rx) => {
@@ -182,35 +188,9 @@ async fn wait_for_reconnect(state: Shared, seen_epoch: u64) {
     }
 }
 
-#[derive(Debug)]
-enum NetworkEvent {
-    Response { request_id: String, url: String },
-    LoadingFinished { request_id: String },
-    LoadingFailed { request_id: String },
-}
-
 enum ControllerEnd {
     Ended,
     ReconnectRequested,
-}
-
-fn parse_event(method: &str, v: &Value) -> Option<NetworkEvent> {
-    let p = v.get("params")?;
-    let request_id = p.get("requestId")?.as_str()?.to_string();
-    match method {
-        "Network.responseReceived" => {
-            let url = p
-                .get("response")
-                .and_then(|r| r.get("url"))
-                .and_then(|u| u.as_str())
-                .unwrap_or("")
-                .to_string();
-            Some(NetworkEvent::Response { request_id, url })
-        }
-        "Network.loadingFinished" => Some(NetworkEvent::LoadingFinished { request_id }),
-        "Network.loadingFailed" => Some(NetworkEvent::LoadingFailed { request_id }),
-        _ => None,
-    }
 }
 
 async fn controller(
@@ -244,7 +224,8 @@ async fn controller(
                     }
                 }
                 ResolveWork::Resolve(candidate) => {
-                    pending_resolves.push(resolve_candidate(conn.clone(), candidate).boxed());
+                    pending_resolves
+                        .push(resolution::resolve_candidate(conn.clone(), candidate).boxed());
                 }
             }
         }
@@ -307,7 +288,8 @@ async fn controller(
                         }
                     }
                     ResolveAction::Retry(candidate) => {
-                        pending_resolves.push(resolve_candidate(conn.clone(), candidate).boxed());
+                        pending_resolves
+                            .push(resolution::resolve_candidate(conn.clone(), candidate).boxed());
                     }
                     ResolveAction::Continue => {}
                 }
@@ -320,112 +302,6 @@ async fn controller(
                 return Ok(ControllerEnd::ReconnectRequested);
             }
         }
-    }
-}
-
-async fn prewarm_google_maps(conn: Arc<Conn>, app: AppHandle) {
-    let script =
-        r#"Boolean(window.google && window.google.maps && window.google.maps.StreetViewService)"#;
-    for attempt in 1..=6 {
-        let ready = tokio::time::timeout(
-            Duration::from_millis(750),
-            conn.call(
-                "Runtime.evaluate",
-                json!({
-                    "expression": script,
-                    "returnByValue": true,
-                }),
-            ),
-        )
-        .await
-        .ok()
-        .and_then(Result::ok)
-        .and_then(|v| {
-            v.get("result")
-                .and_then(|r| r.get("value"))
-                .and_then(|v| v.as_bool())
-        })
-        .unwrap_or(false);
-
-        if ready {
-            log_line(&app, "info", "Google Maps resolver prewarmed");
-            return;
-        }
-
-        if attempt < 6 {
-            tokio::time::sleep(Duration::from_millis(150)).await;
-        }
-    }
-}
-
-async fn resolve_candidate(conn: Arc<Conn>, candidate: PanoCandidate) -> ResolvedCandidate {
-    let outcome = resolve_pano(&conn, &candidate.pano).await;
-    ResolvedCandidate { candidate, outcome }
-}
-
-fn is_maps_rpc_url(url: &str) -> bool {
-    url.contains("maps.googleapis.com/$rpc")
-        || (url.contains("maps.googleapis.com") && url.contains("$rpc"))
-}
-
-async fn fetch_body(conn: &Conn, request_id: &str) -> Result<String> {
-    let v = conn
-        .call(
-            "Network.getResponseBody",
-            json!({ "requestId": request_id }),
-        )
-        .await?;
-    let body = v
-        .get("body")
-        .and_then(|b| b.as_str())
-        .ok_or_else(|| anyhow::anyhow!("empty body"))?;
-    let base64 = v
-        .get("base64Encoded")
-        .and_then(|b| b.as_bool())
-        .unwrap_or(false);
-
-    if base64 {
-        let bytes = base64::engine::general_purpose::STANDARD.decode(body)?;
-        Ok(String::from_utf8_lossy(&bytes).into_owned())
-    } else {
-        Ok(body.to_string())
-    }
-}
-
-async fn resolve_pano(conn: &Conn, pano: &str) -> ResolveOutcome {
-    let script = resolver::build_script(pano);
-    let res = match tokio::time::timeout(
-        RESOLVE_TIMEOUT,
-        conn.call(
-            "Runtime.evaluate",
-            json!({
-                "expression": script,
-                "returnByValue": true,
-                "awaitPromise": true,
-            }),
-        ),
-    )
-    .await
-    {
-        Ok(Ok(res)) => res,
-        Ok(Err(e)) => return ResolveOutcome::CdpError(e.to_string()),
-        Err(_) => return ResolveOutcome::Timeout,
-    };
-
-    let raw = res
-        .get("result")
-        .and_then(|r| r.get("value"))
-        .and_then(|v| v.as_str())
-        .unwrap_or("");
-
-    match resolver::parse(raw) {
-        resolver::ResolverOutcome::Resolved { lat, lng } => ResolveOutcome::Resolved { lat, lng },
-        resolver::ResolverOutcome::NotFound => ResolveOutcome::NotFound,
-        resolver::ResolverOutcome::GoogleNotReady => ResolveOutcome::GoogleNotReady,
-        resolver::ResolverOutcome::Timeout => ResolveOutcome::Timeout,
-        resolver::ResolverOutcome::InvalidResponse => ResolveOutcome::InvalidResponse,
-        resolver::ResolverOutcome::Transient(error) => ResolveOutcome::Transient(error),
-        resolver::ResolverOutcome::Error(error) => ResolveOutcome::CdpError(error),
     }
 }
 

@@ -75,7 +75,9 @@ function MarkerColorButton({ label, value, onChange }: MarkerColorButtonProps) {
             className="size-3 rounded-full ring-1 ring-white/[0.1]"
             style={{ backgroundColor: value }}
           />
-          <span className="min-w-0 truncate font-mono text-[10px] uppercase">{value.replace("#", "")}</span>
+          <span className="min-w-0 truncate font-mono text-[10px] uppercase">
+            {value.replace("#", "")}
+          </span>
         </button>
       </PopoverTrigger>
       <PopoverContent

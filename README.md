@@ -98,6 +98,8 @@ Click the pencil icon in the sidebar to enter **Edit Mode**:
 bun install
 bun run dev          # development with hot reload
 bun run build        # create release builds
+bun run test         # frontend unit tests
+bun run check        # lint, tests, and frontend build
 ```
 
 ## Support

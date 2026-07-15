@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { t } from "@/lib/i18n"
 import { getSettingsStore } from "./settings-persistence"
 import { logger } from "./logger"
+import { createDebouncedWriter } from "./debounced-writer"
 import {
   applySelectionStyle,
   dedupeTextIds,
@@ -63,7 +64,6 @@ const DEFAULT_CONFIG: DisplayConfig = {
 
 const KNOWN_WIDGETS = new Set<WidgetId>(ALL_WIDGETS)
 const DISPLAY_SAVE_DELAY_MS = 250
-let displaySaveTimer: ReturnType<typeof setTimeout> | null = null
 
 function cloneDefault(): DisplayConfig {
   return {
@@ -138,19 +138,24 @@ async function persistDisplayConfig(state: DisplayConfig) {
   }
 }
 
-function schedulePersistDisplayConfig(state: DisplayConfig) {
-  if (displaySaveTimer) clearTimeout(displaySaveTimer)
-  const snapshot: DisplayConfig = {
+function snapshotDisplayConfig(state: DisplayConfig): DisplayConfig {
+  return {
     order: [...state.order],
     textStyles: { ...state.textStyles },
     hiddenTexts: { ...state.hiddenTexts },
     mapVisible: state.mapVisible,
     sidebarWidth: state.sidebarWidth,
   }
-  displaySaveTimer = setTimeout(() => {
-    displaySaveTimer = null
-    void persistDisplayConfig(snapshot)
-  }, DISPLAY_SAVE_DELAY_MS)
+}
+
+const displayWriter = createDebouncedWriter(persistDisplayConfig, DISPLAY_SAVE_DELAY_MS)
+
+function saveDisplayConfig(state: DisplayConfig) {
+  void displayWriter.save(snapshotDisplayConfig(state))
+}
+
+function scheduleDisplayConfig(state: DisplayConfig) {
+  displayWriter.schedule(snapshotDisplayConfig(state))
 }
 
 type DisplayStore = DisplayConfig & {
@@ -226,17 +231,17 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
 
   setOrder: (order) => {
     set({ order })
-    void persistDisplayConfig(get())
+    saveDisplayConfig(get())
   },
   setMapVisible: (mapVisible) => {
     set({ mapVisible })
-    void persistDisplayConfig(get())
+    saveDisplayConfig(get())
   },
   setSidebarWidth: (width) => {
     const sidebarWidth = clampSidebar(width)
     if (sidebarWidth === get().sidebarWidth) return
     set({ sidebarWidth })
-    schedulePersistDisplayConfig(get())
+    scheduleDisplayConfig(get())
   },
 
   setSelection: (ids) => set({ selection: dedupeTextIds(ids) }),
@@ -256,24 +261,24 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
     const { selection, textStyles } = get()
     if (selection.length === 0) return
     set({ textStyles: applySelectionStyle(textStyles, selection, patch) })
-    schedulePersistDisplayConfig(get())
+    scheduleDisplayConfig(get())
   },
   setSelectionHidden: (hidden) => {
     const { selection, hiddenTexts } = get()
     if (selection.length === 0) return
     set({ hiddenTexts: setSelectionHiddenState(hiddenTexts, selection, hidden) })
-    void persistDisplayConfig(get())
+    saveDisplayConfig(get())
   },
   resetSelection: () => {
     const { selection, textStyles } = get()
     if (selection.length === 0) return
     set({ textStyles: resetSelectedStyles(textStyles, selection) })
-    void persistDisplayConfig(get())
+    saveDisplayConfig(get())
   },
   resetWidget: (id) => {
     const { textStyles, hiddenTexts, selection } = get()
     set(resetWidgetTextState(id, textStyles, hiddenTexts, selection))
-    void persistDisplayConfig(get())
+    saveDisplayConfig(get())
   },
   resetParts: (options) => {
     const current = get()
@@ -285,11 +290,11 @@ export const useDisplayStore = create<DisplayStore>((set, get) => ({
       sidebarWidth: options.panel ? DEFAULT_CONFIG.sidebarWidth : current.sidebarWidth,
     }
     set({ ...next, selection: [] })
-    void persistDisplayConfig(next)
+    saveDisplayConfig(next)
   },
   resetAll: () => {
     const fresh = cloneDefault()
     set({ ...fresh, selection: [] })
-    void persistDisplayConfig(fresh)
+    saveDisplayConfig(fresh)
   },
 }))

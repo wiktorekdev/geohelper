@@ -37,7 +37,9 @@ export function Group({
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       {children}
     </div>
   )

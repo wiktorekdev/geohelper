@@ -73,9 +73,7 @@ export function EmptyState({ conn }: { conn: ConnState }) {
           {details.body ? (
             <div className="text-[11px] text-muted-foreground leading-relaxed">{details.body}</div>
           ) : (
-            <div className="text-[11px] text-muted-foreground">
-              Launch the game to get started
-            </div>
+            <div className="text-[11px] text-muted-foreground">Launch the game to get started</div>
           )}
         </div>
       </div>

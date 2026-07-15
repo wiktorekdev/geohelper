@@ -2,6 +2,18 @@
 
 All notable changes to GeoHelper are kept here.
 
+## [0.23.1] - 2026-07-15
+
+### Changed
+
+- **Maintainability cleanup** — split application startup, selection toolbar, color picker, and Chrome DevTools Protocol responsibilities into smaller focused modules without changing the user workflow.
+- **Automated quality checks** — added frontend unit tests and made both frontend and Rust test suites mandatory in continuous integration.
+
+### Fixed
+
+- **Settings persistence ordering** — serialized debounced and immediate settings writes so an older sidebar-width snapshot can no longer overwrite newer display settings.
+- **Lifecycle cleanup** — stabilized translation callbacks and centralized application listeners, timers, and startup tasks to prevent stale handlers during rerenders.
+
 ## [0.23.0] - 2026-07-03
 
 ### Fixed

@@ -48,7 +48,9 @@ export function LocationSection() {
         )
       case "empty":
         return (
-          <Card className="mx-3 my-1.5 p-4 text-sm text-muted-foreground">{t("location.empty")}</Card>
+          <Card className="mx-3 my-1.5 p-4 text-sm text-muted-foreground">
+            {t("location.empty")}
+          </Card>
         )
       case "settlement":
         return <SettlementView display={display} />

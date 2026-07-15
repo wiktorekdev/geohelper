@@ -8,8 +8,14 @@ export const KOFI_URL = "https://ko-fi.com/wiktorekdev"
 export const VERSION = packageJson.version
 
 export function compareVersions(a: string, b: string): number {
-  const an = a.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0)
-  const bn = b.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0)
+  const an = a
+    .replace(/^v/, "")
+    .split(".")
+    .map((n) => parseInt(n, 10) || 0)
+  const bn = b
+    .replace(/^v/, "")
+    .split(".")
+    .map((n) => parseInt(n, 10) || 0)
   const len = Math.max(an.length, bn.length)
   for (let i = 0; i < len; i++) {
     const av = an[i] ?? 0

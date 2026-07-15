@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { useCallback } from "react"
 
 import en from "@/locales/en.json"
 import pl from "@/locales/pl.json"
@@ -114,7 +115,8 @@ export function t(key: string, vars?: Record<string, string | number>): string {
 /** Hook variant - re-renders when the user switches locale. */
 export function useT() {
   const locale = useI18n((s) => s.locale)
-  return (key: string, vars?: Record<string, string | number>) => {
-    return translate(locale, key, vars)
-  }
+  return useCallback(
+    (key: string, vars?: Record<string, string | number>) => translate(locale, key, vars),
+    [locale]
+  )
 }
