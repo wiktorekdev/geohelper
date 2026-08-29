@@ -7,7 +7,6 @@
   <p>Live coordinates · Country · Region · Road · Postcode · Flag · Map preview</p>
 
   <p>
-    <img src="https://img.shields.io/badge/status-NPU%20%E2%80%94%20No%20Planned%20Updates-f59e0b?style=flat-square" alt="Status: NPU — No Planned Updates" />
     <a href="../../stargazers"><img src="https://img.shields.io/github/stars/wiktorekdev/geohelper?style=flat-square&color=6366f1" alt="Stars" /></a>
     <a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/wiktorekdev/geohelper?style=flat-square&color=6366f1" alt="Latest release" /></a>
     <a href="../../releases"><img src="https://img.shields.io/github/downloads/wiktorekdev/geohelper/total?style=flat-square&color=success" alt="Downloads" /></a>
